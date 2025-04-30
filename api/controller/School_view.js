@@ -4,7 +4,7 @@ const Address = require('../model/Address')
 
 exports.getSchools = async (req, res) =>{
     try{
-        const school = await School.find().populate('addressId', 'name').populate('groupSchoolId', 'name')
+        const school = await School.find().populate('address', 'name').populate('groupSchool', 'name')
         res.status(200).json(school)
     }catch(error){
         res.status(500).json({message: error.message})
@@ -13,7 +13,7 @@ exports.getSchools = async (req, res) =>{
 
 exports.getSchool = async (req, res) =>{
     try{
-        const school = await School.findById(req.params.id).populate('addressId', 'name').populate('groupSchoolId', 'name')
+        const school = await School.findById(req.params.id).populate('address', 'name').populate('groupSchool', 'name')
         if(!school) return res.status(404).json({message: "School not found"})
             res.json(school)
     }catch(error){
@@ -29,8 +29,8 @@ exports.createSchool = async (req, res) =>{
         if (!groupSchool && !address) return res.status(404).json({message: "GroupSchool or Address not found"})
 
         const school = new School({
-            groupSchoolId,
-            addressId,
+            groupSchool: groupSchoolId,
+            address: addressId,
             schoolName,
             email,
             phoneNumber,
@@ -48,8 +48,8 @@ exports.updateSchool = async (req, res) =>{
         const school = await School.findById(req.params.id)
         if (!school) return res.status(404).json({message: 'School not found'})
         
-        school.groupSchoolId= req.body.groupSchoolId
-        school.addressId = req.body.addressId
+        school.groupSchool = req.body.groupSchoolId
+        school.address = req.body.addressId
         school.schoolName = req.body.schoolName
         school.email = req.body.email
         school.phoneNumber = req.body.phoneNumber
@@ -74,7 +74,7 @@ exports.deleteSchool = async (req, res) =>{
 
 exports.getSchoolByAddress = async (req, res) =>{
     try{
-        const school = await School.find({addressId: req.params.id}).populate('addressId', 'name')
+        const school = await School.find({addressId: req.params.id}).populate('address', 'name')
         res.status(200).json(school)
     }catch(error){
         res.status(500).json({message: error.message})
