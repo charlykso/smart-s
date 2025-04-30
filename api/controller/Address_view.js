@@ -1,6 +1,5 @@
-const Address = require('../models/Address'); // Import the Address model
+const Address = require('../models/Address'); 
 
-// 🟢 Get All Addresses
 exports.getAllAddresses = async (req, res) => {
     try {
         const addresses = await Address.find();
@@ -10,7 +9,6 @@ exports.getAllAddresses = async (req, res) => {
     }
 };
 
-// 🔵 Get Address by ID
 exports.getAddressById = async (req, res) => {
     try {
         const address = await Address.findById(req.params.id);
@@ -21,7 +19,6 @@ exports.getAddressById = async (req, res) => {
     }
 };
 
-// 🟢 Create New Address
 exports.createAddress = async (req, res) => {
     try {
         const address = new Address(req.body);
@@ -32,7 +29,6 @@ exports.createAddress = async (req, res) => {
     }
 };
 
-// 🟠 Update Address by ID
 exports.updateAddress = async (req, res) => {
     try {
         const address = await Address.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -43,7 +39,6 @@ exports.updateAddress = async (req, res) => {
     }
 };
 
-// 🔴 Delete Address by ID
 exports.deleteAddress = async (req, res) => {
     try {
         const address = await Address.findByIdAndDelete(req.params.id);
