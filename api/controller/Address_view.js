@@ -20,10 +20,16 @@ exports.getAddressById = async (req, res) => {
 };
 
 exports.createAddress = async (req, res) => {
+    const address = new Address ({
+        country: req.body.country,
+        state: req.body.state,
+        street: req.body.street,
+        zip_code: req.body.zip_code,
+        street_no: req.body.street_no,
+    })
     try {
-        const address = new Address(req.body);
-        await address.save();
-        res.status(201).json(address);
+        const newAddress = await address.save();
+        res.status(201).json(newAddress);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
@@ -33,7 +39,13 @@ exports.updateAddress = async (req, res) => {
     try {
         const address = await Address.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!address) return res.status(404).json({ message: "Address not found" });
-        res.status(200).json(address);
+        address.country = req.body.country
+        address.state = req.body.state
+        address.street = req.body.street
+        address.zip_code = req.body.zip_code
+        address.street_no = req.body.street_no
+        const updatedAddress = await address.save()
+        res.status(200).json(updatedAddress);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -48,5 +60,3 @@ exports.deleteAddress = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-
-module.exports = exports;

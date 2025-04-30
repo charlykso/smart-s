@@ -2,6 +2,7 @@ const express = require('express');
 const  connectDB = require('./db/connection')
 const groupSchoolRoute = require('./route/groupSchoolRoute')
 const schoolRoute = require('./route/schoolRoute')
+const AddressRoute = require('./route/AddressRoute')
 
 const app = express();
 
@@ -11,6 +12,7 @@ app.use(express.json()); // Middleware to parse JSON requests
 //use the routes
 app.use('/api/v1/groupSchool', groupSchoolRoute)
 app.use('/api/v1/school', schoolRoute)
+app.use('/api/v1/Address', AddressRoute)
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
