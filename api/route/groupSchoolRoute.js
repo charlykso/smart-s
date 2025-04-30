@@ -5,7 +5,7 @@ const router = express.Router()
 router.get ('/all', GroupSchoolController.getGroupSchools)
 router.get('/:id', GroupSchoolController.getGroupSchool)
 router.post('/create', GroupSchoolController.createGroupSchool)
-router.put('/update/:id', GroupSchoolController.updateGroupSchool)
-router.delete('/delete/:id', GroupSchoolController.deleteGroupSchool)
+router.put('/:id/update', GroupSchoolController.updateGroupSchool)
+router.delete('/:id/delete', GroupSchoolController.deleteGroupSchool)
 
 module.exports = router
