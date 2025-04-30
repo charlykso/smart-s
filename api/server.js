@@ -3,12 +3,9 @@ const  connectDB = require('./db/connection')
 const groupSchoolRoute = require('./route/groupSchoolRoute')
 const schoolRoute = require('./route/schoolRoute')
 const AddressRoute = require('./route/AddressRoute')
-<<<<<<< HEAD
 const ClassArmRoute = require('./route/ClassArmRoute')
-=======
 const userRoute = require('./route/userRoute');
 const profileRoute = require('./route/profileRoute');
->>>>>>> f2b9ca1a33c9c03b8fdcced0dd153f7c2cbf4b5b
 
 const app = express();
 
@@ -18,13 +15,10 @@ app.use(express.json()); // Middleware to parse JSON requests
 //use the routes
 app.use('/api/v1/groupSchool', groupSchoolRoute)
 app.use('/api/v1/school', schoolRoute)
-app.use('/api/v1/Address', AddressRoute)
-<<<<<<< HEAD
-app.use('/api/v1/ClassArm', ClassArmRoute)
-=======
+app.use('/api/v1/address', AddressRoute)
+app.use('/api/v1/classArm', ClassArmRoute)
 app.use('/api/v1/user', userRoute)
 app.use('/api/v1/profile', profileRoute)
->>>>>>> f2b9ca1a33c9c03b8fdcced0dd153f7c2cbf4b5b
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
