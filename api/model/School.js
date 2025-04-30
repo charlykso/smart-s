@@ -34,16 +34,7 @@ const SchoolSchema = new mongoose.Schema({
         default: true,
         require: true,
     },
-    
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
 
-    updatedAt: {
-        type: Date,
-        default: Date.now,
-    }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('School', SchoolSchema);

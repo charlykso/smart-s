@@ -13,7 +13,6 @@ exports.getGroupSchools = async (req, res) =>{
 exports.getGroupSchool = async (req, res) =>{
     try{
         const groupSchool = await GroupSchool.findById(req.params.id)
-        res.status(200).json(groupSchool)
         if (!groupSchool) return res.status(404).json({message: 'GroupSchool not found'})
             res.status(200).json(groupSchool)
     } catch (error){
