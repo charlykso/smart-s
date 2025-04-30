@@ -27,6 +27,8 @@ exports.createGroupSchool = async (req, res) =>{
         logo: req.body.logo,
     })
     try{
+        const existing = await GroupSchool.findOne({ $or: [{name: req.body.name}, {logo: req.body.logo}] })
+        if (existing) return res.status(409).json({message: 'This School already exists'})
         const newGroupSchool = await groupSchool.save()
         res.status(201).json(newGroupSchool)
     }catch (error){
