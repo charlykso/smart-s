@@ -1,18 +1,18 @@
 const mongoose = require('mongoose');
 
 const SchoolSchema = new mongoose.Schema({
-    groupSchoold:{
+    groupSchool:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'GroupSchool',
     },
 
-    schoolName:{
+    name:{
         type: String,
         require: true,
         unique: true,
     },
 
-    addressId:{
+    address:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Address',
     },
