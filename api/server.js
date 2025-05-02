@@ -6,11 +6,8 @@ const AddressRoute = require('./route/AddressRoute')
 const ClassArmRoute = require('./route/ClassArmRoute')
 const userRoute = require('./route/userRoute');
 const profileRoute = require('./route/profileRoute');
-<<<<<<< HEAD
 const paymentProfileRoute = require('./route/paymentProfileRoute');
-=======
 const feeRoute = require('./route/feeRoute')
->>>>>>> e8d0664 (Fee model added)
 
 const app = express();
 
@@ -24,11 +21,8 @@ app.use('/api/v1/Address', AddressRoute)
 app.use('/api/v1/ClassArm', ClassArmRoute)
 app.use('/api/v1/user', userRoute)
 app.use('/api/v1/profile', profileRoute)
-<<<<<<< HEAD
 app.use('/api/v1/paymentProfile', paymentProfileRoute)
-=======
 app.use('/api/v1/fee', feeRoute)
->>>>>>> e8d0664 (Fee model added)
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
