@@ -1,5 +1,5 @@
 const express = require('express')
-const FeeController = require('../controller/Fee_view')
+const FeeController = require('../controller/fee_view')
 const router = express.Router()
 
 router.get('/all', FeeController.getFees)
