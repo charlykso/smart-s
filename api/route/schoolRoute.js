@@ -1,5 +1,5 @@
 const express = require('express');
-const SchoolController = require('../controller/School_view')
+const SchoolController = require('../controller/school_view')
 const router = express.Router()
 
 router.get('/all',  SchoolController.getSchools)
