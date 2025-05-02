@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const termController = require('../controllers/Term');
+const termController = require('../controller/term_view');
 
 router.get('/all', termController.getAllTerms);
 router.get('/:id', termController.getTermById);

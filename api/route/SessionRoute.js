@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const sessionController = require('../controllers/Session');
+const sessionController = require('../controller/session_view');
 
 router.get('/all', sessionController.getAllSessions);
 router.get('/:id', sessionController.getSessionById);
