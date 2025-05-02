@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const addressController = require('../controllers/address');
+const addressController = require('../controller/Address');
 
 router.get('/get', addressController.getAllAddresses);
 router.get('/:id', addressController.getAddressById);
