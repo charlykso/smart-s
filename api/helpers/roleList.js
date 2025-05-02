@@ -1,6 +1,6 @@
 
 const ROLES_LIST = {
-    'admin': 'dmin',
+    'admin': 'admin',
     "User": 'User',
     "proprietor": 'proprietor',
     "ICT_administrator": 'ICT_administrator',
