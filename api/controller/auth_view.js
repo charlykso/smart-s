@@ -18,13 +18,13 @@ exports.login = async(req, res) => {
               Id:  user._id,
               email: user.email,
                firstname : user.firstname,
-                lastname: user.lastname,
+                middlename: user.middlename,
                 regNo: user.regNo,
-               level : user.level,
-               staffNo: user.staffNo,
-               title: user.title,
+               phone : user.phone,
+               role: user.role,
+               type: user.type,
                 gender: user.gender,
-                roles: user.roles
+                
             },
             message : "Successful",
             token : token.token,
