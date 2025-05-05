@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const SchoolSchema = new mongoose.Schema({
+const schoolSchema = new mongoose.Schema({
     groupSchool:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'GroupSchool',
@@ -37,4 +37,4 @@ const SchoolSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-module.exports = mongoose.model('School', SchoolSchema);
+module.exports = mongoose.model('School', schoolSchema);
