@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const SessionSchema = new mongoose.Schema({
+const sessionSchema = new mongoose.Schema({
     school: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'School',
@@ -19,4 +19,4 @@ const SessionSchema = new mongoose.Schema({
      },
 }, { timestamps: true });
 
-module.exports = mongoose.model('Session', SessionSchema);
+module.exports = mongoose.model('Session', sessionSchema);
