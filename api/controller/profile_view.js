@@ -14,7 +14,7 @@ exports.getUserProfile = async (req, res) => {
     }
 };
 
-exports.uploadProfileImage = async (req, res) => {
+exports.postProfileImage = async (req, res) => {
     try {
         const { id } = req.params_id;
         if (!req.file) {
