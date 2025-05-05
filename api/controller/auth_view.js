@@ -23,7 +23,7 @@ exports.login = async(req, res) => {
                 middlename: user.middlename,
                 regNo: user.regNo,
                phone : user.phone,
-               role: user.role,
+               roles: user.roles,
                type: user.type,
                 gender: user.gender,
                 
