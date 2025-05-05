@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const FeeSchema = new mongoose.Schema({
+const feeSchema = new mongoose.Schema({
     term:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Term',
@@ -52,4 +52,4 @@ const FeeSchema = new mongoose.Schema({
 
 },{ timestamps: true });
 
-module.exports = mongoose.model('Fees', FeeSchema);
+module.exports = mongoose.model('Fees', feeSchema);

@@ -1,11 +1,11 @@
 const User = require('../model/User');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const Profile = require('../model/Profile');
 
 
 exports.getICT_administrators = async (req, res) => {
     try {
-        const ICT_administrators = await User.find({ role: 'ICT_administrator' }).select('-password -__v').populate('name');
+        const ICT_administrators = await User.find({ role: 'ICT_administrator' }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(ICT_administrators);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -15,7 +15,7 @@ exports.getICT_administrators = async (req, res) => {
 
 exports.getAuditors = async (req, res) => {
     try {
-        const auditors = await User.find({ role: 'auditor' }).select('-password -__v').populate('name');
+        const auditors = await User.find({ role: 'Auditor' }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(auditors);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -25,7 +25,7 @@ exports.getAuditors = async (req, res) => {
 
 exports.getProprietors = async (req, res) => {
     try {
-        const proprietors = await User.find({ role: 'proprietor' }).select('-password -__v').populate('name');
+        const proprietors = await User.find({ role: 'Proprietor' }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(proprietors);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -33,7 +33,7 @@ exports.getProprietors = async (req, res) => {
 };
 exports.getPrincipals = async (req, res) => {
     try {
-        const principals = await User.find({ role: 'principal' }).select('-password -__v').populate('name');
+        const principals = await User.find({ role: 'Principal' }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(principals);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -42,7 +42,7 @@ exports.getPrincipals = async (req, res) => {
 
 exports.getHeadteachers = async (req, res) => {
     try {
-        const headteachers = await User.find({ role: 'headteacher' }).select('-password -__v').populate('name');
+        const headteachers = await User.find({ role: 'Headteacher' }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(headteachers);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -50,7 +50,7 @@ exports.getHeadteachers = async (req, res) => {
 }
 exports.getBursars = async (req, res) => {
     try {
-        const bursars = await User.find({ role: 'bursar' }).select('-password -__v').populate('name');
+        const bursars = await User.find({ role: 'Bursar' }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(bursars);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -59,7 +59,7 @@ exports.getBursars = async (req, res) => {
 
 exports.getStudents = async (req, res) => {
     try {
-        const students = await User.find({ role: 'student' }).select('-password -__v').populate('name');
+        const students = await User.find({ role: 'Student' }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(students);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -67,7 +67,7 @@ exports.getStudents = async (req, res) => {
 };
 exports.getParents = async (req, res) => {
     try {
-        const parents = await User.find({ role: 'parent' }).select('-password -__v').populate('name');
+        const parents = await User.find({ role: 'Parent' }).select('-password -__v').populate('name');
         res.status(200).json(parents);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -76,7 +76,7 @@ exports.getParents = async (req, res) => {
 
 exports.getStudentsInParticularSchool = async (req, res) => {
     try {
-        const students = await User.find({ role: 'student', school_id: req.params.school_id }).select('-password -__v').populate('name');
+        const students = await User.find({ role: 'Student', school_id: req.params.school_id }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(students);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -86,7 +86,7 @@ exports.getStudentsInParticularSchool = async (req, res) => {
 exports.getParentsInParticularSchool = async (req, res) => {
 
     try {
-        const parents = await User.find({ role: 'parent', school_id: req.params.school_id }).select('-password -__v').populate('name');
+        const parents = await User.find({ role: 'Parent', school_id: req.params.school_id }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(parents);
     } catch (error) {
         res.status(500).json({ message: error.message });

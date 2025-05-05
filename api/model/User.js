@@ -3,8 +3,7 @@ const mongoose = require('mongoose')
 const userSchema = new mongoose.Schema({
     school: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: School,
-        required: true
+        ref: 'School',
     },
     firstname: {
         type: String,
@@ -13,8 +12,6 @@ const userSchema = new mongoose.Schema({
     },
     middlename: {
         type: String,
-        required: true,
-        trim: true
     },
     lastname: {
         type: String,
@@ -30,7 +27,6 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-        lowercase: true,
         trim: true
     },
     phone: {
@@ -49,11 +45,10 @@ const userSchema = new mongoose.Schema({
     },
     DOB: {
         type: Date,
-        required: true,
     },
     gender: {
         type: String,
-        enum: ['Male', 'Female', 'Other'],
+        enum: ['Male', 'Female'],
         required: true
     },
     classArm: {
@@ -62,13 +57,13 @@ const userSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['admin', 'ICT_administrator', 'auditor', 'proprietor', 'principal', 'headteacher', 'bursar', 'student', 'parent'],
-        required: true
+        enum: ['day', 'boarding']
     },
-    role: {
-        type: String,
-        enum: ['admin', 'ICT_administrator', 'auditor', 'proprietor', 'principal', 'headteacher', 'bursar', 'student', 'parent'],
-        required: true
+    roles: {
+        type: [String],
+        enum: ['Admin', 'ICT_administrator', 'Auditor', 'Proprietor', 'Principal', 'Headteacher', 'Bursar', 'Student', 'Parent'],
+        required: true,
+        default: ['Student']
     },
     password: {
         type: String,

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const GroupSchoolSchema = new mongoose.Schema({
+const groupSchoolSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -21,4 +21,4 @@ const GroupSchoolSchema = new mongoose.Schema({
   
 },{ timestamps: true });
 
-module.exports = mongoose.model('GroupSchool', GroupSchoolSchema)
+module.exports = mongoose.model('GroupSchool', groupSchoolSchema)

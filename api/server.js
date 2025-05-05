@@ -10,6 +10,7 @@ const sessionRoute = require('./route/sessionRoute');
 const termRoute = require('./route/termRoute');
 const paymentProfileRoute = require('./route/paymentProfileRoute');
 const feeRoute = require('./route/feeRoute')
+const authRoute = require('./route/authRoute')
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/api/v1/Session', sessionRoute)
 app.use('/api/v1/Term', termRoute)
 app.use('/api/v1/paymentProfile', paymentProfileRoute)
 app.use('/api/v1/fee', feeRoute)
+app.use('/api/v1/auth', authRoute)
 
 app.get('/', (req, res) => {
   res.send('Hello World!');

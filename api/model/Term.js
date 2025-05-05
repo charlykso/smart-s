@@ -3,10 +3,9 @@ const mongoose = require('mongoose');
 const termSchema = new mongoose.Schema({
    
     session: {
-        type: mongoose.Schema.Types.objectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Session',
         required: true,
-        unique: true,
     },
     name: { type: String,
          required: true,
