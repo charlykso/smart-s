@@ -2,15 +2,13 @@ const School = require('../model/School')
 const GroupSchool = require('../model/GroupSchool')
 const Address = require('../model/Address')
 
-exports.getSchools = async (req, res) => {
-  try {
-    const school = await School.find()
-      .populate('address', 'name')
-      .populate('groupSchool', 'name')
-    res.status(200).json(school)
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
+exports.getSchools = async (req, res) =>{
+    try{
+        const school = await School.find().populate('address', 'country state zip_code town street street_no').populate('groupSchool', 'name')
+        res.status(200).json(school)
+    }catch(error){
+        res.status(500).json({message: error.message})
+    }
 }
 
 exports.getSchool = async (req, res) => {
