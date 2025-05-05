@@ -1,19 +1,16 @@
 const jwt = require('jsonwebtoken');
-const { admin, User } = require('./roleList');
 require('dotenv').config();
 
 const getAuthToken = (User) => {
-    if (!User || !User._id || !User.role) {
+    if (!user || !user._id || !user.roles) {
         throw new Error("Invalid user data");
     }
 
     return jwt.sign(
         {
-            id: User._id,
-            roles: [User.role],
+            id: user._id,
+            roles: [user.roles],
             iat: Math.floor(Date.now() / 1000), 
-            iss: "annunciation group school", 
-            aud: "User", 
         },
         process.env.JWT_SECRET,
         {
@@ -25,11 +22,9 @@ const getAuthToken = (User) => {
 const getRefreshToken = (user) => {
     return jwt.sign(
         {
-            id: User._id,
-            role: User.role,
+            id: user._id,
+            roles: user.role,
             iat: Math.floor(Date.now() / 1000),
-            iss: "annunciation group schoool",
-            aud: "User",
         },
         process.env.JWT_REFRESH_SECRET,
         {
