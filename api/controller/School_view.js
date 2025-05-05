@@ -23,14 +23,14 @@ exports.getSchool = async (req, res) =>{
 
 exports.createSchool = async (req, res) =>{
     try{
-        const {groupSchoolId, schoolName, addressId, email, phoneNumber}= req.body
-        const groupSchool = await GroupSchool.findById(groupSchoolId)
-        const address = await Address.findById(addressId)
+        const {groupSchool_id, schoolName, address_id, email, phoneNumber}= req.body
+        const groupSchool = await GroupSchool.findById(groupSchool_id)
+        const address = await Address.findById(address_id)
         if (!groupSchool && !address) return res.status(404).json({message: "GroupSchool or Address not found"})
 
         const school = new School({
-            groupSchool: groupSchoolId,
-            address: addressId,
+            groupSchool: groupSchool_id,
+            address: address_id,
             schoolName,
             email,
             phoneNumber,
@@ -48,8 +48,8 @@ exports.updateSchool = async (req, res) =>{
         const school = await School.findById(req.params.id)
         if (!school) return res.status(404).json({message: 'School not found'})
         
-        school.groupSchool = req.body.groupSchoolId
-        school.address = req.body.addressId
+        school.groupSchool = req.body.groupSchool_id
+        school.address = req.body.address_id
         school.schoolName = req.body.schoolName
         school.email = req.body.email
         school.phoneNumber = req.body.phoneNumber
