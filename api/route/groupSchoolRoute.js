@@ -1,5 +1,5 @@
 const express = require('express')
-const GroupSchoolController = require('../controller/GroupSchool_view.js')
+const GroupSchoolController = require('../controller/groupSchool_view')
 const router = express.Router()
 
 router.get ('/all', GroupSchoolController.getGroupSchools)

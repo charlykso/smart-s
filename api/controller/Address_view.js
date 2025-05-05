@@ -1,4 +1,4 @@
-const Address = require('../models/Address'); 
+const Address = require('../model/Address'); 
 
 exports.getAllAddresses = async (req, res) => {
     try {
