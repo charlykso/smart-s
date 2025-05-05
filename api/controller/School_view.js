@@ -4,7 +4,7 @@ const Address = require('../model/Address')
 
 exports.getSchools = async (req, res) =>{
     try{
-        const school = await School.find().populate('address', 'country state zip_code town street street_no').populate('groupSchool', 'name')
+        const school = await School.find().populate('address', 'country state zip_code town street street_no').populate('groupSchool', 'name logo')
         res.status(200).json(school)
     }catch(error){
         res.status(500).json({message: error.message})
