@@ -11,16 +11,14 @@ exports.getSchools = async (req, res) =>{
     }
 }
 
-exports.getSchool = async (req, res) => {
-  try {
-    const school = await School.findById(req.params.id)
-      .populate('address', 'name')
-      .populate('groupSchool', 'name')
-    if (!school) return res.status(404).json({ message: 'School not found' })
-    res.json(school)
-  } catch (error) {
-    res.status(500).json({ message: error.message })
-  }
+exports.getSchool = async (req, res) =>{
+    try{
+        const school = await School.findById(req.params.id).populate('address', 'country state zip_code town street street_no').populate('groupSchool', 'name logo')
+        if(!school) return res.status(404).json({message: "School not found"})
+            res.json(school)
+    }catch(error){
+        res.status(500).json({message: error.message})
+    }
 }
 
 exports.createSchool = async (req, res) => {
