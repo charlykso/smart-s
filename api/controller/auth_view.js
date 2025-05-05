@@ -1,11 +1,12 @@
 const User = require('../model/User')
 const bcrypt = require('bcryptjs')
-const authenticateUser = require('../helpers/')
-const generateToken = require('../helpers/generateToken.js')
+const authenticateUser = require('../helpers/authenticateUser')
+const generateToken = require('../helpers/generateToken')
 exports.login = async(req, res) => {
     try{
         const {email, password} = req.body
         const user = await authenticateUser(email, password)
+        if(!user) return res.status(404).json({message: "User not found"})
         const token = generateToken(user)
         res.cookie('refreshToken', token.refreshToken,{
             httpOnly: true,
