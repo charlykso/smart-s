@@ -22,7 +22,7 @@ exports.getFee = async (req, res) => {
 
 exports.createFee = async (req, res) => {
     const fee = new Fee({
-        term: req.body.term,
+        term: req.body.term_id,
         name: req.body.name,
         decription: req.body.decription,
         type: req.body.type,
@@ -35,7 +35,7 @@ exports.createFee = async (req, res) => {
     try {
         const existing = await Fee.findOne({ $or: [{ name: req.body.name }, { term: req.body.term }] })
         if (existing) return res.status(409).json({ message: 'This Fee already exist' });
-        const term = await Term.findById(term)
+        const term = await Term.findById(term_id)
         if (!term) return res.status(409).json({message: "Term not found"})
         const newFee = await fee.save();
         res.status(201).json(newFee);
@@ -48,7 +48,7 @@ exports.updateFee = async (req, res) => {
     try {
         const fee = await Fee.findByIdAndUpdate(req.params.id, req.body, { new: true }).populate('term');
         if (!fee) return res.status(404).json({ message: 'Fee not found' });
-        fee.term = req.body.term;
+        fee.term = req.body.term_id;
         fee.name = req.body.name;
         fee.decription = req.body.decription;
         fee.type = req.body.type;
@@ -77,7 +77,7 @@ exports.deleteFee = async (req, res) =>{
 
 exports.getFeesByTerm = async (req, res) =>{
     try{
-        const {term} = req.params
+        const {term_id} = req.params
         const fees = await Fee.find({term: term}).populate('term')
         res.json(fees)
     }catch(error){

@@ -24,7 +24,6 @@ const feeSchema = new mongoose.Schema({
     isActive:{
         type: Boolean,
         default: true,
-        require: true,
     },
 
     isInstallmentAllowed:{
@@ -40,14 +39,13 @@ const feeSchema = new mongoose.Schema({
     },
 
     amount:{
-        type: Number,
+        type: mongoose.Schema.Types.Double,
         require: true,
     },
 
     isApproved:{
         type: Boolean,
         default: false,
-        require: true,
     },
 
 },{ timestamps: true });

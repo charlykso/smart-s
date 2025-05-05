@@ -24,7 +24,7 @@ const schoolSchema = new mongoose.Schema({
     },
 
     phoneNumber:{
-        type: Number,
+        type: String,
         require: true,
         unique: true,
     },
