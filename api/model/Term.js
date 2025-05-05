@@ -1,12 +1,10 @@
 const mongoose = require('mongoose');
 
-const TermSchema = new mongoose.Schema({
-   
+const termSchema = new mongoose.Schema({
     session: {
-        type: mongoose.Schema.Types.objectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Session',
         required: true,
-        unique: true,
     },
     name: { type: String,
          required: true,
@@ -20,4 +18,4 @@ const TermSchema = new mongoose.Schema({
          },
 }, { timestamps: true });
 
-module.exports = mongoose.model('Term', TermSchema);
+module.exports = mongoose.model('Term', termSchema);
