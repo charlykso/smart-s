@@ -2,6 +2,7 @@ const User = require('../model/User')
 const bcrypt = require('bcryptjs')
 const authenticateUser = require('../helpers/authenticateUser')
 const generateToken = require('../helpers/generateToken')
+
 exports.login = async(req, res) => {
     try{
         const {email, password} = req.body
