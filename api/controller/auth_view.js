@@ -1,4 +1,5 @@
 const User = require('../model/User')
+const bcrypt = require('bcryptjs')
 const authenticateUser = require('../helpers/authenticateUser')
 const generateToken = require('../helpers/generateToken')
 
