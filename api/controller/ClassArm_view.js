@@ -23,7 +23,12 @@ exports.getClassArmById = async (req, res) => {
 
 exports.createClassArm = async (req, res) => {
     try {
-        const classArm = new ClassArm(req.body);
+        const { school_id, name, totalNumberOfStudents } = req.body
+        const classArm = new ClassArm({
+            school: school_id,
+            name,
+            totalNumberOfStudents
+        });
         await classArm.save();
         res.status(201).json(classArm);
     } catch (error) {
