@@ -514,7 +514,7 @@ exports.createStudent = async (req, res) => {
             gender,
             classArm: classArm_id,
             type,
-            role: 'student',
+            role: 'Student',
             password: hashedPassword
          });
         const newStudent = await student.save();

@@ -32,7 +32,7 @@ router.get('/bursar/:id/get', userController.getBursar);
 router.post('/bursar/create', userController.createBursar);
 router.put('/bursar/update', userController.updateBursar);
 router.delete('/bursar/delete', userController.deleteBursar);
-router.get('/all', userController.getStudents);
+router.get('/students/all', userController.getStudents);
 router.get('/students/get', userController.getStudentsInParticularSchool);
 router.get('/student/:id/get', userController.getStudent);
 router.post('/student/create', userController.createStudent);
