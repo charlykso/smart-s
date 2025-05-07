@@ -114,9 +114,9 @@ exports.deleteSchool = async (req, res) => {
 
 exports.getSchoolByAddress = async (req, res) => {
   try {
-    const school = await School.find({ addressId: req.params.id }).populate(
+    const school = await School.find({ address: req.params.address_id }).populate(
       'address',
-      'name'
+      'country state zip_code town street street_no'
     )
     res.status(200).json(school)
   } catch (error) {
@@ -126,16 +126,8 @@ exports.getSchoolByAddress = async (req, res) => {
 
 exports.getSchoolByGroupSchool = async (req, res) => {
   try {
-    const groupSchool = await GroupSchool.findById(req.params.id)
-    if (!groupSchool)
-      return res.status(404).json({ message: 'GroupSchool not found' })
-    const schools = await School.find({ groupSchool: req.params.id })
-      .populate('address', 'country city state street')
-      .populate('groupSchool', 'name')
-    if (!schools)
-      return res
-        .status(404)
-        .json({ message: 'No school found for this GroupSchool' })
+    const schools = await School.find({ groupSchool: req.params.groupSchool_id }).populate('address', 'country state zip_code town street street_no').populate('groupSchool', 'name logo')
+    if (!schools) return res.status(404).json({ message: 'School not found' })
     res.status(200).json(schools)
   } catch (error) {
     res.status(500).json({ message: error.message })

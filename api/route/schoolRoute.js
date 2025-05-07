@@ -7,7 +7,7 @@ router.get('/:id', SchoolController.getSchool)
 router.post('/create', SchoolController.createSchool)
 router.put('/update', SchoolController.updateSchool)
 router.delete('/delete', SchoolController.deleteSchool)
-router.get('/by-address/:addressId', SchoolController.getSchoolByAddress)
-router.get('/by-groupSchool/:groupSchoolId', SchoolController.getSchoolByGroupSchool)
+router.get('/by-address/:address_id', SchoolController.getSchoolByAddress)
+router.get('/by-groupSchool/:groupSchool_id', SchoolController.getSchoolByGroupSchool)
 
 module.exports = router
