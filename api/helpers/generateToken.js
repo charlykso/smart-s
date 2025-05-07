@@ -1,9 +1,6 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-const jwt = require('jsonwebtoken')
-require('dotenv').config()
-
 const getAuthToken = (user) => {
   if (!(user?.['_id'] && user?.role)) {
     throw new Error('Invalid user data')
