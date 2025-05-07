@@ -37,7 +37,6 @@ const userSchema = new mongoose.Schema({
     address: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Address',
-        required: true,
     },
     student: {
         type: mongoose.Schema.Types.ObjectId,
@@ -57,7 +56,8 @@ const userSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['day', 'boarding']
+        enum: ['day', 'boarding'],
+        default: 'day'
     },
     roles: {
         type: [String],

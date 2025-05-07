@@ -495,7 +495,6 @@ exports.createStudent = async (req, res) => {
         const { school_id, firstname, middlename, lastname, regNo, email, phone, address_id, DOB, gender, classArm_id, type, role, password } = req.body;
         if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || regNo === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || classArm_id === "" || type === "" || role === "" || password === "") {
             return res.status(400).json({ message: 'All fields are required' });
-        
         }
         const existingUser = await User.findOne({ regNo: regNo });
         if (existingUser) {
@@ -523,22 +522,6 @@ exports.createStudent = async (req, res) => {
             user: newStudent._id,
         })
         await profile.save();
-        const returnStudent = {
-            _id: newStudent._id,
-            school: newStudent.school,
-            firstname: newStudent.firstname,
-            middlename: newStudent.middlename,
-            lastname: newStudent.lastname,
-            regNo: newStudent.regNo,
-            email: newStudent.email,
-            phone: newStudent.phone,
-            address: newStudent.address,
-            DOB: newStudent.DOB,
-            gender: newStudent.gender,
-            classArm: newStudent.classArm,
-            type: newStudent.type,
-            role: newStudent.role
-        }
         res.status(201).json({ message: 'Student created successfully', 
             userId: savedUser._id,
             profileId: profile._id

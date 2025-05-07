@@ -1,4 +1,5 @@
 const ClassArm = require('../model/ClassArm'); 
+const School = require('../model/School');
 
 exports.getAllClassArms = async (req, res) => {
     try {

@@ -16,7 +16,6 @@ const profileSchema = new mongoose.Schema({
     },
     dateOfAdmission: {
         type: String,
-        required: true,
         trim: true
     },
     passwordRest_token: {
