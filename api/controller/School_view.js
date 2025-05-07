@@ -90,7 +90,7 @@ exports.updateSchool = async (req, res) => {
 
     school.groupSchool = req.body.groupSchool_id
     school.address = req.body.address_id
-    school.schoolName = req.body.schoolName
+    school.name = req.body.name
     school.email = req.body.email
     school.phoneNumber = req.body.phoneNumber
 
@@ -105,7 +105,7 @@ exports.deleteSchool = async (req, res) => {
   try {
     const school = await School.findById(req.params.id)
     if (!school) return res.status(404).json({ message: 'School not found' })
-    await School.deleteOne({ _id: req.params.id })
+    await School.findByIdAndDelete({ _id: req.params.id })
     res.status(200).json({ message: 'School deleted successfully' })
   } catch (error) {
     res.status(500).json({ message: error.message })
