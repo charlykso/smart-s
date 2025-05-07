@@ -24,6 +24,8 @@ exports.getClassArmById = async (req, res) => {
 exports.createClassArm = async (req, res) => {
     try {
         const { school_id, name, totalNumberOfStudents } = req.body
+        const school = await School.findById(school_id);
+        if (!school) return res.status(404).json({ message: "School not found" });
         const classArm = new ClassArm({
             school: school_id,
             name,
