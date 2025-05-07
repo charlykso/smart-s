@@ -3,6 +3,15 @@ const bcrypt = require('bcryptjs');
 const Profile = require('../model/Profile');
 
 
+exports.getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find().select('-password -__v').populate('school', 'name');
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
 exports.getICT_administrators = async (req, res) => {
     try {
         const ICT_administrators = await User.find({ role: 'ICT_administrator' }).select('-password -__v').populate('profile', 'img');

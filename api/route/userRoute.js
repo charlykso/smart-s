@@ -2,7 +2,8 @@ const express = require('express');
 const userController = require('../controller/user_view');
 const router = express.Router();
 
-router.get('/all', userController.getICT_administrators);
+router.get('/all', userController.getAllUsers);
+router.get('/ict-admin/all', userController.getICT_administrators);
 router.get('/ict-admin/:id/get', userController.getICT_administrator);
 router.post('/ict-admin/create', userController.createICT_administrator);
 router.put('/ict-admin/update', userController.updateICT_administrator);
