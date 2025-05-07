@@ -532,10 +532,7 @@ exports.createStudent = async (req, res) => {
             user: newStudent._id,
         })
         await profile.save();
-        res.status(201).json({ message: 'Student created successfully', 
-            userId: savedStudent._id,
-            profileId: profile._id
-        });
+        res.status(201).json({ message: 'Student created successfully'});
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
