@@ -3,7 +3,7 @@ const Term = require('../model/Term');
 
 exports.getFees = async (req, res) => {
     try {
-        const fees = await Fee.find().populate('term');
+        const fees = await Fee.find().populate('term', 'name');
         res.status(200).json(fees);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -12,7 +12,7 @@ exports.getFees = async (req, res) => {
 
 exports.getFee = async (req, res) => {
     try {
-        const fee = await Fee.findById(req.params.id).populate('term');
+        const fee = await Fee.findById(req.params.id).populate('term', 'name');
         if (!fee) return res.status(404).json({ message: 'Fee not found' });
         res.status(200).json(fee);
     } catch (error) {
