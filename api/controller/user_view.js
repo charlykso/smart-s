@@ -85,8 +85,18 @@ exports.getParents = async (req, res) => {
 
 exports.getStudentsInParticularSchool = async (req, res) => {
     try {
-        const { school_id } = req.params.school_id;
-        const students = await User.findById({ role: 'Student', school_id: req.params.school_id }).select('-password -__v');
+        const school_id = req.params.school_id;
+        const students = await User.find({
+            role: 'Student',
+            school: school_id
+        })
+        .select('-password -__v')
+        .populate('school', 'name')
+        .populate('classArm', 'name')
+        .populate('profile');
+        if (students.length === 0) {
+            return res.status(404).json({ message: 'No students found for this school' });
+        }
         res.status(200).json(students);
     } catch (error) {
         res.status(500).json({ message: error.message });
