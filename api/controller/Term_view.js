@@ -26,10 +26,10 @@ exports.getTermById = async (req, res) => {
 
 exports.createTerm = async (req, res) => {
     try {
+        const {session: session_id, name, startDate, endDate } = req.body;
         const session = await Session.findById (session)
         if (!session) return res.status(409).json({message: 'session not found'})
-        const { name, startDate, endDate } = req.body;
-        const term = new Term({ name, startDate, endDate });
+        const term = new Term({session: session_id, name, startDate, endDate });
         await term.save();
         res.status(201).json(term);
     } catch (error) {
