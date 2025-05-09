@@ -1,5 +1,5 @@
-const Term = require('../model/Term'); 
-const Session = require('../model/Session'); 
+const Term = require('../model/Term');
+const Session = require('../model/Session');
 
 
 
@@ -26,10 +26,12 @@ exports.getTermById = async (req, res) => {
 
 exports.createTerm = async (req, res) => {
     try {
-        const {session: session_id, name, startDate, endDate } = req.body;
-        const session = await Session.findById (session_id)
-        if (!session) return res.status(409).json({message: 'session not found'})
-        const term = new Term({session: session_id, name, startDate, endDate });
+        const { session: session_id, name, startDate, endDate } = req.body;
+        const session = await Session.findById(session_id)
+        if (!session) return res.status(409).json({ message: 'term not found' })
+        const existingTerm = await Term.findOne({ name })
+        if (existingTerm) { return res.status(400).json({ message: "term already exists" }) };
+        const term = new Term({ session: session_id, name, startDate, endDate });
         await term.save();
         res.status(201).json(term);
     } catch (error) {
@@ -66,11 +68,11 @@ exports.deleteTerm = async (req, res) => {
 
 exports.getTermBySession = async (req, res) => {
     try {
-        const {session} = req.params
-        const term = await Term.find({session: session}).populate('session')
+        const { session } = req.params
+        const term = await Term.find({ session: session }).populate('session')
         res.json(term)
     } catch (error) {
-        res.status(500).json({message: error.message})
+        res.status(500).json({ message: error.message })
     }
 };
 
