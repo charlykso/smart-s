@@ -39,10 +39,10 @@ exports.createSession = async (req, res) => {
 
 exports.updateSession = async (req, res) => {
     try {
-        const { name, startDate, endDate } = req.body;
+        const { school_id,name, startDate, endDate } = req.body;
         const session = await Session.findByIdAndUpdate(
             req.params.id,
-            { name, startDate, endDate },
+            { school_id, name, startDate, endDate },
             { new: true }
         );
         if (!session) return res.status(404).json({ message: "Session not found" });
