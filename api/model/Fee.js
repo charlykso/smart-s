@@ -50,4 +50,4 @@ const feeSchema = new mongoose.Schema({
 
 },{ timestamps: true });
 
-module.exports = mongoose.model('Fees', feeSchema);
+module.exports = mongoose.model('Fee', feeSchema);
