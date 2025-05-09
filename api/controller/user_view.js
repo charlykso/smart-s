@@ -143,7 +143,7 @@ exports.getProprietor = async (req, res) => {
 
 exports.getPrincipal = async (req, res) => {
     try {
-        const principal = await User.findById({ role: 'principal', _id: req.params.id }).select('-password -__v').populate('name');
+        const principal = await User.findById({ role: 'principal', _id: req.params.id }).select('-password -__v').populate('school', 'name').populate('profile', 'name');
         res.status(200).json(principal);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -190,8 +190,8 @@ exports.getParent = async (req, res) => {
 
 exports.createICT_administrator = async (req, res) => {
     try {
-        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role, password } = req.body;
-        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || type === "" || role === "" || password === "") {
+        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles, password } = req.body;
+        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || roles === "" || password === "") {
             return res.status(400).json({ message: 'All fields are required' });
 
         }
@@ -213,8 +213,7 @@ exports.createICT_administrator = async (req, res) => {
             profile: profile_id,
             DOB,
             gender,
-            type,
-            role: 'ICT_administrator',
+            roles: ['ICT_administrator'],
             password: hashedPassword
          });
         await ICT_administrator.save();
@@ -227,8 +226,8 @@ exports.createICT_administrator = async (req, res) => {
 
 exports.createAuditor = async (req, res) => {
     try {
-        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role, password } = req.body;
-        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || type === "" || role === "" || password === "") {
+        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles, password } = req.body;
+        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || roles === "" || password === "") {
             return res.status(400).json({ message: 'All fields are required' });
 
         }
@@ -250,8 +249,7 @@ exports.createAuditor = async (req, res) => {
             profile: profile_id,
             DOB,
             gender,
-            type,
-            role: 'auditor',
+            roles: ['Auditor'],
             password: hashedPassword
          });
         await auditor.save();
@@ -264,8 +262,8 @@ exports.createAuditor = async (req, res) => {
 
 exports.createProprietor = async (req, res) => {
     try {
-        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role, password } = req.body;
-        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || type === "" || role === "" || password === "") {
+        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles, password } = req.body;
+        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || roles === "" || password === "") {
             return res.status(400).json({ message: 'All fields are required' });
         
         }
@@ -287,8 +285,7 @@ exports.createProprietor = async (req, res) => {
             profile: profile_id,
             DOB,
             gender,
-            type,
-            role: 'proprietor',
+            roles: ['Proprietor'],
             password: hashedPassword
          });
         await proprietor.save();
@@ -299,8 +296,8 @@ exports.createProprietor = async (req, res) => {
 };
 exports.createPrincipal = async (req, res) => {
     try {
-        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role, password } = req.body;
-        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || type === "" || role === "" || password === "") {
+        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles, password } = req.body;
+        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || roles === "" || password === "") {
             return res.status(400).json({ message: 'All fields are required' });
         
         }
@@ -322,23 +319,19 @@ exports.createPrincipal = async (req, res) => {
             profile: profile_id,
             DOB,
             gender,
-            type,
-            role: 'principal',
+            roles: ['Principal'],
             password: hashedPassword
          });
         await principal.save();
-        res.status(201).json({ message: 'Principal created successfully', 
-            userId: savedUser._id,
-            profileId: profile._id
-        });
+        res.status(201).json({ message: 'Principal created successfully'});
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 exports.createHeadteacher = async (req, res) => {
     try {
-        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role, password } = req.body;
-        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || type === "" || role === "" || password === "") {
+        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles, password } = req.body;
+        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || roles === "" || password === "") {
             return res.status(400).json({ message: 'All fields are required' });
         
         }
@@ -360,8 +353,7 @@ exports.createHeadteacher = async (req, res) => {
             profile: profile_id,
             DOB,
             gender,
-            type,
-            role: 'headteacher',
+            roles: ['Headteacher'],
             password: hashedPassword
          });
         await headteacher.save();
@@ -372,8 +364,8 @@ exports.createHeadteacher = async (req, res) => {
 };
 exports.createBursar = async (req, res) => {
     try {
-        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role, password } = req.body;
-        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || type === "" || role === "" || password === "") {
+        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles, password } = req.body;
+        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || roles === "" || password === "") {
             return res.status(400).json({ message: 'All fields are required' });
         
         }
@@ -395,8 +387,7 @@ exports.createBursar = async (req, res) => {
             profile: profile_id,
             DOB,
             gender,
-            type,
-            role: 'bursar',
+            roles: ['bursar'],
             password: hashedPassword
          });
         await bursar.save();
@@ -407,8 +398,8 @@ exports.createBursar = async (req, res) => {
 };
 exports.createStudent = async (req, res) => {
     try {
-        const { school_id, firstname, middlename, lastname, regNo, email, phone, address_id, DOB, gender, classArm_id, type, role, password } = req.body;
-        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || regNo === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || classArm_id === "" || type === "" || role === "" || password === "") {
+        const { school_id, firstname, middlename, lastname, regNo, email, phone, address_id, DOB, gender, classArm_id, type, roles, password } = req.body;
+        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || regNo === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || classArm_id === "" || type === "" || roles === "" || password === "") {
             return res.status(400).json({ message: 'All fields are required' });
         }
         const existingUser = await User.findOne({ regNo: regNo });
@@ -432,7 +423,7 @@ exports.createStudent = async (req, res) => {
             gender,
             classArm: classArm_id,
             type,
-            role: 'Student',
+            roles: ['Student'],
             password: hashedPassword
          });
          await student.save();
@@ -443,8 +434,8 @@ exports.createStudent = async (req, res) => {
 };
 exports.createParent = async (req, res) => {
     try {
-        const { school_id, firstname, middlename, lastname, student_id, email, phone, address_id, DOB, gender, type, role, password } = req.body;
-        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || student_id === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || type === "" || role === "" || password === "") {
+        const { school_id, firstname, middlename, lastname, student_id, email, phone, address_id, DOB, gender, roles, password } = req.body;
+        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || student_id === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || roles === "" || password === "") {
             return res.status(400).json({ message: 'All fields are required' });
         
         }
@@ -472,8 +463,7 @@ exports.createParent = async (req, res) => {
             profile: profile_id,
             DOB,
             gender,
-            type,
-            role: 'parent',
+            roles: ['Parent'],
             password: hashedPassword
          }); 
         await parent.save();
@@ -486,33 +476,16 @@ exports.createParent = async (req, res) => {
 exports.updateICT_administrator = async (req, res) => {
     try {
         const { id } = req.params;
-        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role } = req.body;
-        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || type === "" || role === "") {
+        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles } = req.body;
+        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || roles === "") {
             return res.status(400).json({ message: 'All fields are required' });
 
         }
-        const ict_administrator = await User.findByIdAndUpdate(id, { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role }, { new: true });
+        const ict_administrator = await User.findByIdAndUpdate(id, { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles }, { new: true });
         if (!ict_administrator) {
             return res.status(404).json({ message: 'ICT administrator not found' });
         }
-        const returnICT_administrator = {
-            _id: ict_administrator._id,
-            school: ict_administrator.school,
-            firstname: ict_administrator.firstname,
-            middlename: ict_administrator.middlename,
-            lastname: ict_administrator.lastname,
-            email: ict_administrator.email,
-            phone: ict_administrator.phone,
-            address: ict_administrator.address,
-            DOB: ict_administrator.DOB,
-            gender: ict_administrator.gender,
-            type: ict_administrator.type,
-            role: ict_administrator.role
-        }
-        res.status(200).json({ message: 'ICT administrator updated successfully',
-            userId: savedUser._id,
-            profileId: profile._id
-        });
+        res.status(200).json({ message: 'ICT administrator updated successfully'});
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -521,28 +494,14 @@ exports.updateICT_administrator = async (req, res) => {
 exports.updateAuditor = async (req, res) => {
     try {
         const { id } = req.params;
-        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role } = req.body;
-        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || type === "" || role === "") {
+        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles } = req.body;
+        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || roles === "") {
             return res.status(400).json({ message: 'All fields are required' });
 
         }
-        const auditor = await User.findByIdAndUpdate(id, { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role }, { new: true });
+        const auditor = await User.findByIdAndUpdate(id, { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles }, { new: true });
         if (!auditor) {
             return res.status(404).json({ message: 'Auditor not found' });
-        }
-        const returnAuditor = {
-            _id: auditor._id,
-            school: auditor.school,
-            firstname: auditor.firstname,
-            middlename: auditor.middlename,
-            lastname: auditor.lastname,
-            email: auditor.email,
-            phone: auditor.phone,
-            address: auditor.address,
-            DOB: auditor.DOB,
-            gender: auditor.gender,
-            type: auditor.type,
-            role: auditor.role
         }
         res.status(200).json({ message: 'Auditor updated successfully' });
     } catch (error) {
@@ -554,29 +513,16 @@ exports.updateAuditor = async (req, res) => {
 exports.updateProprietor = async (req, res) => {
     try {
         const { id } = req.params;
-        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role } = req.body;
-        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || type === "" || role === "") {
+        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles } = req.body;
+        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || roles === "") {
             return res.status(400).json({ message: 'All fields are required' });
 
         }
-        const proprietor = await User.findByIdAndUpdate(id, { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role }, { new: true });
+        const proprietor = await User.findByIdAndUpdate(id, { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles }, { new: true });
         if (!proprietor) {
             return res.status(404).json({ message: 'Proprietor not found' });
         }
-        const returnProprietor = {
-            _id: proprietor._id,
-            school: proprietor.school,
-            firstname: proprietor.firstname,
-            middlename: proprietor.middlename,
-            lastname: proprietor.lastname,
-            email: proprietor.email,
-            phone: proprietor.phone,
-            address: proprietor.address,
-            DOB: proprietor.DOB,
-            gender: proprietor.gender,
-            type: proprietor.type,
-            role: proprietor.role
-        }
+        
         res.status(200).json({ message: 'Proprietor updated successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -586,28 +532,14 @@ exports.updateProprietor = async (req, res) => {
 exports.updatePrincipal = async (req, res) => {
     try {
         const { id } = req.params;
-        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role } = req.body;
-        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || type === "" || role === "") {
+        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles } = req.body;
+        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || roles === "") {
             return res.status(400).json({ message: 'All fields are required' });
 
         }
-        const principal = await User.findByIdAndUpdate(id, { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role }, { new: true });
+        const principal = await User.findByIdAndUpdate(id, { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles }, { new: true });
         if (!principal) {
             return res.status(404).json({ message: 'Principal not found' });
-        }
-        const returnPrincipal = {
-            _id: principal._id,
-            school: principal.school,
-            firstname: principal.firstname,
-            middlename: principal.middlename,
-            lastname: principal.lastname,
-            email: principal.email,
-            phone: principal.phone,
-            address: principal.address,
-            DOB: principal.DOB,
-            gender: principal.gender,
-            type: principal.type,
-            role: principal.role
         }
         res.status(200).json({ message: 'Principal updated successfully' });
     } catch (error) {
@@ -618,28 +550,14 @@ exports.updatePrincipal = async (req, res) => {
 exports.updateHeadteacher = async (req, res) => {
     try {
         const { id } = req.params;
-        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role } = req.body;
-        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || type === "" || role === "") {
+        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles } = req.body;
+        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || roles === "") {
             return res.status(400).json({ message: 'All fields are required' });
 
         }
-        const headteacher = await User.findByIdAndUpdate(id, { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role }, { new: true });
+        const headteacher = await User.findByIdAndUpdate(id, { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles }, { new: true });
         if (!headteacher) {
             return res.status(404).json({ message: 'Headteacher not found' });
-        }
-        const returnHeadteacher = {
-            _id: headteacher._id,
-            school: headteacher.school,
-            firstname: headteacher.firstname,
-            middlename: headteacher.middlename,
-            lastname: headteacher.lastname,
-            email: headteacher.email,
-            phone: headteacher.phone,
-            address: headteacher.address,
-            DOB: headteacher.DOB,
-            gender: headteacher.gender,
-            type: headteacher.type,
-            role: headteacher.role
         }
         res.status(200).json({ message: 'Headteacher updated successfully' });
     } catch (error) {
@@ -650,28 +568,14 @@ exports.updateHeadteacher = async (req, res) => {
 exports.updateBursar = async (req, res) => {
     try {
         const { id } = req.params;
-        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role } = req.body;
-        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || type === "" || role === "") {
+        const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles } = req.body;
+        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || roles === "") {
             return res.status(400).json({ message: 'All fields are required' });
 
         }
-        const bursar = await User.findByIdAndUpdate(id, { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, type, role }, { new: true });
+        const bursar = await User.findByIdAndUpdate(id, { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles }, { new: true });
         if (!bursar) {
             return res.status(404).json({ message: 'Bursar not found' });
-        }
-        const returnBursar = {
-            _id: bursar._id,
-            school: bursar.school,
-            firstname: bursar.firstname,
-            middlename: bursar.middlename,
-            lastname: bursar.lastname,
-            email: bursar.email,
-            phone: bursar.phone,
-            address: bursar.address,
-            DOB: bursar.DOB,
-            gender: bursar.gender,
-            type: bursar.type,
-            role: bursar.role
         }
         res.status(200).json({ message: 'Bursar updated successfully' });
     } catch (error) {
@@ -691,22 +595,6 @@ exports.updateStudent = async (req, res) => {
         if (!student) {
             return res.status(404).json({ message: 'Student not found' });
         }
-        const returnStudent = {
-            _id: student._id,
-            school: student.school,
-            firstname: student.firstname,
-            middlename: student.middlename,
-            lastname: student.lastname,
-            regNo: student.regNo,
-            email: student.email,
-            phone: student.phone,
-            address: student.address,
-            DOB: student.DOB,
-            gender: student.gender,
-            classArm: student.classArm,
-            type: student.type,
-            role: student.role
-        }
         res.status(200).json({ message: 'Student updated successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -716,29 +604,14 @@ exports.updateStudent = async (req, res) => {
 exports.updateParent = async (req, res) => {
     try {
         const { id } = req.params;
-        const { school_id, firstname, middlename, lastname, student_id, email, phone, address_id, DOB, gender, type, role } = req.body;
-        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || student_id === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || type === "" || role === "") {
+        const { school_id, firstname, middlename, lastname, student_id, email, phone, address_id, DOB, gender, roles } = req.body;
+        if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || student_id === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || roles === "") {
             return res.status(400).json({ message: 'All fields are required' });
 
         }
-        const parent = await User.findByIdAndUpdate(id, { school_id, firstname, middlename, lastname, student_id, email, phone, address_id, DOB, gender, type, role }, { new: true });
+        const parent = await User.findByIdAndUpdate(id, { school_id, firstname, middlename, lastname, student_id, email, phone, address_id, DOB, gender, roles }, { new: true });
         if (!parent) {
             return res.status(404).json({ message: 'Parent not found' });
-        }
-        const returnParent = {
-            _id: parent._id,
-            school: parent.school,
-            firstname: parent.firstname,
-            middlename: parent.middlename,
-            lastname: parent.lastname,
-            student: parent.student_id,
-            email: parent.email,
-            phone: parent.phone,
-            address: parent.address,
-            DOB: parent.DOB,
-            gender: parent.gender,
-            type: parent.type,
-            role: parent.role
         }
         res.status(200).json({ message: 'Parent updated successfully' });
     } catch (error) {

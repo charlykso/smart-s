@@ -61,13 +61,11 @@ const userSchema = new mongoose.Schema({
     type: {
         type: String,
         enum: ['day', 'boarding'],
-        default: 'day'
     },
     roles: {
         type: [String],
         enum: ['Admin', 'ICT_administrator', 'Auditor', 'Proprietor', 'Principal', 'Headteacher', 'Bursar', 'Student', 'Parent'],
         required: true,
-        default: ['Student']
     },
     password: {
         type: String,
