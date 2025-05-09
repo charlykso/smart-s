@@ -511,6 +511,10 @@ exports.createStudent = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
         const hashedPassword = await bcrypt.hash(password, 10);
+        const profile = new Profile({
+
+        });
+        await profile.save();
         const student = new User({ 
             school: school_id,
             firstname,
@@ -520,6 +524,7 @@ exports.createStudent = async (req, res) => {
             email,
             phone,
             address: address_id,
+            profile: profile_id,
             DOB,
             gender,
             classArm: classArm_id,
@@ -528,10 +533,6 @@ exports.createStudent = async (req, res) => {
             password: hashedPassword
          });
         const newStudent = await student.save();
-        const profile = new Profile({
-            user: newStudent._id,
-        })
-        await profile.save();
         res.status(201).json({ message: 'Student created successfully'});
     } catch (error) {
         res.status(500).json({ message: error.message });
