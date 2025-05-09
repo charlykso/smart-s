@@ -26,7 +26,7 @@ exports.getSessionById = async (req, res) => {
 
 exports.createSession = async (req, res) => {
     try {
-        const {school: school_id, name, startDate, endDate} = req.body;
+        const {school_id, name, startDate, endDate} = req.body;
         const school = await School.findById(school_id)
         if(!school) return res.status(404).json({message: 'School not found'});
         const existingSession = await Session.findOne({name, school: school_id});
