@@ -190,6 +190,8 @@ exports.createICT_administrator = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
         const hashedPassword = await bcrypt.hash(password, 10);
+        const profile = new Profile({ });
+        const profile_id = await profile.save();
         const ICT_administrator = new User({
             school: school_id,
             firstname,
@@ -198,35 +200,15 @@ exports.createICT_administrator = async (req, res) => {
             email,
             phone,
             address: address_id,
+            profile: profile_id,
             DOB,
             gender,
             type,
             role: 'ICT_administrator',
             password: hashedPassword
          });
-        const newICT_administrator = await ICT_administrator.save();
-        const profile = new Profile({
-            user: newICT_administrator._id,
-        })
-        await profile.save();
-        const returnICT_administrator = {
-            _id: newICT_administrator._id,
-            school: newICT_administrator.school,
-            firstname: newICT_administrator.firstname,
-            middlename: newICT_administrator.middlename,
-            lastname: newICT_administrator.lastname,
-            email: newICT_administrator.email,
-            phone: newICT_administrator.phone,
-            address: newICT_administrator.address,
-            DOB: newICT_administrator.DOB,
-            gender: newICT_administrator.gender,
-            type: newICT_administrator.type,
-            role: newICT_administrator.role
-        }
-        res.status(201).json({ message: 'ICT administrator and profile created successfully',
-            userId: savedUser._id,
-            profileId: profile._id
-        });
+        await ICT_administrator.save();
+        res.status(201).json({ message: 'ICT administrator and profile created successfully'});
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -245,6 +227,8 @@ exports.createAuditor = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
         const hashedPassword = await bcrypt.hash(password, 10);
+        const profile = new Profile({ });
+        const profile_id = await profile.save();
         const auditor = new User({
             school: school_id,
             firstname,
@@ -253,35 +237,15 @@ exports.createAuditor = async (req, res) => {
             email,
             phone,
             address: address_id,
+            profile: profile_id,
             DOB,
             gender,
             type,
             role: 'auditor',
             password: hashedPassword
          });
-        const newAuditor = await auditor.save();
-        const profile = new Profile({
-            user: newAuditor._id,
-        })
-        await profile.save();
-        const returnAuditor = {
-            _id: newAuditor._id,
-            school: newAuditor.school,
-            firstname: newAuditor.firstname,
-            middlename: newAuditor.middlename,
-            lastname: newAuditor.lastname,
-            email: newAuditor.email,
-            phone: newAuditor.phone,
-            address: newAuditor.address,
-            DOB: newAuditor.DOB,
-            gender: newAuditor.gender,
-            type: newAuditor.type,
-            role: newAuditor.role
-        }
-        res.status(201).json({ message: 'Auditor and profile created successfully',
-            userId: savedUser._id,
-            profileId: profile._id
-        });
+        await auditor.save();
+        res.status(201).json({ message: 'Auditor and profile created successfully'});
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -300,6 +264,8 @@ exports.createProprietor = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
         const hashedPassword = await bcrypt.hash(password, 10);
+        const profile = new Profile({ });
+        const profile_id = await profile.save();
         const proprietor = new User({ 
             school: school_id,
             firstname,
@@ -308,35 +274,15 @@ exports.createProprietor = async (req, res) => {
             email,
             phone,
             address: address_id,
+            profile: profile_id,
             DOB,
             gender,
             type,
             role: 'proprietor',
             password: hashedPassword
          });
-        const newProprietor = await proprietor.save();
-        const profile = new Profile({
-            user: newProprietor._id,
-        })
-        await profile.save();
-        const returnProprietor = {
-            _id: newProprietor._id,
-            school: newProprietor.school,
-            firstname: newProprietor.firstname,
-            middlename: newProprietor.middlename,
-            lastname: newProprietor.lastname,
-            email: newProprietor.email,
-            phone: newProprietor.phone,
-            address: newProprietor.address,
-            DOB: newProprietor.DOB,
-            gender: newProprietor.gender,
-            type: newProprietor.type,
-            role: newProprietor.role
-        }
-        res.status(201).json({ message: 'Proprietor created successfully',
-            userId: savedUser._id,
-            profileId: profile._id
-        });
+        await proprietor.save();
+        res.status(201).json({ message: 'Proprietor created successfully'});
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -353,6 +299,8 @@ exports.createPrincipal = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
         const hashedPassword = await bcrypt.hash(password, 10);
+        const profile = new Profile({ });
+        const profile_id = await profile.save();
         const principal = new User({ 
             school: school_id,
             firstname,
@@ -361,31 +309,14 @@ exports.createPrincipal = async (req, res) => {
             email,
             phone,
             address: address_id,
+            profile: profile_id,
             DOB,
             gender,
             type,
             role: 'principal',
             password: hashedPassword
          });
-        const newPrincipal = await principal.save();
-        const profile = new Profile({
-            user: newPrincipal._id,
-        })
-        await profile.save();
-        const returnPrincipal = {
-            _id: newPrincipal._id,
-            school: newPrincipal.school,
-            firstname: newPrincipal.firstname,
-            middlename: newPrincipal.middlename,
-            lastname: newPrincipal.lastname,
-            email: newPrincipal.email,
-            phone: newPrincipal.phone,
-            address: newPrincipal.address,
-            DOB: newPrincipal.DOB,
-            gender: newPrincipal.gender,
-            type: newPrincipal.type,
-            role: newPrincipal.role
-        }
+        await principal.save();
         res.status(201).json({ message: 'Principal created successfully', 
             userId: savedUser._id,
             profileId: profile._id
@@ -406,6 +337,8 @@ exports.createHeadteacher = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
         const hashedPassword = await bcrypt.hash(password, 10);
+        const profile = new Profile({ });
+        const profile_id = await profile.save();
         const headteacher = new User({ 
             school: school_id,
             firstname,
@@ -414,35 +347,15 @@ exports.createHeadteacher = async (req, res) => {
             email,
             phone,
             address: address_id,
+            profile: profile_id,
             DOB,
             gender,
             type,
             role: 'headteacher',
             password: hashedPassword
          });
-        const newHeadteacher = await headteacher.save();
-        const profile = new Profile({
-            user: newHeadteacher._id,
-        })
-        await profile.save();
-        const returnHeadteacher = {
-            _id: newHeadteacher._id,
-            school: newHeadteacher.school,
-            firstname: newHeadteacher.firstname,
-            middlename: newHeadteacher.middlename,
-            lastname: newHeadteacher.lastname,
-            email: newHeadteacher.email,
-            phone: newHeadteacher.phone,
-            address: newHeadteacher.address,
-            DOB: newHeadteacher.DOB,
-            gender: newHeadteacher.gender,
-            type: newHeadteacher.type,
-            role: newHeadteacher.role
-        }
-        res.status(201).json({ message: 'Headteacher created successfully', 
-            userId: savedUser._id,
-            profileId: profile._id
-        });
+        await headteacher.save();
+        res.status(201).json({ message: 'Headteacher created successfully'});
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -459,6 +372,8 @@ exports.createBursar = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
         const hashedPassword = await bcrypt.hash(password, 10);
+        const profile = new Profile({ });
+        const profile_id = await profile.save();
         const bursar = new User({ 
             school: school_id,
             firstname,
@@ -467,35 +382,15 @@ exports.createBursar = async (req, res) => {
             email,
             phone,
             address: address_id,
+            profile: profile_id,
             DOB,
             gender,
             type,
             role: 'bursar',
             password: hashedPassword
          });
-        const newBursar = await bursar.save();
-        const profile = new Profile({
-            user: newBursar._id,
-        })
-        await profile.save();
-        const returnBursar = {
-            _id: newBursar._id,
-            school: newBursar.school,
-            firstname: newBursar.firstname,
-            middlename: newBursar.middlename,
-            lastname: newBursar.lastname,
-            email: newBursar.email,
-            phone: newBursar.phone,
-            address: newBursar.address,
-            DOB: newBursar.DOB,
-            gender: newBursar.gender,
-            type: newBursar.type,
-            role: newBursar.role
-        }
-        res.status(201).json({ message: 'Bursar created successfully', 
-            userId: savedUser._id,
-            profileId: profile._id
-        });
+        await bursar.save();
+        res.status(201).json({ message: 'Bursar created successfully'});
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -553,6 +448,8 @@ exports.createParent = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
         const hashedPassword = await bcrypt.hash(password, 10);
+        const profile = new Profile({ });
+        const profile_id = await profile.save();
         const parent = new User({
             school: school_id,
             firstname,
@@ -562,36 +459,15 @@ exports.createParent = async (req, res) => {
             email,
             phone,
             address: address_id,
+            profile: profile_id,
             DOB,
             gender,
             type,
             role: 'parent',
             password: hashedPassword
          }); 
-        const newParent = await parent.save();
-        const profile = new Profile({
-            user: newParent._id,
-        })
-        await profile.save();
-        const returnParent = {
-            _id: newParent._id,
-            school: newParent.school,
-            firstname: newParent.firstname,
-            middlename: newParent.middlename,
-            lastname: newParent.lastname,
-            student: newParent.student_id,
-            email: newParent.email,
-            phone: newParent.phone,
-            address: newParent.address,
-            DOB: newParent.DOB,
-            gender: newParent.gender,
-            type: newParent.type,
-            role: newParent.role
-        }
-        res.status(201).json({ message: 'Parent created successfully', 
-            userId: savedUser._id,
-            profileId: profile._id
-        });
+        await parent.save();
+        res.status(201).json({ message: 'Parent created successfully'});
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
