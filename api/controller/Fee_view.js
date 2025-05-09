@@ -33,7 +33,7 @@ exports.createFee = async (req, res) => {
         isApproved: req.body.isApproved,
     });
     try {
-        const existing = await Fee.findOne({ $or: [{ name: req.body.name }] })
+        const existing = await Fee.findOne({ $or: [{ name: req.body.name, term: req.body.term_id }] })
         if (existing) return res.status(409).json({ message: 'This Fee already exist' });
         const term = await Term.findById(req.body.term_id)
         if (!term) return res.status(409).json({message: "Term not found"})
