@@ -1,4 +1,5 @@
 const User = require("../model/User");
+const bcrypt = require("bcryptjs");
 const Profile = require("../model/Profile");
 
 exports.getAllUsers = async (req, res) => {
@@ -9,7 +10,6 @@ exports.getAllUsers = async (req, res) => {
             .populate('classArm', 'name')
             .populate({
                 path: Profile, 
-                select: 'bio location' 
             });
 
         res.status(200).json(users);
