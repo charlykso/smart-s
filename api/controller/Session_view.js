@@ -29,7 +29,7 @@ exports.createSession = async (req, res) => {
         const {school: school_id, name, startDate, endDate} = req.body;
         const school = await School.findById(school_id)
         if(!school) return res.status(404).json({message: 'School not found'});
-        const existingSession = await Session.findOne({name})
+        const existingSession = await Session.findOne({name, school: school_id});
         if(existingSession) {return res.status(400).json({message: "session already exists"})};
         const session = new Session({school: school_id, name, startDate, endDate });
         await session.save();
