@@ -30,7 +30,7 @@ exports.login = async(req, res) => {
                 
             },
             message : "Successful",
-            token : token.token,
+            token : token.authToken,
         })
     
     }catch (err){
