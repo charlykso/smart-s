@@ -68,7 +68,7 @@ exports.getBursars = async (req, res) => {
 
 exports.getStudents = async (req, res) => {
     try {
-        const students = await User.find({ role: 'Student' }).select('-password -__v').populate('profile', 'img');
+        const students = await User.find({ roles: 'Student' }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(students);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -87,7 +87,7 @@ exports.getStudentsInParticularSchool = async (req, res) => {
     try {
         const school_id = req.params.school_id;
         const students = await User.find({
-            role: 'Student',
+            roles: 'Student',
             school: school_id
         })
         .select('-password -__v')
