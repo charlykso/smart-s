@@ -14,7 +14,7 @@ exports.getAllUsers = async (req, res) => {
 
 exports.getICT_administrators = async (req, res) => {
     try {
-        const ICT_administrators = await User.find({ role: 'ICT_administrator' }).select('-password -__v').populate('profile', 'img');
+        const ICT_administrators = await User.find({ roles: 'ICT_administrator' }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(ICT_administrators);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -24,7 +24,7 @@ exports.getICT_administrators = async (req, res) => {
 
 exports.getAuditors = async (req, res) => {
     try {
-        const auditors = await User.find({ role: 'Auditor' }).select('-password -__v').populate('profile', 'img');
+        const auditors = await User.find({ roles: 'Auditor' }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(auditors);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -34,7 +34,7 @@ exports.getAuditors = async (req, res) => {
 
 exports.getProprietors = async (req, res) => {
     try {
-        const proprietors = await User.find({ role: 'Proprietor' }).select('-password -__v').populate('profile', 'img');
+        const proprietors = await User.find({ roles: 'Proprietor' }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(proprietors);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -42,7 +42,7 @@ exports.getProprietors = async (req, res) => {
 };
 exports.getPrincipals = async (req, res) => {
     try {
-        const principals = await User.find({ role: 'Principal' }).select('-password -__v').populate('profile', 'img');
+        const principals = await User.find({ roles: 'Principal' }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(principals);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -51,7 +51,7 @@ exports.getPrincipals = async (req, res) => {
 
 exports.getHeadteachers = async (req, res) => {
     try {
-        const headteachers = await User.find({ role: 'Headteacher' }).select('-password -__v').populate('profile', 'img');
+        const headteachers = await User.find({ roles: 'Headteacher' }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(headteachers);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -59,7 +59,7 @@ exports.getHeadteachers = async (req, res) => {
 }
 exports.getBursars = async (req, res) => {
     try {
-        const bursars = await User.find({ role: 'Bursar' }).select('-password -__v').populate('profile', 'img');
+        const bursars = await User.find({ roles: 'Bursar' }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(bursars);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -76,7 +76,7 @@ exports.getStudents = async (req, res) => {
 };
 exports.getParents = async (req, res) => {
     try {
-        const parents = await User.find({ role: 'Parent' }).select('-password -__v').populate('name');
+        const parents = await User.find({ roles: 'Parent' }).select('-password -__v').populate('name');
         res.status(200).json(parents);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -106,7 +106,7 @@ exports.getStudentsInParticularSchool = async (req, res) => {
 exports.getParentsInParticularSchool = async (req, res) => {
 
     try {
-        const parents = await User.find({ role: 'Parent', school_id: req.params.school_id }).select('-password -__v').populate('profile', 'img');
+        const parents = await User.find({ roles: 'Parent', school_id: req.params.school_id }).select('-password -__v').populate('profile', 'img');
         res.status(200).json(parents);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -116,7 +116,7 @@ exports.getParentsInParticularSchool = async (req, res) => {
 
 exports.getICT_administrator = async (req, res) => {
     try {
-        const ICT_administrator = await User.findById({ role: 'ICT_administrator', _id: req.params.id }).select('-password -__v').populate('name');
+        const ICT_administrator = await User.findById({ roles: 'ICT_administrator', _id: req.params.id }).select('-password -__v').populate('name');
         res.status(200).json(ICT_administrator);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -125,7 +125,7 @@ exports.getICT_administrator = async (req, res) => {
 
 exports.getAuditor = async (req, res) => {
     try {
-        const auditor = await User.findById({ role: 'auditor', _id: req.params.id }).select('-password -__v').populate('name');
+        const auditor = await User.findById({ roles: 'auditor', _id: req.params.id }).select('-password -__v').populate('name');
         res.status(200).json(auditor);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -134,7 +134,7 @@ exports.getAuditor = async (req, res) => {
 
 exports.getProprietor = async (req, res) => {
     try {
-        const proprietor = await User.findById({ role: 'proprietor', _id: req.params.id }).select('-password -__v').populate('name');
+        const proprietor = await User.findById({ roles: 'proprietor', _id: req.params.id }).select('-password -__v').populate('name');
         res.status(200).json(proprietor);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -143,7 +143,7 @@ exports.getProprietor = async (req, res) => {
 
 exports.getPrincipal = async (req, res) => {
     try {
-        const principal = await User.findById({ role: 'principal', _id: req.params.id }).select('-password -__v').populate('school', 'name').populate('profile', 'name');
+        const principal = await User.findById({ roles: 'principal', _id: req.params.id }).select('-password -__v').populate('school', 'name').populate('profile', 'name');
         res.status(200).json(principal);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -152,7 +152,7 @@ exports.getPrincipal = async (req, res) => {
 
 exports.getHeadteacher = async (req, res) => {
     try {
-        const headteacher = await User.findOne({ role: 'headteacher', _id: req.params.id }).select('-password -__v').populate('name');
+        const headteacher = await User.findOne({ roles: 'headteacher', _id: req.params.id }).select('-password -__v').populate('name');
         res.status(200).json(headteacher);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -161,7 +161,7 @@ exports.getHeadteacher = async (req, res) => {
 
 exports.getBursar = async (req, res) => {
     try {
-        const bursar = await User.findById({ role: 'bursar', _id: req.params.id }).select('-password -__v').populate('name');
+        const bursar = await User.findById({ roles: 'bursar', _id: req.params.id }).select('-password -__v').populate('name');
         res.status(200).json(bursar);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -170,7 +170,7 @@ exports.getBursar = async (req, res) => {
 
 exports.getStudent = async (req, res) => {
     try {
-        const student = await User.findById({ role: 'student', _id: req.params.id }).select('-password -__v');
+        const student = await User.findById({ roles: 'student', _id: req.params.id }).select('-password -__v');
         res.status(200).json(student);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -180,7 +180,7 @@ exports.getStudent = async (req, res) => {
 
 exports.getParent = async (req, res) => {
     try {
-        const parent = await User.findById({ role: 'parent', _id: req.params.id }).select('-password -__v').populate('name');
+        const parent = await User.findById({ roles: 'parent', _id: req.params.id }).select('-password -__v').populate('name');
         res.status(200).json(parent);
     } catch (error) {
         res.status(500).json({ message: error.message });
