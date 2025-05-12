@@ -3,6 +3,7 @@ const router = express.Router();
 const sessionController = require('../controller/session_view');
 
 router.get('/all', sessionController.getAllSessions);
+router.get('/:school_id/sessions/:session_id/term', sessionController.getTermsBySession);
 router.get('/:id', sessionController.getSessionById);
 router.post('/create', sessionController.createSession);
 router.put('/:id/update', sessionController.updateSession);

@@ -1,8 +1,6 @@
 const Session = require('../model/Session'); 
 const School = require('../model/School');
-const { response } = require('express');
-
-
+const Term = require('../model/Term');
 exports.getAllSessions = async (req, res) => {
     try {
         const sessions = await Session.find();
@@ -54,7 +52,23 @@ exports.updateSession = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+exports.getTermsBySession = async (req, res) => {
+    try {
+        const { school_id, session_id } = req.params;
+        
+        const school = await School.findById(school_id);
+        if (!school) return res.status(404).json({ message: "School not found" });
 
+        const session = await Session.findById(session_id);
+        if (!session) return res.status(404).json({ message: "Session not found" });
+
+        const terms = await Term.find({ session: session_id, school: school_id });
+
+        res.status(200).json(terms);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 
 exports.deleteSession = async (req, res) => {
     try {
