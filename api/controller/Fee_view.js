@@ -78,9 +78,47 @@ exports.deleteFee = async (req, res) =>{
 exports.getFeesByTerm = async (req, res) =>{
     try{
         const {term_id} = req.params
-        const fees = await Fee.find({term: term}).populate('term')
+        const fees = await Fee.findById({term: term_id}).populate('term', 'name')
         res.json(fees)
     }catch(error){
         res.status(500).json({message: error.message})
+    }
+}
+
+exports.getApprovedFees = async (req, res) => {
+    try {
+        const fees = await Fee.find({ isApproved: true }).populate('term', 'name');
+        res.status(200).json(fees);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+exports.getUnapprovedFees = async (req, res) => {
+    try {
+        const fees = await Fee.find({ isApproved: false }).populate('term', 'name');
+        res.status(200).json(fees);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+exports.getApprovedFeesByTerm = async (req, res) => {
+    try {
+        const { term_id } = req.params;
+        const fees = await Fee.find({ term: term_id, isApproved: true }).populate('term', 'name');
+        res.status(200).json(fees);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+exports.getUnapprovedFeesByTerm = async (req, res) => {
+    try {
+        const { term_id } = req.params;
+        const fees = await Fee.find({ term: term_id, isApproved: false }).populate('term', 'name');
+        res.status(200).json(fees);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 }
