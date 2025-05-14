@@ -188,6 +188,39 @@ exports.getParent = async (req, res) => {
 
 };
 
+exports.createAdmin = async (req, res) => {
+    try {
+        const { firstname, middlename, lastname, email, phone, DOB, gender, roles, password } = req.body;
+        if (firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || DOB === "" || gender === "" || roles === "" || password === "") {
+            return res.status(400).json({ message: 'All fields are required' });
+
+        }
+        const existingUser = await User.findOne({ email: email, phone: phone });
+        if (existingUser) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const profile = new Profile({ });
+        const profile_id = await profile.save();
+        const admin = new User({
+            firstname,
+            middlename,
+            lastname,
+            email,
+            phone,
+            profile: profile_id,
+            DOB,
+            gender,
+            roles: ['Admin'],
+            password: hashedPassword
+         });
+        await admin.save();
+        res.status(201).json({ message: 'Admin and profile created successfully'});
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+
+};
 exports.createICT_administrator = async (req, res) => {
     try {
         const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles, password } = req.body;
