@@ -28,12 +28,13 @@ router.route('/:term_id/get-approved-fees')
 router.route('/:term_id/get-unapproved-fees')
  .get(authenticateToken, verifyRoles(roleList.Bursar, roleList.Principal, roleList.Admin), feeController.getUnapprovedFeesByTerm)
 
-router
-  .route('/school/school_id')
-  .get(
-    feeController.approvedFeesForASchool
-  ) //Bursar and principal
+router.route('/school/:school_id')
+ .get(authenticateToken,verifyRoles(roleList.Principal, roleList.Admin), feeController.approvedFeesForASchool)
+router.route('/school/:school_id/get-unapproved-fees')
+ .get(authenticateToken, verifyRoles(roleList.Principal, roleList.Admin), feeController.unapprovedFeesForASchool)
+ 
 
-router.route('/school/school_id/get')
+
+router.route('/school/:school_id/get')
  .get(authenticateToken, verifyRoles(roleList.Bursar, roleList.Principal, roleList.Admin), feeController.getFeesBySchool)
 module.exports = router
