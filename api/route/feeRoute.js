@@ -13,8 +13,8 @@ router.route('/get-unapproved-fees')
 
 router.get('/:id', feeController.getFee)
 
-router.route('/create')
- .post(authenticateToken, verifyRoles(roleList.bursar), feeController.createFee) //Bursar
+router.post('/create', feeController.createFee) //Bursar
+ 
 router.route('/:id/update')
  .put(authenticateToken, verifyRoles(roleList.bursar), feeController.updateFee) //Bursar
 router.route('/:id/delete')
@@ -34,4 +34,6 @@ router
     feeController.approvedFeesForASchool
   ) //Bursar and principal
 
+router.route('/school/school_id')
+ .get(authenticateToken, verifyRoles(roleList.bursar, roleList.principal), feeController.getFeesBySchool)
 module.exports = router
