@@ -13,6 +13,13 @@ router
     userController.getAllUsers
   )
 router
+  .route('/admin/create')
+  .post(
+    // authenticateToken,
+    // verifyRoles(roleList.admin),
+    userController.createAdmin
+  )
+router
   .route('/ict-admin/all')
   .get(
     authenticateToken,
@@ -122,8 +129,8 @@ router
 router
   .route('/principals/all')
   .get(
-    authenticateToken,
-    verifyRoles(roleList.admin),
+    // authenticateToken,
+    // verifyRoles(roleList.admin),
     userController.getPrincipals
   )
 router
