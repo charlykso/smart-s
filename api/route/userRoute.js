@@ -8,8 +8,8 @@ const verifyRoles = require('../middleware/verifyRoles')
 router
   .route('/all')
   .get(
-    authenticateToken,
-    verifyRoles(roleList.admin),
+    // authenticateToken,
+    // verifyRoles(roleList.admin),
     userController.getAllUsers
   )
 router
@@ -103,8 +103,6 @@ router
 router
   .route('/proprietor/create')
   .post(
-    authenticateToken,
-    verifyRoles(roleList.admin, roleList.proprietor),
     userController.createProprietor
   )
 router
@@ -173,8 +171,6 @@ router
 router
   .route('/headteacher/create')
   .post(
-    authenticateToken,
-    verifyRoles(roleList.admin, roleList.headteacher),
     userController.createHeadteacher
   )
 router
@@ -356,15 +352,15 @@ router
 router
   .route('/parent/create')
   .post(
-    authenticateToken,
-    verifyRoles(
-      roleList.admin,
-      roleList.proprietor,
-      roleList.principal,
-      roleList.headteacher,
-      roleList.ICT_administrator,
-      roleList.parent
-    ),
+    // authenticateToken,
+    // verifyRoles(
+    //   roleList.admin,
+    //   roleList.proprietor,
+    //   roleList.principal,
+    //   roleList.headteacher,
+    //   roleList.ICT_administrator,
+    //   roleList.parent
+    // ),
     userController.createParent
   )
 router

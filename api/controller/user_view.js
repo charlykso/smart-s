@@ -438,7 +438,7 @@ exports.createParent = async (req, res) => {
             return res.status(400).json({ message: 'All fields are required' });
         
         }
-
+        const student = await User.findById(student_id);
         if (!student) {
             return res.status(404).json({ message: 'Student not found' });
         }
