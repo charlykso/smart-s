@@ -78,7 +78,9 @@ exports.deleteFee = async (req, res) =>{
 exports.getFeesByTerm = async (req, res) =>{
     try{
         const {term_id} = req.params
-        const fees = await Fee.findById({term: term_id}).populate('term', 'name')
+        const term = await Term.findById(term_id)
+        if (!term) return res.status(404).json({message: "Term not found"})
+        const fees = await Fee.find({term: term_id}).populate('term', 'name')
         res.json(fees)
     }catch(error){
         res.status(500).json({message: error.message})
