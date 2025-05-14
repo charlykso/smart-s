@@ -24,7 +24,6 @@ const userSchema = new mongoose.Schema({
     },
     regNo: {
         type: String,
-        unique: true,
         trim: true
     },
     email: {
