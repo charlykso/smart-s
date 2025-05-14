@@ -7,7 +7,7 @@ const router = express.Router()
 
 router.get('/all',  schoolController.getSchools)
 router.route('/:id')
- .get(authenticateToken, verifyRoles(roleList.principal), schoolController.getSchool) //principal
+ .get(authenticateToken, verifyRoles(roleList.principal, roleList.student, roleList.ICT_administrator, roleList.headteacher, roleList.proprietor), schoolController.getSchool) //principal
 router.route('/create')
  .post(authenticateToken, verifyRoles(roleList.admin), schoolController.createSchool) //Admin
 
