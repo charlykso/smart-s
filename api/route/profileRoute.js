@@ -6,7 +6,7 @@ const roleList = require('../helpers/roleList');
 const verifyRoles = require('../middleware/verifyRoles')
 
 router.route('/all')
-    .get(authenticateToken, verifyRoles(roleList.admin), profileController.getAllUserProfile)
+    .get(authenticateToken, verifyRoles(roleList.Admin), profileController.getAllUserProfile)
 router.route('/:id/get')
     .get(authenticateToken, verifyRoles(roleList.User), profileController.getUserProfile)
 router.post('/:id/create', profileController.createUserProfile);

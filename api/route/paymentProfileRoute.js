@@ -6,16 +6,16 @@ const roleList = require('../helpers/roleList');
 const verifyRoles = require('../middleware/verifyRoles')
 
 router.route('/all')
-    .get(authenticateToken, verifyRoles(roleList.admin), paymentProfileController.getAllPaymentProfiles)
+    .get(authenticateToken, verifyRoles(roleList.Admin), paymentProfileController.getAllPaymentProfiles)
 router.route('/:id')
-    .get(authenticateToken, verifyRoles(roleList.admin, roleList.auditor, roleList.principal), paymentProfileController.getPaymentProfile)
+    .get(authenticateToken, verifyRoles(roleList.Admin, roleList.Auditor, roleList.Principal), paymentProfileController.getPaymentProfile)
 router.route('/all/:school_id')
-    .get(authenticateToken, verifyRoles(roleList.admin, roleList.auditor, roleList.principal, roleList.ICT_administrator), paymentProfileController.getAllPaymentProfilesForSchool)
+    .get(authenticateToken, verifyRoles(roleList.Admin, roleList.Auditor, roleList.Principal, roleList.ICT_administrator), paymentProfileController.getAllPaymentProfilesForSchool)
 router.route('/create')
-    .post(authenticateToken, verifyRoles(roleList.admin, roleList.auditor), paymentProfileController.createPaymentProfile)
+    .post(authenticateToken, verifyRoles(roleList.Admin, roleList.Auditor), paymentProfileController.createPaymentProfile)
 router.route('/update/:id')
-    .put(authenticateToken, verifyRoles(roleList.admin, roleList.auditor), paymentProfileController.updatePaymentProfile)
+    .put(authenticateToken, verifyRoles(roleList.Admin, roleList.Auditor), paymentProfileController.updatePaymentProfile)
 router.route('/delete/:id')
-    .delete(authenticateToken, verifyRoles(roleList.admin, roleList.auditor), paymentProfileController.deletePaymentProfile)
+    .delete(authenticateToken, verifyRoles(roleList.Admin, roleList.Auditor), paymentProfileController.deletePaymentProfile)
 
 module.exports = router;
