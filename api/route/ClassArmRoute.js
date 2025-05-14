@@ -6,14 +6,14 @@ const verifyRoles = require('../middleware/verifyRoles');
 const classArmController = require('../controller/classArm_view');
 
 router.route('/all')
-    .get(authenticateToken, verifyRoles(roleList.admin, roleList.ICT_administrator, roleList.proprietor, roleList.principal,), classArmController.getAllClassArms)
+    .get(authenticateToken, verifyRoles(roleList.Admin, roleList.ICT_administrator, roleList.Proprietor, roleList.Principal,), classArmController.getAllClassArms)
 router.route('/:id')
-    .get(authenticateToken, verifyRoles(roleList.admin, roleList.ICT_administrator, roleList.proprietor, roleList.principal,),classArmController.getClassArmById)
+    .get(authenticateToken, verifyRoles(roleList.Admin, roleList.ICT_administrator, roleList.Proprietor, roleList.Principal,),classArmController.getClassArmById)
 router.route('/')
-    .post(authenticateToken, verifyRoles(roleList.admin, roleList.ICT_administrator, roleList.proprietor, roleList.principal,),classArmController.createClassArm)
+    .post(authenticateToken, verifyRoles(roleList.Admin, roleList.ICT_administrator, roleList.Proprietor, roleList.Principal,),classArmController.createClassArm)
 router.route('/:id/update')
-    .put(authenticateToken, verifyRoles(roleList.admin, roleList.ICT_administrator, roleList.proprietor, roleList.principal,),classArmController.updateClassArm)
+    .put(authenticateToken, verifyRoles(roleList.Admin, roleList.ICT_administrator, roleList.Proprietor, roleList.Principal,),classArmController.updateClassArm)
 router.route('/:id/delete')
-    .delete(authenticateToken, verifyRoles(roleList.admin, roleList.ICT_administrator, roleList.proprietor, roleList.principal,),classArmController.deleteClassArm)
+    .delete(authenticateToken, verifyRoles(roleList.Admin, roleList.ICT_administrator, roleList.Proprietor, roleList.Principal,),classArmController.deleteClassArm)
 
 module.exports = router;
