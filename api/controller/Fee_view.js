@@ -4,7 +4,7 @@ const School = require('../model/School');
 
 exports.getFees = async (req, res) => {
   try {
-    const fees = await Fee.find().populate('term', 'name')
+    const fees = await Fee.find().populate('term', 'name').populate('school', 'name')
     res.status(200).json(fees)
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -157,6 +157,16 @@ exports.approvedFeesForASchool = async (req, res) => {
       fee => fee.term?.session
     );
     res.status(200).json(filteredFees)
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+exports.getFeesBySchool = async (req, res) => {
+  try {
+    const { school_id } = req.params
+    const fees = await Fee.find({ school: school_id }).populate('term', 'name').populate('school', 'name')
+    res.status(200).json(fees)
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
