@@ -13,6 +13,17 @@ router.route('/:id/update')
  .put(authenticateToken, verifyRoles(roleList.bursar), feeController.updateFee) //Bursar
 router.route('/:id/delete')
  .delete(authenticateToken, verifyRoles(roleList.bursar), feeController.deleteFee) //Bursar
-router.get('/term/termId', feeController.getFeesByTerm) 
+router.get('/term/:term_id', feeController.getFeesByTerm)
+router.route('/get-approved-fees')
+ .get(authenticateToken, verifyRoles(roleList.bursar, roleList.principal), feeController.getApprovedFees) //Bursar and principal
+
+router.route('/get-unapproved-fees')
+ .get(authenticateToken, verifyRoles(roleList.bursar, roleList.principal), feeController.getUnapprovedFees) //Bursar and principal
+
+router.route('/:term_id/get-approved-fees')
+ .get(authenticateToken, verifyRoles(roleList.bursar, roleList.principal), feeController.getApprovedFeesByTerm)
+
+router.route('/:term_id/get-unapproved-fees')
+ .get(authenticateToken, verifyRoles(roleList.bursar, roleList.principal), feeController.getUnapprovedFeesByTerm)
 
 module.exports = router
