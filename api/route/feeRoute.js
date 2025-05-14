@@ -28,4 +28,10 @@ router.route('/:term_id/get-approved-fees')
 router.route('/:term_id/get-unapproved-fees')
  .get(authenticateToken, verifyRoles(roleList.bursar, roleList.principal), feeController.getUnapprovedFeesByTerm)
 
+router
+  .route('/:school_id/approved')
+  .get(
+    feeController.approvedFeesForASchool
+  ) //Bursar and principal
+
 module.exports = router
