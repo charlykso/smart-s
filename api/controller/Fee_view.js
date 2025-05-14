@@ -24,6 +24,7 @@ exports.getFee = async (req, res) => {
 exports.createFee = async (req, res) => {
     const fee = new Fee({
         term: req.body.term_id,
+        school: req.body.school_id,
         name: req.body.name,
         decription: req.body.decription,
         type: req.body.type,
