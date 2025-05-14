@@ -34,6 +34,6 @@ router
     feeController.approvedFeesForASchool
   ) //Bursar and principal
 
-router.route('/school/school_id')
+router.route('/school/school_id/get')
  .get(authenticateToken, verifyRoles(roleList.Bursar, roleList.Principal, roleList.Admin), feeController.getFeesBySchool)
 module.exports = router
