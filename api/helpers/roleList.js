@@ -1,15 +1,15 @@
 
 const ROLES_LIST = {
-    'admin': 'admin',
+    'Admin': 'Admin',
     "User": 'User',
-    "proprietor": 'proprietor',
+    "Proprietor": 'Proprietor',
     "ICT_administrator": 'ICT_administrator',
-    "auditor": 'auditor',
-    "principal": 'principal',
-    "headteacher": 'headteacher',
-    "bursar": 'bursar',
-    'student': 'student',
-    'parent': 'parent',
+    "Auditor": 'Auditor',
+    "Principal": 'Principal',
+    "Headteacher": 'Headteacher',
+    "Bursar": 'Bursar',
+    'Student': 'Student',
+    'Parent': 'Parent',
 }
 
 module.exports = ROLES_LIST
