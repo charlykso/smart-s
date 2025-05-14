@@ -139,25 +139,45 @@ exports.approvedFeesForASchool = async (req, res) => {
   try {
     const { school_id } = req.params
     const fees = await Fee.find({
+      school: school_id,
       isApproved: true,
+    }).populate({
+      path: 'school', 
+      select: 'name'
     }).populate({
       path: 'term',
       select: 'name',
       populate: {
         path: 'session',
-        match: { school: school_id },
         select: 'school name',
-        populate: {
-          path: 'school',
-          select: 'name',
-        },
       },
     })
-    const filteredFees = fees.filter(
-      fee => fee.term?.session
-    );
-    res.status(200).json(filteredFees)
+    res.status(200).json(fees)
   } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+exports.unapprovedFeesForASchool = async (req, res) => {
+  try {
+    const { school_id } = req.params
+    const fees = await Fee.find({
+      school: school_id,
+      isApproved: false,
+    }).populate({
+      path: 'school',
+      select: 'name'
+    }).populate({
+      path: 'term',
+      select: 'name',
+      populate: {
+        path: 'session',
+        select: 'school name',
+      },
+    })
+    res.status(200).json(fees)
+  }
+  catch (error) {
     res.status(500).json({ message: error.message })
   }
 }
