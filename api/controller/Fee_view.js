@@ -1,5 +1,6 @@
-const Fee = require('../model/Fee')
-const Term = require('../model/Term')
+const Fee = require('../model/Fee');
+const Term = require('../model/Term');
+const School = require('../model/School');
 
 exports.getFees = async (req, res) => {
   try {
@@ -21,30 +22,29 @@ exports.getFee = async (req, res) => {
 }
 
 exports.createFee = async (req, res) => {
-  const fee = new Fee({
-    term: req.body.term_id,
-    name: req.body.name,
-    decription: req.body.decription,
-    type: req.body.type,
-    isActive: req.body.isActive,
-    isInstallmentAllowed: req.body.isInstallmentAllowed,
-    no_ofInstallments: req.body.no_ofInstallments,
-    amount: req.body.amount,
-    isApproved: req.body.isApproved,
-  })
-  try {
-    const existing = await Fee.findOne({
-      $or: [{ name: req.body.name, term: req.body.term_id }],
-    })
-    if (existing)
-      return res.status(409).json({ message: 'This Fee already exist' })
-    const term = await Term.findById(req.body.term_id)
-    if (!term) return res.status(409).json({ message: 'Term not found' })
-    const newFee = await fee.save()
-    res.status(201).json(newFee)
-  } catch (error) {
-    res.status(400).json({ message: error.message })
-  }
+    const fee = new Fee({
+        term: req.body.term_id,
+        name: req.body.name,
+        decription: req.body.decription,
+        type: req.body.type,
+        isActive: req.body.isActive,
+        isInstallmentAllowed: req.body.isInstallmentAllowed,
+        no_ofInstallments: req.body.no_ofInstallments,
+        amount: req.body.amount,
+        isApproved: req.body.isApproved,
+    });
+    try {
+        const existing = await Fee.findOne({ $or: [{ name: req.body.name, term: req.body.term_id }] })
+        if (existing) return res.status(409).json({ message: 'This Fee already exist' });
+        const school = await School.findById(req.body.school_id)
+        if (!school) return res.status(409).json({ message: "School not found" })
+        const term = await Term.findById(req.body.term_id)
+        if (!term) return res.status(409).json({message: "Term not found"})
+        const newFee = await fee.save();
+        res.status(201).json(newFee);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
 }
 
 exports.updateFee = async (req, res) => {
