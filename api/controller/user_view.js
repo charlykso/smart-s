@@ -364,19 +364,19 @@ exports.createHeadteacher = async (req, res) => {
 };
 exports.createBursar = async (req, res) => {
     try {
+        console.log(req.body)
         const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles, password } = req.body;
         if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || roles === "" || password === "") {
             return res.status(400).json({ message: 'All fields are required' });
-        
         }
-        const existingUser = await User.findOne({ email: email, phone: phone });
+        const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
         const hashedPassword = await bcrypt.hash(password, 10);
         const profile = new Profile({ });
         const profile_id = await profile.save();
-        const bursar = new User({ 
+        const student = new User({ 
             school: school_id,
             firstname,
             middlename,
@@ -387,11 +387,11 @@ exports.createBursar = async (req, res) => {
             profile: profile_id,
             DOB,
             gender,
-            roles: ['bursar'],
+            roles: ['Bursar'],
             password: hashedPassword
          });
-        await bursar.save();
-        res.status(201).json({ message: 'Bursar created successfully'});
+         await student.save();
+        res.status(201).json({ message: 'Bursar created successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
