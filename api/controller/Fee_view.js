@@ -89,8 +89,10 @@ exports.getFeesByTerm = async (req, res) =>{
 
 exports.getApprovedFees = async (req, res) => {
     try {
-        const fees = await Fee.find({ isApproved: true }).populate('term', 'name');
-        res.status(200).json(fees);
+        
+        const approvedFees = await Fee.find({ isApproved: true }).populate('term', 'name');
+        if (!approvedFees) return res.status(404).json({ message: 'No approved fees found' });
+        res.status(200).json(approvedFees);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -98,8 +100,9 @@ exports.getApprovedFees = async (req, res) => {
 
 exports.getUnapprovedFees = async (req, res) => {
     try {
-        const fees = await Fee.find({ isApproved: false }).populate('term', 'name');
-        res.status(200).json(fees);
+        const unapprovedFees = await Fee.find({ isApproved: false }).populate('term', 'name');
+        if (!unapprovedFees) return res.status(404).json({ message: 'No unapproved fees found' });
+        res.status(200).json(unapprovedFees);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -107,6 +110,8 @@ exports.getUnapprovedFees = async (req, res) => {
 
 exports.getApprovedFeesByTerm = async (req, res) => {
     try {
+        const term = await Term.findById(req.params.term_id);
+        if (!term) return res.status(404).json({ message: 'Term not found' });
         const { term_id } = req.params;
         const fees = await Fee.find({ term: term_id, isApproved: true }).populate('term', 'name');
         res.status(200).json(fees);
@@ -117,6 +122,8 @@ exports.getApprovedFeesByTerm = async (req, res) => {
 
 exports.getUnapprovedFeesByTerm = async (req, res) => {
     try {
+        const term = await Term.findById(req.params.term_id);
+        if (!term) return res.status(404).json({ message: 'Term not found' });
         const { term_id } = req.params;
         const fees = await Fee.find({ term: term_id, isApproved: false }).populate('term', 'name');
         res.status(200).json(fees);
