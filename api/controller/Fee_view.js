@@ -89,7 +89,6 @@ exports.getFeesByTerm = async (req, res) =>{
 
 exports.getApprovedFees = async (req, res) => {
     try {
-        
         const approvedFees = await Fee.find({ isApproved: true }).populate('term', 'name');
         if (!approvedFees) return res.status(404).json({ message: 'No approved fees found' });
         res.status(200).json(approvedFees);
