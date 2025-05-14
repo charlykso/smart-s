@@ -1,18 +1,29 @@
 const express = require('express')
-const FeeController = require('../controller/fee_view')
+const feeController = require('../controller/fee_view')
 const authenticateToken = require('../middleware/authenticateToken')
 const roleList = require('../helpers/roleList')
 const verifyRoles = require('../middleware/verifyRoles')
 const router = express.Router()
 
-router.get('/all', FeeController.getFees)
-router.get('/:id', FeeController.getFee)
+router.get('/all', feeController.getFees)
+router.get('/:id', feeController.getFee)
 router.route('/create')
- .post(authenticateToken, verifyRoles(roleList.bursar), FeeController.createFee) //Bursar
+ .post(authenticateToken, verifyRoles(roleList.bursar), feeController.createFee) //Bursar
 router.route('/:id/update')
- .put(authenticateToken, verifyRoles(roleList.bursar), FeeController.updateFee) //Bursar
+ .put(authenticateToken, verifyRoles(roleList.bursar), feeController.updateFee) //Bursar
 router.route('/:id/delete')
- .delete(authenticateToken, verifyRoles(roleList.bursar), FeeController.deleteFee) //Bursar
-router.get('/term/termId', FeeController.getFeesByTerm) 
+ .delete(authenticateToken, verifyRoles(roleList.bursar), feeController.deleteFee) //Bursar
+router.get('/term/:term_id', feeController.getFeesByTerm)
+router.route('/get-approved-fees')
+ .get(authenticateToken, verifyRoles(roleList.bursar, roleList.principal), feeController.getApprovedFees) //Bursar and principal
+
+router.route('/get-unapproved-fees')
+ .get(authenticateToken, verifyRoles(roleList.bursar, roleList.principal), feeController.getUnapprovedFees) //Bursar and principal
+
+router.route('/:term_id/get-approved-fees')
+ .get(authenticateToken, verifyRoles(roleList.bursar, roleList.principal), feeController.getApprovedFeesByTerm)
+
+router.route('/:term_id/get-unapproved-fees')
+ .get(authenticateToken, verifyRoles(roleList.bursar, roleList.principal), feeController.getUnapprovedFeesByTerm)
 
 module.exports = router

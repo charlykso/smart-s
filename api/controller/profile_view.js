@@ -22,26 +22,21 @@ exports.getUserProfile = async (req, res) => {
     }
 };
 
-exports.postProfileImage = async (req, res) => {
+exports.createUserProfile = async (req, res) => {
     try {
-        const { id } = req.params_id;
-        if (!req.file) {
-            return res.status(400).json({ message: 'No image uploaded' });
-        }
-        const profile = await Profile.findOne({ user: id });
-        if (!profile) {
-            return res.status(404).json({ message: 'Profile not found' });
-        }
-        profile.img = req.file.path;
-        await profile.save();
-        res.status(200).json({
-            message: 'Profile image uploaded successfully',
-            imagePath: req.file.path,
-        });
+        const { img, graduationYear, dateOfAdmission, passwordRest_token, refresh_token } = req.body
+
+        const existingUserProfile = await User.findOne({ studentId, courseId });
+        if (existingUserProfile) return res.status(400).json({ message: 'User profile already exist' })
+
+        const profile = new Profile({ img, graduationYear, dateOfAdmission, passwordRest_token, refresh_token })
+        await profile.save()
+
+        res.status(201).json(profile)
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(400).json({ message: error.message })
     }
-};
+}
 
 exports.updateUserProfile = async (req, res) => {
     try {
