@@ -8,11 +8,11 @@ const verifyRoles = require('../middleware/verifyRoles')
 router.route('/all')
     .get(authenticateToken, verifyRoles(roleList.admin), profileController.getAllUserProfile)
 router.route('/:id/get')
-    .get(authenticate, verifyRoles(roleList.User), profileController.getUserProfile)
-router.post('/:id/upload', profileController.postProfileImage);
+    .get(authenticateToken, verifyRoles(roleList.User), profileController.getUserProfile)
+router.post('/:id/upload', profileController.createUserProfile);
 router.route('/:id/update')
-    .put(authenticate, verifyRoles(roleList.User), profileController.updateUserProfile)
+    .put(authenticateToken, verifyRoles(roleList.User), profileController.updateUserProfile)
 router.route('/:id/delete')
-    .delete(authenticate, verifyRoles(roleList.User), profileController.deleteUserProfile)
+    .delete(authenticateToken, verifyRoles(roleList.User), profileController.deleteUserProfile)
 
 module.exports = router;
