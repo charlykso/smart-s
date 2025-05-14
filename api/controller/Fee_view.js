@@ -55,6 +55,7 @@ exports.updateFee = async (req, res) => {
     }).populate('term')
     if (!fee) return res.status(404).json({ message: 'Fee not found' })
     fee.term = req.body.term_id
+    fee.school = req.body.school_id
     fee.name = req.body.name
     fee.decription = req.body.decription
     fee.type = req.body.type
