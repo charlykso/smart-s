@@ -10,6 +10,7 @@ router.route('/get-approved-fees')
  .get(authenticateToken, verifyRoles(roleList.bursar, roleList.principal), feeController.getApprovedFees) //Bursar and principal
 router.route('/get-unapproved-fees')
  .get(authenticateToken, verifyRoles(roleList.bursar, roleList.principal), feeController.getUnapprovedFees) //Bursar and principal
+
 router.get('/:id', feeController.getFee)
 
 router.route('/create')
