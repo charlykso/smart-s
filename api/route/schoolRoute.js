@@ -7,7 +7,7 @@ const router = express.Router()
 
 router.get('/all',  schoolController.getSchools)
 router.route('/:id')
- .get(authenticateToken, verifyRoles(roleList.principal, roleList.student, roleList.ICT_administrator, roleList.headteacher, roleList.proprietor), schoolController.getSchool) //principal
+ .get(authenticateToken, verifyRoles(roleList.principal, roleList.student, roleList.ICT_administrator, roleList.headteacher, roleList.proprietor, roleList.admin), schoolController.getSchool) //principal
 router.route('/create')
  .post(authenticateToken, verifyRoles(roleList.admin), schoolController.createSchool) //Admin
 
@@ -16,9 +16,9 @@ router.route('/:id/update')
 router.route('/:id/delete')
  .delete(authenticateToken, verifyRoles(roleList.admin), schoolController.deleteSchool) //Admin
 router.route('/by-address/:address_id')
- .get(authenticateToken, verifyRoles(roleList.principal), schoolController.getSchoolByAddress) //principal
+ .get(authenticateToken, verifyRoles(roleList.principal, roleList.admin), schoolController.getSchoolByAddress) //principal
 
 router.route('/by-groupSchool/:groupSchool_id')
-.get(authenticateToken, verifyRoles(roleList.principal), schoolController.getSchoolByGroupSchool) //principal
+.get(authenticateToken, verifyRoles(roleList.principal, roleList.admin), schoolController.getSchoolByGroupSchool) //principal
 
 module.exports = router
