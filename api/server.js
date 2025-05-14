@@ -1,22 +1,24 @@
-const express = require('express');
-const  connectDB = require('./db/connection')
+const express = require('express')
+const connectDB = require('./db/connection')
 const groupSchoolRoute = require('./route/groupSchoolRoute')
 const schoolRoute = require('./route/schoolRoute')
-const addressRoute = require('./route/addressRoute');
-const classArmRoute = require('./route/classArmRoute');
-const userRoute = require('./route/userRoute');
-const profileRoute = require('./route/profileRoute');
-const sessionRoute = require('./route/sessionRoute');
-const termRoute = require('./route/termRoute');
-const paymentProfileRoute = require('./route/paymentProfileRoute');
+const addressRoute = require('./route/addressRoute')
+const classArmRoute = require('./route/classArmRoute')
+const userRoute = require('./route/userRoute')
+const profileRoute = require('./route/profileRoute')
+const sessionRoute = require('./route/sessionRoute')
+const termRoute = require('./route/termRoute')
+const paymentProfileRoute = require('./route/paymentProfileRoute')
 const feeRoute = require('./route/feeRoute')
 const authRoute = require('./route/authRoute')
 const approveRoute = require('./route/approveRoute')
 
-const app = express();
+const app = express()
 
-connectDB(); // Connect to MongoDB
-app.use(express.json()); // Middleware to parse JSON requests
+app.use(express.urlencoded({ extended: true }))
+
+connectDB() // Connect to MongoDB
+app.use(express.json()) // Middleware to parse JSON requests
 
 //use the routes
 app.use('/api/v1/groupSchool', groupSchoolRoute)
@@ -33,9 +35,9 @@ app.use('/api/v1/approve', approveRoute)
 app.use('/api/v1/auth', authRoute)
 
 app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
+  res.send('Hello World!')
+})
 
 app.listen(3000, () => {
-  console.log('Server is running on http://localhost:3000');
-});
+  console.log('Server is running on http://localhost:3000')
+})

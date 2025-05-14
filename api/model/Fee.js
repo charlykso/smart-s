@@ -5,6 +5,11 @@ const feeSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Term',
     },
+    
+    school:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'School',
+    },
 
     name:{
         type: String,
