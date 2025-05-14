@@ -375,7 +375,7 @@ exports.createBursar = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const profile = new Profile({ });
         const profile_id = await profile.save();
-        const student = new User({ 
+        const bursar = new User({ 
             school: school_id,
             firstname,
             middlename,
@@ -389,7 +389,7 @@ exports.createBursar = async (req, res) => {
             roles: ['Bursar'],
             password: hashedPassword
          });
-         await student.save();
+         await bursar.save();
         res.status(201).json({ message: 'Bursar created successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });

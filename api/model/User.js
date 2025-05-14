@@ -23,8 +23,7 @@ const userSchema = new mongoose.Schema({
         trim: true
     },
     regNo: {
-        type: String,
-        trim: true
+        type: String
     },
     email: {
         type: String,
