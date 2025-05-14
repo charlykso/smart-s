@@ -370,7 +370,7 @@ router
       roleList.Headteacher,
       roleList.ICT_administrator,
       roleList.Parent
-    // ),
+    ),
     userController.createParent
   )
 router
@@ -400,6 +400,6 @@ router
       roleList.Parent
     ),
     userController.deleteParent
-  )
+)
 
-module.exports = router
+module.exports = router;
