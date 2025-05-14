@@ -364,7 +364,6 @@ exports.createHeadteacher = async (req, res) => {
 };
 exports.createBursar = async (req, res) => {
     try {
-        console.log(req.body)
         const { school_id, firstname, middlename, lastname, email, phone, address_id, DOB, gender, roles, password } = req.body;
         if (school_id === "" || firstname === "" || middlename === "" || lastname === "" || email === "" || phone === "" || address_id === "" || DOB === "" || gender === "" || roles === "" || password === "") {
             return res.status(400).json({ message: 'All fields are required' });
