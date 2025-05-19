@@ -9,8 +9,9 @@ const paymentProfileSchema = new mongoose.Schema({
     },
     fw_secret_key: {
         type: String,
-        trim: true,
-        default: null,
+    },
+    fw_public_key: {
+        type: String,
     },
     activate_fw: {
         type: Boolean,
@@ -18,12 +19,22 @@ const paymentProfileSchema = new mongoose.Schema({
     },
     ps_secret_key: {
         type: String,
-        trim: true,
-        default: null,
+    },
+    ps_public_key: {
+        type: String,
     },
     activate_ps: {
         type: Boolean,
         default: false,
+    },
+    account_no: {
+        type: String
+    },
+    account_name: {
+        type: String
+    },
+    bank_name: {
+        type: String
     },
 }, { timestamps: true })
 

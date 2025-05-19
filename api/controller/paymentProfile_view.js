@@ -31,7 +31,7 @@ exports.getAllPaymentProfilesForSchool = async (req, res) => {
 
 exports.createPaymentProfile = async (req, res) => {
     try {
-        const { school_id, fw_secret_key, activate_fw, ps_secret_key, activate_ps } = req.body;
+        const { school_id, fw_secret_key, fw_public_key, ps_secret_key, ps_public_key, account_no, account_name, bank_name } = req.body;
         const existingProfile = await PaymentProfile.findOne({ school: school_id, fw_secret_key, ps_secret_key });
         if (existingProfile) {
             return res.status(400).json({ error: 'Profile for this school already exists.' });
@@ -39,9 +39,14 @@ exports.createPaymentProfile = async (req, res) => {
         const newProfile = await PaymentProfile.create({
             school: school_id,
             fw_secret_key,
-            activate_fw,
+            activate_fw: !!req.body.fw_secret_key,
+            fw_public_key,
+            account_no,
+            account_name,
+            bank_name,
             ps_secret_key,
-            activate_ps,
+            ps_public_key,
+            activate_ps: !!req.body.ps_secret_key,
         });
         res.status(201).json({ message: 'Payment profile created', profile: newProfile });
     } catch (error) {
