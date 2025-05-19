@@ -33,6 +33,7 @@ app.use('/api/v1/paymentProfile', paymentProfileRoute)
 app.use('/api/v1/fee', feeRoute)
 app.use('/api/v1/approve', approveRoute)
 app.use('/api/v1/auth', authRoute)
+app.use('/api/v1/payment', require('./route/paymentRoute'))
 
 app.get('/', (req, res) => {
   res.send('Hello World!')

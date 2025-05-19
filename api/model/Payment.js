@@ -1,38 +1,34 @@
 const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema({
-    user_id: {
+    user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
     },
-    fee_id: {
+    fee: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Fee',
         required: true,
     },
-    transaction_id: {
-        type: String,
-        required: true,
-        unique: true,
+    trans_id: {
+        type: mongoose.Schema.Types.BigInt,
     },
-    trx_reference: {
+    trx_ref: {
         type: String,
-        required: true,
-        unique: true,
     },
     amount: {
-        type: Number,
+        type: mongoose.Schema.Types.Double,
         required: true,
         min: 0,
     },
-    transaction_date: {
+    trans_date: {
         type: Date,
         default: Date.now,
     },
     mode_of_payment: {
         type: String,
-        enum: ['paystack', 'flutterwave'],
+        enum: ['paystack', 'flutterwave', 'bank_transfer', 'cash'],
         required: true,
     },
     status: {
@@ -44,10 +40,14 @@ const paymentSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    metadata: {
-        type: Object, 
-        default: {},
+    channel: {
+        type: String,
+        enum: ['web', 'mobile', 'pos', 'bank'],
+        default: 'web',
     },
+    paid_at: {
+        type: Date,
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Payment', paymentSchema);
