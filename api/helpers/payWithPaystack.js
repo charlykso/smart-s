@@ -6,25 +6,27 @@ const { combine, getKey, getCypherText,  decrypt } = require('./security')
 const initiatePaymentWithPaystack = async ( paymentProfile, fee, userData, callbackUrl) => {
     const cypherText = combine(paymentProfile.ps_secret_key)
     const url = callbackUrl + '?key=' + cypherText
+    const tRef = genTrxnRef()
     const paymentData = {
-        email: userData.email,
-        amount: fee.amount * 100, // Paystack requires the amount in kobo
-        currency: "NGN",
-        callback_url: url,
-        trxref: genTrxnRef(),
-        metadata: {
-            custom_fields: [
-                {
-                    display_name: "Payment for",
-                    variable_name: "payment_for",
-                    user_id:  userData._id,
-                    regNo: userData.regNo,
-                    fee_id: fee._id,
-                    value: fee.name
-                }
-            ]
-        }
-    };
+      email: userData.email,
+      amount: fee.amount * 100, // Paystack requires the amount in kobo
+      currency: 'NGN',
+      callback_url: url,
+      reference: tRef,
+      metadata: {
+        custom_fields: [
+          {
+            display_name: 'Payment for',
+            variable_name: 'payment_for',
+            user_id: userData._id,
+            regNo: userData.regNo,
+            fee_id: fee._id,
+            value: fee.name,
+            trxref: tRef,
+          },
+        ],
+      },
+    }
 
     const headers = {
         Authorization: `Bearer ${paymentProfile.ps_secret_key}`,

@@ -6,12 +6,11 @@ const {
   initiatePaymentWithPaystack,
   paystackCallback,
 } = require('../helpers/payWithPaystack')
+const { mapPaystackPaymentData } = require('../helpers/mappPaymentData')
 
 exports.getAllPayments = async (req, res) => {
   try {
-    const payments = await Payment.find()
-      .populate('user, regNo email')
-      .populate('fee, name amount')
+    const payments = await Payment.find().populate('user', 'email regNo').populate('fee', 'name amount')
     res.status(200).json(payments)
   } catch (error) {
     res
@@ -30,6 +29,12 @@ exports.initiatePayment = async (req, res) => {
     const paymentProfile = await PaymentProfile.findOne({ school: school_id })
     if (!paymentProfile)
       return res.status(404).json({ error: 'Payment profile not found' })
+    const initialPayment = await Payment.findOne({
+      user: user_id,
+      fee: fee_id,
+    })
+    if (initialPayment)
+      return res.status(400).json({ error: 'Payment already exists' })
 
     if (paymentProfile.activate_ps) {
       const callbackUrl = `http://localhost:3000/api/v1/payment/paystack_callback`
@@ -63,8 +68,11 @@ exports.paystackCallback = async (req, res) => {
     }
     // extract payment details from the response
     console.log(response)
+    const paymentData = await mapPaystackPaymentData(response)
+    //serialize the payment data
+    console.log(paymentData)
     //insert payment record into the database
-    res.status(200).json({res: response})
+    res.status(200).json({ res: 'Payment successful' })
   } catch (error) {
     res
       .status(500)

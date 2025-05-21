@@ -12,7 +12,7 @@ const paymentSchema = new mongoose.Schema({
         required: true,
     },
     trans_id: {
-        type: mongoose.Schema.Types.BigInt,
+        type: String,
     },
     trx_ref: {
         type: String,
@@ -33,7 +33,7 @@ const paymentSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['pending', 'successful', 'failed'],
+        enum: ['pending', 'success', 'failed'],
         default: 'pending',
     },
     isInstallment: {
@@ -42,8 +42,7 @@ const paymentSchema = new mongoose.Schema({
     },
     channel: {
         type: String,
-        enum: ['web', 'mobile', 'pos', 'bank'],
-        default: 'web',
+        enum: ['web', 'mobile', 'pos', 'card'],
     },
     paid_at: {
         type: Date,
