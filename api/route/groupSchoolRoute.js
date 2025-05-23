@@ -1,5 +1,5 @@
 const express = require('express')
-const groupSchoolController = require('../controller/GroupSchool_view')
+const groupSchoolController = require('../controller/groupSchool_view')
 const authenticateToken = require('../middleware/authenticateToken')
 const roleList = require('../helpers/roleList')
 const verifyRoles = require('../middleware/verifyRoles')
