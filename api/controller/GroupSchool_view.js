@@ -1,4 +1,6 @@
 const GroupSchool = require('../model/GroupSchool')
+const uploadToCloud = require('../helpers/uploadToCloud')
+const fs = require('fs')
 
 
 exports.getGroupSchools = async (req, res) =>{
@@ -58,5 +60,33 @@ exports.deleteGroupSchool = async (req, res) =>{
         res.status(200).json({message: 'GroupSchool deleted successfully'})
     }catch (error){
         res.status(500).json({message: error.message})
+    }
+}
+
+exports.uploadSchoolLogo = async (req, res) => {
+    try {
+        
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+        const groupSchool = await GroupSchool.findById(req.params.id);
+        if (!groupSchool) {
+            return res.status(404).json({ message: 'GroupSchool not found' });
+        }
+        const publicId = groupSchool.name.replace(/\s+/g, '_').toLowerCase();
+        const logoUrl = await uploadToCloud(req.file.path, 'image', 'School_logos', publicId);
+        groupSchool.logo = logoUrl;
+        // Delete the local file after uploading to Cloudinary
+        fs.unlinkSync(req.file.path);
+        await groupSchool.save();
+        res.status(200).json({ message: 'Logo uploaded successfully' });
+    } catch (error) {
+        if (req.file) {
+            // Delete the local file if it exists
+            fs.unlinkSync(req.file.path).catch(err => {
+                console.error('Error deleting local file:', err);
+            });
+        }
+        res.status(500).json({ message: error.message });
     }
 }
