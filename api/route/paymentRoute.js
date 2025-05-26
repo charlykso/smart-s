@@ -11,5 +11,10 @@ router.route('/initiate')
     .post(paymentController.initiatePayment);
 
 router.route('/paystack_callback').get(paymentController.paystackCallback)
+router.route('/pay-with-cash').post(
+    authenticateToken,
+    verifyRoles(roleList.Student, roleList.Admin),
+    paymentController.PayWithCash
+);
 
 module.exports = router;

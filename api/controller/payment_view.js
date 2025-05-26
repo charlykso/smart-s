@@ -2,6 +2,7 @@ const Payment = require('../model/Payment')
 const PaymentProfile = require('../model/PaymentProfile')
 const Fee = require('../model/Fee')
 const User = require('../model/User')
+const genTrxnRef = require('../helpers/genTrxnRef')
 const {
   initiatePaymentWithPaystack,
   paystackCallback,
@@ -73,6 +74,44 @@ exports.paystackCallback = async (req, res) => {
     console.log(paymentData)
     //insert payment record into the database
     res.status(200).json({ res: 'Payment successful' })
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: 'Internal server error', details: error.message })
+  }
+}
+
+
+exports.PayWithCash = async (req, res) => {
+  try {
+    const { user_id, fee_id } = req.body
+    const fee = await Fee.findById(fee_id)
+    if (!fee) return res.status(404).json({ error: 'Fee not found' })
+    const user = await User.findById(user_id)
+    if (!user) return res.status(404).json({ error: 'User not found' })
+    
+    const tRef = genTrxnRef()
+    
+    const initialPayment = await Payment.findOne({
+      user: user_id,
+      fee: fee_id,
+    })
+    if (initialPayment)
+      return res.status(400).json({ error: 'Payment already exists' })
+
+    const payment = new Payment({
+      user: user_id,
+      fee: fee_id,
+      amount: fee.amount,
+      mode_of_payment: 'cash',
+      status: 'success',
+      trx_ref: tRef,
+      trans_date: new Date(),
+
+    })
+    await payment.save()
+    res.status(201).json({ message: 'Payment successful', payment })
+
   } catch (error) {
     res
       .status(500)

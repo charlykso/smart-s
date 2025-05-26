@@ -42,7 +42,7 @@ const paymentSchema = new mongoose.Schema({
     },
     channel: {
         type: String,
-        enum: ['web', 'mobile', 'pos', 'card'],
+        enum: ['web', 'mobile', 'pos', 'card', 'cash'],
     },
     paid_at: {
         type: Date,
