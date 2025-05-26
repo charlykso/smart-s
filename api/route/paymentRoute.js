@@ -13,4 +13,23 @@ router.get('/get-paystack', paymentController.getAllPaymentsByPaystack);
 router.get('/get-Bank_transfer', paymentController.getAllPaymentsByBankTransfer);
 router.route('/paystack_callback').get(paymentController.paystackCallback); 
 
+router.route('/paystack_callback').get(paymentController.paystackCallback)
+router.route('/pay-with-cash').post(
+    authenticateToken,
+    verifyRoles(roleList.Student, roleList.Admin),
+    paymentController.PayWithCash
+);
+
+router.route('/get-payments-by-cash').get(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Bursar),
+    paymentController.getPaymentsByCash
+);
+
+router.route('/get-payments-by-flutterwave').get(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Bursar),
+    paymentController.getPaymentsByFlutterwave
+);
+
 module.exports = router;
