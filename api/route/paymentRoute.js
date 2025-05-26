@@ -8,8 +8,9 @@ const verifyRoles = require('../middleware/verifyRoles');
 router.route('/all')
     .get( paymentController.getAllPayments);
 router.route('/initiate')
-    .post(paymentController.initiatePayment);
-
-router.route('/paystack_callback').get(paymentController.paystackCallback)
+ .post(paymentController.initiatePayment);
+router.get('/get-paystack', paymentController.getAllPaymentsByPaystack);
+router.get('/get-Bank_transfer', paymentController.getAllPaymentsByBankTransfer);
+router.route('/paystack_callback').get(paymentController.paystackCallback); 
 
 module.exports = router;

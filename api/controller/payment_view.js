@@ -78,4 +78,31 @@ exports.paystackCallback = async (req, res) => {
       .status(500)
       .json({ error: 'Internal server error', details: error.message })
   }
-}
+};
+exports.getAllPaymentsByPaystack = async (req, res) => {
+  try {
+    const payments = await Payment.find({ mode_of_payment: 'paystack' })
+      .populate('user', 'email regNo')
+      .populate('fee', 'name amount')
+    if (!payments || payments.length === 0){
+      return res.status(404).json({error: 'No paystack Payment found'})
+    }
+    res.status(200).json(payments)
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error', details: error.message })
+  }
+};
+exports.getAllPaymentsByBankTransfer = async (req, res) => {
+  try {
+    const payments = await Payment.find({ mode_of_payment: 'bank_transfer' })
+      .populate('user', 'email regNo')
+      .populate('fee', 'name amount')
+    if (!payments || payments.length === 0){
+      return res.status(404).json({error: 'No bank_transfer Payment found'})
+    }
+
+    res.status(200).json(payments)
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error', details: error.message })
+  }
+};
