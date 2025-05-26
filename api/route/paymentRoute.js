@@ -17,4 +17,16 @@ router.route('/pay-with-cash').post(
     paymentController.PayWithCash
 );
 
+router.route('/get-payment-by-cash/:id').get(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Bursar),
+    paymentController.getPaymentByCash
+);
+
+router.route('/get-payment-by-flutterwave/:id').get(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Bursar),
+    paymentController.getPaymentByFlutterwave
+);
+
 module.exports = router;

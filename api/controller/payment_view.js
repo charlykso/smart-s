@@ -118,3 +118,37 @@ exports.PayWithCash = async (req, res) => {
       .json({ error: 'Internal server error', details: error.message })
   }
 }
+
+exports.getPaymentsByCash = async (req, res) => {
+  try {
+    const { user_id } = req.query
+    const payments = await Payment.find({ user: user_id, mode_of_payment: 'cash' })
+      .populate('user', 'email regNo')
+      .populate('fee', 'name amount')
+    if (!payments || payments.length === 0) {
+      return res.status(404).json({ error: 'No cash payments found for this user' })
+    }
+    res.status(200).json(payments)
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: 'Internal server error', details: error.message })
+  }
+}
+
+exports.getPaymentByFlutterwave = async (req, res) => {
+  try {
+    const { user_id } = req.query
+    const payments = await Payment.find({ user: user_id, mode_of_payment: 'flutterwave' })
+      .populate('user', 'email regNo')
+      .populate('fee', 'name amount')
+    if (!payments || payments.length === 0) {
+      return res.status(404).json({ error: 'No Flutterwave payments found for this user' })
+    }
+    res.status(200).json(payments)
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: 'Internal server error', details: error.message })
+  }
+}
