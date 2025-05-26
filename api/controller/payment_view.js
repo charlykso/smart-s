@@ -121,12 +121,11 @@ exports.PayWithCash = async (req, res) => {
 
 exports.getPaymentsByCash = async (req, res) => {
   try {
-    const { user_id } = req.query
-    const payments = await Payment.find({ user: user_id, mode_of_payment: 'cash' })
+    const payments = await Payment.find({mode_of_payment: 'cash' })
       .populate('user', 'email regNo')
       .populate('fee', 'name amount')
     if (!payments || payments.length === 0) {
-      return res.status(404).json({ error: 'No cash payments found for this user' })
+      return res.status(404).json({ error: 'No cash payments found' })
     }
     res.status(200).json(payments)
   } catch (error) {
@@ -136,14 +135,13 @@ exports.getPaymentsByCash = async (req, res) => {
   }
 }
 
-exports.getPaymentByFlutterwave = async (req, res) => {
+exports.getPaymentsByFlutterwave = async (req, res) => {
   try {
-    const { user_id } = req.query
-    const payments = await Payment.find({ user: user_id, mode_of_payment: 'flutterwave' })
+    const payments = await Payment.find({mode_of_payment: 'flutterwave' })
       .populate('user', 'email regNo')
       .populate('fee', 'name amount')
     if (!payments || payments.length === 0) {
-      return res.status(404).json({ error: 'No Flutterwave payments found for this user' })
+      return res.status(404).json({ error: 'No Flutterwave payments found' })
     }
     res.status(200).json(payments)
   } catch (error) {

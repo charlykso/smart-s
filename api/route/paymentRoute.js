@@ -17,16 +17,16 @@ router.route('/pay-with-cash').post(
     paymentController.PayWithCash
 );
 
-router.route('/get-payment-by-cash/:id').get(
+router.route('/get-payments-by-cash').get(
     authenticateToken,
     verifyRoles(roleList.Admin, roleList.Bursar),
-    paymentController.getPaymentByCash
+    paymentController.getPaymentsByCash
 );
 
-router.route('/get-payment-by-flutterwave/:id').get(
+router.route('/get-payments-by-flutterwave').get(
     authenticateToken,
     verifyRoles(roleList.Admin, roleList.Bursar),
-    paymentController.getPaymentByFlutterwave
+    paymentController.getPaymentsByFlutterwave
 );
 
 module.exports = router;
