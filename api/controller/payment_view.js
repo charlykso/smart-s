@@ -177,4 +177,4 @@ exports.getPaymentsByFlutterwave = async (req, res) => {
       .status(500)
       .json({ error: 'Internal server error', details: error.message })
   }
-}
+};
