@@ -12,6 +12,7 @@ const paymentProfileRoute = require('./route/paymentProfileRoute')
 const feeRoute = require('./route/feeRoute')
 const authRoute = require('./route/authRoute')
 const approveRoute = require('./route/approveRoute')
+const auditRoute = require('./route/auditRoute')
 
 
 const app = express()
@@ -36,6 +37,7 @@ app.use('/api/v1/approve', approveRoute)
 app.use('/api/v1/auth', authRoute)
 app.use('/api/v1/payment', require('./route/paymentRoute'))
 app.use('/api/v1/notifications', require('./route/notificationRoute'))
+app.use('/api/v1/audit', auditRoute)
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
