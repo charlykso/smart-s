@@ -1,8 +1,13 @@
 const Payment = require('../model/Payment');
+const User = require('../model/User');
 
 exports.getAllPaymentsByUser = async (req, res) => {
     try {
         const user_id = req.params.user_id;
+        const user = await User.findById(user_id);
+        if (!user) {
+            return res.status(404).json({ error: 'User doesnt exist' });
+        }
         const payments = await Payment.find({ user: user_id })
         .populate('user', 'email regNo')
         .populate('fee', 'name amount');
