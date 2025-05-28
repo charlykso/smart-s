@@ -53,7 +53,18 @@ exports.getAllPaymentByUserInTerm = async (req, res) => {
       fee: { $in: feeIds }
     })
       .populate('user', 'email regNo')
-      .populate('fee', 'name amount')
+      .populate({
+        path: 'fee',
+        select: 'name amount school',
+        populate: {
+          path: 'school',
+          select: 'name groupSchool',
+          populate: {
+            path: 'groupSchool',
+            select: 'logo name'
+          }
+        }
+      });
 
     if (!payments || payments.length === 0) {
       return res
