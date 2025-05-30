@@ -97,7 +97,11 @@ exports.getStudentsInParticularSchool = async (req, res) => {
         if (students.length === 0) {
             return res.status(404).json({ message: 'No students found for this school' });
         }
-        res.status(200).json(students);
+        res.status(200).json({
+        status: 'success',
+        totalNumber: students.length,
+        students: students
+    });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
