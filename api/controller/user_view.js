@@ -754,3 +754,41 @@ exports.deleteParent = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+  
+exports.getStaffBySchool = async (req, res) => {
+  try {
+    const { school_id } = req.params;
+
+    const staffMembers = await User.find({
+      school: school_id,
+      roles: { $ne: 'Student' } // exclude students
+    })
+      .select('-password -__v')
+      .populate('school', 'name')
+      .populate('profile');
+
+    if (!staffMembers || staffMembers.length === 0) {
+      return res.status(404).json({ message: 'No staff members found for this school' });
+    }
+
+    const formattedStaff = staffMembers.map(member => ({
+      _id: member._id,
+      name: member.name,
+      email: member.email,
+      roles: member.roles,
+      school: member.school?.name || null,
+      profile: member.profile || null
+    }));
+
+    res.status(200).json({
+      status: 'success',
+      total: formattedStaff.length,
+      staff: formattedStaff
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error fetching staff members',
+      error: error.message
+    });
+  }
+};

@@ -401,5 +401,5 @@ router
     ),
     userController.deleteParent
 )
-
+router.get('/staff/:school_id', userController.getStaffBySchool);
 module.exports = router;
