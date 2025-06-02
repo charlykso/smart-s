@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   UsersIcon,
   CurrencyDollarIcon,
@@ -8,7 +8,9 @@ import {
   ChartBarIcon,
   ClipboardDocumentCheckIcon,
   BanknotesIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 
 import {
   WelcomeCard,
@@ -18,47 +20,67 @@ import {
 } from '../widgets';
 
 import type { QuickAction, Activity } from '../widgets/QuickActionCard';
+import { usePrincipalStore } from '../../../store/principalStore';
+import { principalService } from '../../../services/principalService';
 
 const PrincipalDashboard: React.FC = () => {
-  // Mock data for principal metrics
-  const stats = [
+  const navigate = useNavigate();
+  const {
+    dashboardData,
+    dashboardLoading,
+    dashboardError,
+    fetchDashboardData,
+  } = usePrincipalStore();
+
+  // Fetch dashboard data on component mount
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return principalService.formatCurrency(amount);
+  };
+
+  // Generate stats from dashboard data
+  const stats = dashboardData ? [
     {
       title: 'Total Students',
-      value: '1,234',
-      change: '+45',
-      changeType: 'increase' as const,
+      value: dashboardData.statistics.totalStudents.toLocaleString(),
+      change: 'Enrolled students',
+      changeType: 'neutral' as const,
       icon: UsersIcon,
       iconColor: 'text-blue-600',
-      description: 'Enrolled this term',
+      description: 'Current enrollment',
     },
     {
       title: 'Fee Collection',
-      value: '87%',
-      change: '+5%',
-      changeType: 'increase' as const,
+      value: `${Math.round(dashboardData.financial.collectionRate)}%`,
+      change: dashboardData.financial.collectionRate >= 80 ? 'Good rate' : 'Needs improvement',
+      changeType: dashboardData.financial.collectionRate >= 80 ? 'positive' as const : 'negative' as const,
       icon: CurrencyDollarIcon,
-      iconColor: 'text-green-600',
+      iconColor: principalService.getCollectionRateColor(dashboardData.financial.collectionRate),
       description: 'Collection rate',
     },
     {
-      title: 'Academic Performance',
-      value: '82%',
-      change: '+3%',
-      changeType: 'increase' as const,
-      icon: AcademicCapIcon,
-      iconColor: 'text-purple-600',
-      description: 'Average grade',
+      title: 'Total Revenue',
+      value: formatCurrency(dashboardData.financial.totalRevenue),
+      change: 'All time',
+      changeType: 'positive' as const,
+      icon: BanknotesIcon,
+      iconColor: 'text-green-600',
+      description: 'School revenue',
     },
     {
-      title: 'Pending Approvals',
-      value: '12',
-      change: '-3',
-      changeType: 'decrease' as const,
-      icon: DocumentCheckIcon,
-      iconColor: 'text-orange-600',
-      description: 'Awaiting approval',
+      title: 'Staff Members',
+      value: (dashboardData.statistics.totalTeachers + dashboardData.statistics.totalStaff).toString(),
+      change: `${dashboardData.statistics.totalTeachers} teachers`,
+      changeType: 'neutral' as const,
+      icon: UserGroupIcon,
+      iconColor: 'text-purple-600',
+      description: 'Total staff',
     },
-  ];
+  ] : [];
 
   const quickActions: QuickAction[] = [
     {
@@ -103,69 +125,84 @@ const PrincipalDashboard: React.FC = () => {
     },
   ];
 
-  const recentActivities: Activity[] = [
-    {
-      id: '1',
-      title: 'Fee Structure Approved',
-      description: 'Term 2 fee structure approved for all classes',
-      timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-      type: 'fee',
-      user: 'Principal',
-    },
-    {
-      id: '2',
-      title: 'New Teacher Assigned',
-      description: 'Mathematics teacher assigned to Class 5A',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      type: 'user',
-      user: 'Principal',
-    },
-    {
-      id: '3',
-      title: 'Academic Report Generated',
-      description: 'Monthly academic performance report completed',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 6), // 6 hours ago
-      type: 'academic',
-      user: 'Academic Office',
-    },
-    {
-      id: '4',
-      title: 'Payment Milestone Reached',
-      description: '85% fee collection target achieved',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12 hours ago
-      type: 'payment',
-      user: 'Bursar Office',
-    },
-    {
-      id: '5',
-      title: 'Parent Meeting Scheduled',
-      description: 'PTA meeting scheduled for next Friday',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-      type: 'academic',
-      user: 'Principal',
-    },
-  ];
+  // Generate recent activities from dashboard data
+  const recentActivities: Activity[] = dashboardData ?
+    dashboardData.recentActivities.slice(0, 5).map((activity) => ({
+      id: activity._id,
+      title: activity.type === 'payment' ? 'Payment Activity' :
+             activity.type === 'academic' ? 'Academic Update' :
+             activity.type === 'fee' ? 'Fee Management' :
+             activity.type === 'user' ? 'Staff Update' : 'School Activity',
+      description: activity.description,
+      timestamp: new Date(activity.date),
+      type: activity.type as 'payment' | 'academic' | 'fee' | 'user' | 'system',
+      user: activity.user,
+    })) : [];
 
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
       <WelcomeCard />
 
+      {/* Loading State */}
+      {dashboardLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          <span className="ml-3 text-secondary-600">Loading dashboard...</span>
+        </div>
+      )}
+
+      {/* Error State */}
+      {dashboardError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mr-2" />
+            <div>
+              <h4 className="text-sm font-medium text-red-800">
+                Error Loading Dashboard
+              </h4>
+              <p className="text-sm text-red-700 mt-1">
+                {dashboardError}. Please try refreshing the page.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Outstanding Fees Alert */}
+      {dashboardData && dashboardData.financial.outstandingFees > 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2" />
+            <div>
+              <h4 className="text-sm font-medium text-yellow-800">
+                Outstanding Fees Alert
+              </h4>
+              <p className="text-sm text-yellow-700 mt-1">
+                There are {formatCurrency(dashboardData.financial.outstandingFees)} in outstanding fees. Collection rate is {Math.round(dashboardData.financial.collectionRate)}%.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Statistics Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <StatCard
-            key={index}
-            title={stat.title}
-            value={stat.value}
-            change={stat.change}
-            changeType={stat.changeType}
-            icon={stat.icon}
-            iconColor={stat.iconColor}
-            description={stat.description}
-          />
-        ))}
-      </div>
+      {!dashboardLoading && (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat, index) => (
+            <StatCard
+              key={index}
+              title={stat.title}
+              value={stat.value}
+              change={stat.change}
+              changeType={stat.changeType}
+              icon={stat.icon}
+              iconColor={stat.iconColor}
+              description={stat.description}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

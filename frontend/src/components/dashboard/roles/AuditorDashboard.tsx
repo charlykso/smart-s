@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   DocumentMagnifyingGlassIcon,
   ShieldCheckIcon,
@@ -7,6 +7,7 @@ import {
   DocumentTextIcon,
   CheckCircleIcon,
 } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 
 import {
   WelcomeCard,
@@ -17,48 +18,63 @@ import {
 } from '../widgets';
 
 import type { QuickAction, Activity } from '../widgets/QuickActionCard';
+import { useAuditorStore } from '../../../store/auditorStore';
+import { auditorService } from '../../../services/auditorService';
 import type { AuditEntry } from '../widgets/AuditTrailCard';
 
 const AuditorDashboard: React.FC = () => {
-  // Mock data for auditor metrics - compliance and audit focus
-  const stats = [
+  const navigate = useNavigate();
+  const {
+    dashboardData,
+    dashboardLoading,
+    dashboardError,
+    fetchDashboardData,
+  } = useAuditorStore();
+
+  // Fetch dashboard data on component mount
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  // Generate stats from dashboard data
+  const stats = dashboardData ? [
     {
       title: 'Audit Entries',
-      value: '2,847',
-      change: '+156',
-      changeType: 'increase' as const,
+      value: dashboardData.auditStats.totalAuditEntries.toLocaleString(),
+      change: `+${dashboardData.auditStats.recentAuditsCount}`,
+      changeType: 'positive' as const,
       icon: DocumentMagnifyingGlassIcon,
       iconColor: 'text-blue-600',
       description: 'This month',
     },
     {
       title: 'Compliance Score',
-      value: '94%',
-      change: '+2%',
-      changeType: 'increase' as const,
+      value: `${dashboardData.auditStats.complianceScore}%`,
+      change: dashboardData.auditStats.complianceScore >= 90 ? 'Excellent' : 'Good',
+      changeType: dashboardData.auditStats.complianceScore >= 90 ? 'positive' as const : 'neutral' as const,
       icon: ShieldCheckIcon,
-      iconColor: 'text-green-600',
+      iconColor: auditorService.getComplianceColor(dashboardData.auditStats.complianceScore),
       description: 'Overall compliance',
     },
     {
       title: 'Critical Issues',
-      value: '3',
-      change: '-2',
-      changeType: 'decrease' as const,
+      value: dashboardData.auditStats.criticalIssues.toString(),
+      change: dashboardData.auditStats.criticalIssues > 0 ? 'Needs attention' : 'All clear',
+      changeType: dashboardData.auditStats.criticalIssues > 0 ? 'negative' as const : 'positive' as const,
       icon: ExclamationTriangleIcon,
-      iconColor: 'text-red-600',
+      iconColor: dashboardData.auditStats.criticalIssues > 0 ? 'text-red-600' : 'text-green-600',
       description: 'Require attention',
     },
     {
-      title: 'Reports Generated',
-      value: '47',
-      change: '+8',
-      changeType: 'increase' as const,
+      title: 'Security Score',
+      value: `${dashboardData.auditStats.securityScore}%`,
+      change: dashboardData.auditStats.securityScore >= 85 ? 'Secure' : 'Review needed',
+      changeType: dashboardData.auditStats.securityScore >= 85 ? 'positive' as const : 'negative' as const,
       icon: DocumentTextIcon,
-      iconColor: 'text-purple-600',
-      description: 'This month',
+      iconColor: auditorService.getComplianceColor(dashboardData.auditStats.securityScore),
+      description: 'Security metrics',
     },
-  ];
+  ] : [];
 
   const quickActions: QuickAction[] = [
     {
@@ -103,127 +119,121 @@ const AuditorDashboard: React.FC = () => {
     },
   ];
 
-  const recentActivities: Activity[] = [
-    {
-      id: '1',
-      title: 'Compliance Scan Completed',
-      description: 'Monthly compliance scan completed with 94% score',
-      timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-      type: 'audit',
-      user: 'Audit System',
-    },
-    {
-      id: '2',
-      title: 'Exception Flagged',
-      description: 'Unusual payment pattern detected and flagged',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      type: 'audit',
-      user: 'Monitoring System',
-    },
-    {
-      id: '3',
-      title: 'Audit Report Generated',
-      description: 'Weekly audit report generated and distributed',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 6), // 6 hours ago
-      type: 'audit',
-      user: 'Auditor',
-    },
-    {
-      id: '4',
-      title: 'Data Integrity Check',
-      description: 'Financial data integrity verification completed',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12 hours ago
-      type: 'audit',
-      user: 'System',
-    },
-    {
-      id: '5',
-      title: 'Policy Compliance Review',
-      description: 'Annual policy compliance review initiated',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-      type: 'audit',
-      user: 'Auditor',
-    },
-  ];
+  // Generate recent activities from dashboard data
+  const recentActivities: Activity[] = dashboardData ?
+    dashboardData.recentAudits.slice(0, 5).map((audit) => ({
+      id: audit._id,
+      title: audit.action,
+      description: audit.details,
+      timestamp: new Date(audit.timestamp),
+      type: 'audit' as const,
+      user: audit.user,
+    })) : [];
 
-  const auditEntries: AuditEntry[] = [
-    {
-      id: '1',
-      action: 'Payment Processed',
-      user: 'bursar@school.com',
-      timestamp: new Date(Date.now() - 1000 * 60 * 15),
-      details: 'School fees payment of ₦125,000 processed for student ID: ST2024001',
-      severity: 'low',
-    },
-    {
-      id: '2',
-      action: 'User Role Modified',
-      user: 'admin@school.com',
-      timestamp: new Date(Date.now() - 1000 * 60 * 45),
-      details: 'User role changed from Teacher to Principal for user ID: USR2024045',
-      severity: 'medium',
-    },
-    {
-      id: '3',
-      action: 'Large Payment Alert',
-      user: 'system@school.com',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-      details: 'Payment exceeding ₦500,000 threshold detected and flagged',
-      severity: 'high',
-    },
-    {
-      id: '4',
-      action: 'Database Backup',
-      user: 'system@school.com',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 6),
-      details: 'Automated daily database backup completed successfully',
-      severity: 'low',
-    },
-    {
-      id: '5',
-      action: 'Failed Login Attempt',
-      user: 'unknown@external.com',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8),
-      details: 'Multiple failed login attempts detected from IP: 192.168.1.100',
-      severity: 'medium',
-    },
-  ];
+  // Generate audit entries from dashboard data
+  const auditEntries: AuditEntry[] = dashboardData ?
+    dashboardData.recentAudits.map((audit) => ({
+      id: audit._id,
+      action: audit.action,
+      user: audit.user,
+      timestamp: new Date(audit.timestamp),
+      details: audit.details,
+      severity: audit.severity,
+    })) : [];
 
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
       <WelcomeCard />
 
-      {/* Compliance Alert */}
-      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-        <div className="flex items-center">
-          <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2" />
-          <div>
-            <h4 className="text-sm font-medium text-green-800">
-              Compliance Status: Good
-            </h4>
-            <p className="text-sm text-green-700 mt-1">
-              System compliance is at 94%. All critical requirements are met with 3 minor issues pending resolution.
-            </p>
+      {/* Loading State */}
+      {dashboardLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          <span className="ml-3 text-secondary-600">Loading audit dashboard...</span>
+        </div>
+      )}
+
+      {/* Error State */}
+      {dashboardError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mr-2" />
+            <div>
+              <h4 className="text-sm font-medium text-red-800">
+                Error Loading Dashboard
+              </h4>
+              <p className="text-sm text-red-700 mt-1">
+                {dashboardError}. Please try refreshing the page.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Compliance Alert */}
+      {dashboardData && (
+        <div className={`border rounded-lg p-4 ${
+          dashboardData.auditStats.complianceScore >= 90
+            ? 'bg-green-50 border-green-200'
+            : dashboardData.auditStats.complianceScore >= 75
+            ? 'bg-yellow-50 border-yellow-200'
+            : 'bg-red-50 border-red-200'
+        }`}>
+          <div className="flex items-center">
+            <CheckCircleIcon className={`h-5 w-5 mr-2 ${
+              dashboardData.auditStats.complianceScore >= 90
+                ? 'text-green-600'
+                : dashboardData.auditStats.complianceScore >= 75
+                ? 'text-yellow-600'
+                : 'text-red-600'
+            }`} />
+            <div>
+              <h4 className={`text-sm font-medium ${
+                dashboardData.auditStats.complianceScore >= 90
+                  ? 'text-green-800'
+                  : dashboardData.auditStats.complianceScore >= 75
+                  ? 'text-yellow-800'
+                  : 'text-red-800'
+              }`}>
+                Compliance Status: {dashboardData.auditStats.complianceScore >= 90 ? 'Excellent' :
+                                   dashboardData.auditStats.complianceScore >= 75 ? 'Good' : 'Needs Attention'}
+              </h4>
+              <p className={`text-sm mt-1 ${
+                dashboardData.auditStats.complianceScore >= 90
+                  ? 'text-green-700'
+                  : dashboardData.auditStats.complianceScore >= 75
+                  ? 'text-yellow-700'
+                  : 'text-red-700'
+              }`}>
+                System compliance is at {dashboardData.auditStats.complianceScore}%.
+                {dashboardData.auditStats.criticalIssues > 0
+                  ? ` ${dashboardData.auditStats.criticalIssues} critical issues require attention.`
+                  : ' All critical requirements are met.'
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Statistics Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <StatCard
-            key={`audit-stat-${index}`}
-            title={stat.title}
-            value={stat.value}
-            change={stat.change}
-            changeType={stat.changeType}
-            icon={stat.icon}
-            iconColor={stat.iconColor}
-            description={stat.description}
-          />
-        ))}
-      </div>
+      {!dashboardLoading && (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat, index) => (
+            <StatCard
+              key={`audit-stat-${index}`}
+              title={stat.title}
+              value={stat.value}
+              change={stat.change}
+              changeType={stat.changeType}
+              icon={stat.icon}
+              iconColor={stat.iconColor}
+              description={stat.description}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Compliance Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

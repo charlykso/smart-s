@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   UsersIcon,
   CurrencyDollarIcon,
@@ -8,7 +8,9 @@ import {
   DocumentTextIcon,
   ChatBubbleLeftRightIcon,
   BellIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 
 import {
   WelcomeCard,
@@ -20,47 +22,67 @@ import {
 } from '../widgets';
 
 import type { QuickAction, Activity } from '../widgets/QuickActionCard';
+import { useParentStore } from '../../../store/parentStore';
+import { parentService } from '../../../services/parentService';
 
 const ParentDashboard: React.FC = () => {
-  // Mock data for parent metrics - child-focused
-  const stats = [
+  const navigate = useNavigate();
+  const {
+    dashboardData,
+    dashboardLoading,
+    dashboardError,
+    fetchDashboardData,
+  } = useParentStore();
+
+  // Fetch dashboard data on component mount
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return parentService.formatCurrency(amount);
+  };
+
+  // Generate stats from dashboard data
+  const stats = dashboardData ? [
     {
       title: 'Children Enrolled',
-      value: '2',
-      change: '+1',
-      changeType: 'increase' as const,
+      value: dashboardData.overallSummary.totalChildren.toString(),
+      change: 'Active students',
+      changeType: 'neutral' as const,
       icon: UsersIcon,
       iconColor: 'text-blue-600',
-      description: 'Active students',
+      description: 'Enrolled children',
     },
     {
       title: 'Outstanding Fees',
-      value: '₦185K',
-      change: '-₦25K',
-      changeType: 'decrease' as const,
+      value: formatCurrency(dashboardData.overallSummary.totalOutstanding),
+      change: dashboardData.overallSummary.totalOutstanding > 0 ? 'Payment due' : 'All paid',
+      changeType: dashboardData.overallSummary.totalOutstanding > 0 ? 'negative' as const : 'positive' as const,
       icon: CurrencyDollarIcon,
-      iconColor: 'text-red-600',
+      iconColor: dashboardData.overallSummary.totalOutstanding > 0 ? 'text-red-600' : 'text-green-600',
       description: 'Total pending',
     },
     {
       title: 'Average Performance',
-      value: '82%',
-      change: '+4%',
-      changeType: 'increase' as const,
+      value: `${Math.round(dashboardData.overallSummary.averagePerformance)}%`,
+      change: dashboardData.overallSummary.averagePerformance >= 75 ? 'Excellent' : 'Good',
+      changeType: dashboardData.overallSummary.averagePerformance >= 75 ? 'positive' as const : 'neutral' as const,
       icon: AcademicCapIcon,
-      iconColor: 'text-green-600',
+      iconColor: parentService.getPerformanceColor(dashboardData.overallSummary.averagePerformance),
       description: 'Across all children',
     },
     {
       title: 'Attendance Rate',
-      value: '94%',
-      change: '+1%',
-      changeType: 'increase' as const,
+      value: `${Math.round(dashboardData.overallSummary.averageAttendance)}%`,
+      change: dashboardData.overallSummary.averageAttendance >= 90 ? 'Excellent' : 'Good',
+      changeType: dashboardData.overallSummary.averageAttendance >= 90 ? 'positive' as const : 'neutral' as const,
       icon: CalendarIcon,
-      iconColor: 'text-purple-600',
+      iconColor: parentService.getAttendanceColor(dashboardData.overallSummary.averageAttendance),
       description: 'This term',
     },
-  ];
+  ] : [];
 
   const quickActions: QuickAction[] = [
     {
@@ -105,104 +127,100 @@ const ParentDashboard: React.FC = () => {
     },
   ];
 
-  const recentActivities: Activity[] = [
-    {
-      id: '1',
-      title: 'Payment Processed',
-      description: 'School fees payment of ₦125,000 for John Doe processed',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      type: 'payment',
-      user: 'Payment Gateway',
-    },
-    {
-      id: '2',
-      title: 'Academic Report Available',
-      description: 'Mid-term report for Sarah Doe is now available',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 6), // 6 hours ago
-      type: 'academic',
-      user: 'Academic Office',
-    },
-    {
-      id: '3',
-      title: 'Parent-Teacher Meeting',
-      description: 'Meeting scheduled with Mathematics teacher',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-      type: 'academic',
-      user: 'School Admin',
-    },
-    {
-      id: '4',
-      title: 'Fee Reminder',
-      description: 'Reminder: Term fees due in 5 days',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48), // 2 days ago
-      type: 'fee',
-      user: 'Bursar Office',
-    },
-    {
-      id: '5',
-      title: 'Event Notification',
-      description: 'Sports Day scheduled for next Friday',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 72), // 3 days ago
-      type: 'academic',
-      user: 'School Admin',
-    },
-  ];
+  // Generate recent activities from dashboard data
+  const recentActivities: Activity[] = dashboardData ?
+    dashboardData.recentActivities.slice(0, 5).map((activity) => ({
+      id: activity._id,
+      title: activity.type === 'payment' ? 'Payment Processed' :
+             activity.type === 'academic' ? 'Academic Update' :
+             activity.type === 'fee' ? 'Fee Notification' : 'School Update',
+      description: `${activity.description} for ${activity.childName}`,
+      timestamp: new Date(activity.date),
+      type: activity.type as 'payment' | 'academic' | 'fee' | 'system',
+      user: activity.type === 'payment' ? 'Payment System' : 'School Admin',
+    })) : [];
 
-  // Mock children data
-  const children = [
-    {
-      id: '1',
-      name: 'John Doe',
-      class: 'JSS 2A',
-      outstandingFees: 95000,
-      academicProgress: 85,
-      attendanceRate: 96,
-    },
-    {
-      id: '2',
-      name: 'Sarah Doe',
-      class: 'Primary 5B',
-      outstandingFees: 90000,
-      academicProgress: 79,
-      attendanceRate: 92,
-    },
-  ];
+  // Generate children data from dashboard data
+  const children = dashboardData ?
+    dashboardData.children.map((child) => {
+      const financialData = dashboardData.financialSummary.find(f => f.childId === child._id);
+      const academicData = dashboardData.academicSummary.find(a => a.childId === child._id);
+
+      return {
+        id: child._id,
+        name: `${child.firstname} ${child.lastname}`,
+        class: child.classArm?.name || 'Not assigned',
+        regNo: child.regNo,
+        outstandingFees: financialData?.totalOutstanding || 0,
+        academicProgress: academicData?.currentAverage || 0,
+        attendanceRate: academicData?.attendanceRate || 0,
+      };
+    }) : [];
 
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
       <WelcomeCard />
 
-      {/* Fee Alert */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <div className="flex items-center">
-          <BellIcon className="h-5 w-5 text-yellow-600 mr-2" />
-          <div>
-            <h4 className="text-sm font-medium text-yellow-800">
-              Payment Reminder
-            </h4>
-            <p className="text-sm text-yellow-700 mt-1">
-              You have outstanding fees of ₦185,000 across all children. Payment is due in 5 days.
-            </p>
+      {/* Loading State */}
+      {dashboardLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          <span className="ml-3 text-secondary-600">Loading dashboard...</span>
+        </div>
+      )}
+
+      {/* Error State */}
+      {dashboardError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mr-2" />
+            <div>
+              <h4 className="text-sm font-medium text-red-800">
+                Error Loading Dashboard
+              </h4>
+              <p className="text-sm text-red-700 mt-1">
+                {dashboardError}. Please try refreshing the page.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Fee Alert */}
+      {dashboardData && dashboardData.overallSummary.totalOutstanding > 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <BellIcon className="h-5 w-5 text-yellow-600 mr-2" />
+            <div>
+              <h4 className="text-sm font-medium text-yellow-800">
+                Payment Reminder
+              </h4>
+              <p className="text-sm text-yellow-700 mt-1">
+                You have outstanding fees of {formatCurrency(dashboardData.overallSummary.totalOutstanding)} across all children. Please make payment soon.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Statistics Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <StatCard
-            key={`parent-stat-${index}`}
-            title={stat.title}
-            value={stat.value}
-            change={stat.change}
-            changeType={stat.changeType}
-            icon={stat.icon}
-            iconColor={stat.iconColor}
-            description={stat.description}
-          />
-        ))}
-      </div>
+      {!dashboardLoading && (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat, index) => (
+            <StatCard
+              key={`parent-stat-${index}`}
+              title={stat.title}
+              value={stat.value}
+              change={stat.change}
+              changeType={stat.changeType}
+              icon={stat.icon}
+              iconColor={stat.iconColor}
+              description={stat.description}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Children Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -218,19 +236,19 @@ const ParentDashboard: React.FC = () => {
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-red-600">
-                  ₦{(child.outstandingFees / 1000).toFixed(0)}K
+                  {formatCurrency(child.outstandingFees)}
                 </div>
                 <div className="text-xs text-secondary-600">Outstanding</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">
-                  {child.academicProgress}%
+                <div className={`text-2xl font-bold ${parentService.getPerformanceColor(child.academicProgress)}`}>
+                  {Math.round(child.academicProgress)}%
                 </div>
                 <div className="text-xs text-secondary-600">Performance</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">
-                  {child.attendanceRate}%
+                <div className={`text-2xl font-bold ${parentService.getAttendanceColor(child.attendanceRate)}`}>
+                  {Math.round(child.attendanceRate)}%
                 </div>
                 <div className="text-xs text-secondary-600">Attendance</div>
               </div>
@@ -249,40 +267,52 @@ const ParentDashboard: React.FC = () => {
       </div>
 
       {/* Payment Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PaymentSummaryCard
-          title="Total Fee Summary"
-          totalAmount={370000}
-          paidAmount={185000}
-          pendingAmount={185000}
-        />
+      {dashboardData && !dashboardLoading && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <PaymentSummaryCard
+            title="Total Fee Summary"
+            totalAmount={dashboardData.overallSummary.totalPaid + dashboardData.overallSummary.totalOutstanding}
+            paidAmount={dashboardData.overallSummary.totalPaid}
+            pendingAmount={dashboardData.overallSummary.totalOutstanding}
+          />
 
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
-          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-            Recent Payments
-          </h3>
-          <div className="space-y-3">
-            {[
-              { child: 'John Doe', amount: '₦125,000', date: '2 days ago', status: 'Completed' },
-              { child: 'Sarah Doe', amount: '₦60,000', date: '1 week ago', status: 'Completed' },
-              { child: 'John Doe', amount: '₦95,000', date: '2 weeks ago', status: 'Completed' },
-            ].map((payment, index) => (
-              <div key={`payment-${index}`} className="flex items-center justify-between p-3 border border-secondary-200 rounded-lg">
-                <div>
-                  <div className="font-medium text-secondary-900">{payment.child}</div>
-                  <div className="text-sm text-secondary-600">{payment.date}</div>
+          <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+            <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+              Recent Payments
+            </h3>
+            <div className="space-y-3">
+              {dashboardData.financialSummary.length > 0 ? (
+                dashboardData.financialSummary
+                  .flatMap(child =>
+                    child.recentPayments.slice(0, 2).map(payment => ({
+                      ...payment,
+                      childName: child.childName
+                    }))
+                  )
+                  .slice(0, 3)
+                  .map((payment, index) => (
+                    <div key={`payment-${index}`} className="flex items-center justify-between p-3 border border-secondary-200 rounded-lg">
+                      <div>
+                        <div className="font-medium text-secondary-900">{payment.childName}</div>
+                        <div className="text-sm text-secondary-600">{parentService.formatRelativeTime(payment.trans_date)}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium text-secondary-900">{formatCurrency(payment.amount)}</div>
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Completed
+                        </span>
+                      </div>
+                    </div>
+                  ))
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-secondary-600">No recent payments available</p>
                 </div>
-                <div className="text-right">
-                  <div className="font-medium text-secondary-900">{payment.amount}</div>
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    {payment.status}
-                  </span>
-                </div>
-              </div>
-            ))}
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

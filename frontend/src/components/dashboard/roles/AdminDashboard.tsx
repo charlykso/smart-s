@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   UsersIcon,
   BuildingOfficeIcon,
@@ -8,7 +8,9 @@ import {
   UserPlusIcon,
   DocumentTextIcon,
   ShieldCheckIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 
 import {
   WelcomeCard,
@@ -18,47 +20,67 @@ import {
 } from '../widgets';
 
 import type { QuickAction, Activity } from '../widgets/QuickActionCard';
+import { useAdminStore } from '../../../store/adminStore';
+import { adminService } from '../../../services/adminService';
 
 const AdminDashboard: React.FC = () => {
-  // Mock data - in real app, this would come from API
-  const stats = [
+  const navigate = useNavigate();
+  const {
+    dashboardData,
+    dashboardLoading,
+    dashboardError,
+    fetchDashboardData,
+  } = useAdminStore();
+
+  // Fetch dashboard data on component mount
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return adminService.formatCurrency(amount);
+  };
+
+  // Generate stats from dashboard data
+  const stats = dashboardData ? [
     {
       title: 'Total Schools',
-      value: '12',
-      change: '+2',
-      changeType: 'increase' as const,
+      value: dashboardData.statistics.totalSchools.toLocaleString(),
+      change: 'Active schools',
+      changeType: 'neutral' as const,
       icon: BuildingOfficeIcon,
       iconColor: 'text-blue-600',
-      description: 'Active schools in system',
+      description: 'Schools in system',
     },
     {
       title: 'Total Users',
-      value: '2,847',
-      change: '+156',
-      changeType: 'increase' as const,
+      value: dashboardData.statistics.totalUsers.toLocaleString(),
+      change: `${dashboardData.statistics.totalStudents} students`,
+      changeType: 'positive' as const,
       icon: UsersIcon,
       iconColor: 'text-green-600',
       description: 'All system users',
     },
     {
       title: 'System Revenue',
-      value: '₦45.2M',
-      change: '+12%',
-      changeType: 'increase' as const,
+      value: formatCurrency(dashboardData.statistics.totalRevenue),
+      change: `${dashboardData.statistics.totalPayments} payments`,
+      changeType: 'positive' as const,
       icon: CurrencyDollarIcon,
       iconColor: 'text-yellow-600',
       description: 'Total platform revenue',
     },
     {
-      title: 'System Health',
-      value: '99.8%',
-      change: '+0.2%',
-      changeType: 'increase' as const,
+      title: 'Pending Payments',
+      value: dashboardData.statistics.pendingPayments.toLocaleString(),
+      change: dashboardData.statistics.pendingPayments > 0 ? 'Needs attention' : 'All clear',
+      changeType: dashboardData.statistics.pendingPayments > 0 ? 'negative' as const : 'positive' as const,
       icon: ChartBarIcon,
-      iconColor: 'text-purple-600',
-      description: 'Uptime this month',
+      iconColor: dashboardData.statistics.pendingPayments > 0 ? 'text-red-600' : 'text-green-600',
+      description: 'Payment status',
     },
-  ];
+  ] : [];
 
   const quickActions: QuickAction[] = [
     {
@@ -103,69 +125,92 @@ const AdminDashboard: React.FC = () => {
     },
   ];
 
-  const recentActivities: Activity[] = [
-    {
-      id: '1',
-      title: 'New School Registered',
-      description: 'Greenfield Academy was added to the system',
-      timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-      type: 'system',
+  // Generate recent activities from dashboard data
+  const recentActivities: Activity[] = dashboardData ? [
+    // Recent user registrations
+    ...dashboardData.recentActivities.users.slice(0, 3).map((user) => ({
+      id: `user-${user._id}`,
+      title: 'New User Registered',
+      description: `${user.firstname} ${user.lastname} (${user.roles.join(', ')}) joined the system`,
+      timestamp: new Date(user.createdAt),
+      type: 'user' as const,
       user: 'System Admin',
-    },
-    {
-      id: '2',
-      title: 'User Account Created',
-      description: 'Principal account created for John Doe',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      type: 'user',
-      user: 'Admin User',
-    },
-    {
-      id: '3',
-      title: 'System Backup Completed',
-      description: 'Daily backup completed successfully',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 6), // 6 hours ago
-      type: 'system',
-      user: 'System',
-    },
-    {
-      id: '4',
-      title: 'Security Alert Resolved',
-      description: 'Failed login attempts from IP blocked',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12 hours ago
-      type: 'audit',
-      user: 'Security System',
-    },
-    {
-      id: '5',
-      title: 'Payment Gateway Updated',
-      description: 'Paystack integration updated to v2.1',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-      type: 'system',
-      user: 'ICT Admin',
-    },
-  ];
+    })),
+    // Recent payments
+    ...dashboardData.recentActivities.payments.slice(0, 2).map((payment) => ({
+      id: `payment-${payment._id}`,
+      title: 'Payment Processed',
+      description: `${payment.fee.name} payment of ${formatCurrency(payment.amount)} from ${payment.user.firstname} ${payment.user.lastname}`,
+      timestamp: new Date(payment.trans_date),
+      type: 'payment' as const,
+      user: 'Payment System',
+    }))
+  ].slice(0, 5) : [];
 
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
       <WelcomeCard />
 
+      {/* Loading State */}
+      {dashboardLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          <span className="ml-3 text-secondary-600">Loading dashboard...</span>
+        </div>
+      )}
+
+      {/* Error State */}
+      {dashboardError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mr-2" />
+            <div>
+              <h4 className="text-sm font-medium text-red-800">
+                Error Loading Dashboard
+              </h4>
+              <p className="text-sm text-red-700 mt-1">
+                {dashboardError}. Please try refreshing the page.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* System Alert */}
+      {dashboardData && dashboardData.statistics.pendingPayments > 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2" />
+            <div>
+              <h4 className="text-sm font-medium text-yellow-800">
+                System Alert
+              </h4>
+              <p className="text-sm text-yellow-700 mt-1">
+                There are {dashboardData.statistics.pendingPayments} pending payments requiring attention across the system.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Statistics Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <StatCard
-            key={index}
-            title={stat.title}
-            value={stat.value}
-            change={stat.change}
-            changeType={stat.changeType}
-            icon={stat.icon}
-            iconColor={stat.iconColor}
-            description={stat.description}
-          />
-        ))}
-      </div>
+      {!dashboardLoading && (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat, index) => (
+            <StatCard
+              key={index}
+              title={stat.title}
+              value={stat.value}
+              change={stat.change}
+              changeType={stat.changeType}
+              icon={stat.icon}
+              iconColor={stat.iconColor}
+              description={stat.description}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

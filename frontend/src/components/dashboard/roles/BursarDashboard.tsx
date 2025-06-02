@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   CurrencyDollarIcon,
   BanknotesIcon,
@@ -8,7 +8,9 @@ import {
   ClockIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
+  BuildingLibraryIcon,
 } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 
 import {
   WelcomeCard,
@@ -20,47 +22,81 @@ import {
 } from '../widgets';
 
 import type { QuickAction, Activity } from '../widgets/QuickActionCard';
+import { useBursarStore } from '../../../store/bursarStore';
+import { bursarService } from '../../../services/bursarService';
 
 const BursarDashboard: React.FC = () => {
-  // Mock data for bursar metrics - financial focus
-  const stats = [
+  const navigate = useNavigate();
+  const {
+    dashboardData,
+    dashboardLoading,
+    dashboardError,
+    fetchDashboardData,
+  } = useBursarStore();
+
+  // Fetch dashboard data on component mount
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return bursarService.formatCurrency(amount);
+  };
+
+  // Calculate collection rate from fee collection status
+  const calculateOverallCollectionRate = () => {
+    if (!dashboardData?.feeCollectionStatus.length) return 0;
+
+    const totalExpected = dashboardData.feeCollectionStatus.reduce(
+      (sum, fee) => sum + fee.expectedTotal, 0
+    );
+    const totalCollected = dashboardData.feeCollectionStatus.reduce(
+      (sum, fee) => sum + fee.collectedTotal, 0
+    );
+
+    return totalExpected > 0 ? Math.round((totalCollected / totalExpected) * 100) : 0;
+  };
+
+  // Generate stats from dashboard data
+  const stats = dashboardData ? [
     {
       title: 'Total Revenue',
-      value: '₦45.8M',
-      change: '+12%',
-      changeType: 'increase' as const,
+      value: formatCurrency(dashboardData.financialStats.totalRevenue),
+      change: `${dashboardData.financialStats.totalTransactions} transactions`,
+      changeType: 'neutral' as const,
       icon: CurrencyDollarIcon,
       iconColor: 'text-green-600',
-      description: 'This term',
+      description: 'All time',
     },
     {
       title: 'Collection Rate',
-      value: '87%',
-      change: '+5%',
-      changeType: 'increase' as const,
+      value: `${calculateOverallCollectionRate()}%`,
+      change: 'Overall rate',
+      changeType: calculateOverallCollectionRate() >= 80 ? 'positive' as const : 'negative' as const,
       icon: ChartBarIcon,
-      iconColor: 'text-blue-600',
+      iconColor: calculateOverallCollectionRate() >= 80 ? 'text-blue-600' : 'text-yellow-600',
       description: 'Fee collection',
     },
     {
       title: 'Outstanding Fees',
-      value: '₦6.2M',
-      change: '-8%',
-      changeType: 'decrease' as const,
+      value: formatCurrency(dashboardData.financialStats.outstandingAmount),
+      change: `${dashboardData.financialStats.pendingPayments} pending`,
+      changeType: 'neutral' as const,
       icon: ExclamationTriangleIcon,
       iconColor: 'text-red-600',
       description: 'Pending payments',
     },
     {
-      title: 'Processed Today',
-      value: '₦245K',
-      change: '+15%',
-      changeType: 'increase' as const,
+      title: 'Today\'s Revenue',
+      value: formatCurrency(dashboardData.financialStats.todayRevenue),
+      change: 'Today',
+      changeType: 'positive' as const,
       icon: BanknotesIcon,
       iconColor: 'text-purple-600',
-      description: '47 transactions',
+      description: 'Processed today',
     },
-  ];
+  ] : [];
 
   const quickActions: QuickAction[] = [
     {
@@ -105,128 +141,133 @@ const BursarDashboard: React.FC = () => {
     },
   ];
 
-  const recentActivities: Activity[] = [
-    {
-      id: '1',
+  // Generate recent activities from dashboard data
+  const recentActivities: Activity[] = dashboardData ?
+    dashboardData.recentTransactions.slice(0, 5).map((transaction) => ({
+      id: transaction._id,
       title: 'Payment Processed',
-      description: 'School fees payment of ₦125,000 processed for John Doe',
-      timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15 minutes ago
-      type: 'payment',
-      user: 'Payment Gateway',
-    },
-    {
-      id: '2',
-      title: 'Receipt Generated',
-      description: 'Payment receipt #RF2024001234 generated',
-      timestamp: new Date(Date.now() - 1000 * 60 * 45), // 45 minutes ago
-      type: 'payment',
-      user: 'Bursar',
-    },
-    {
-      id: '3',
-      title: 'Bank Reconciliation',
-      description: 'Daily bank reconciliation completed',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      type: 'payment',
-      user: 'Finance Team',
-    },
-    {
-      id: '4',
-      title: 'Outstanding Fee Alert',
-      description: 'Reminder sent to 45 students with outstanding fees',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 6), // 6 hours ago
-      type: 'fee',
-      user: 'System',
-    },
-    {
-      id: '5',
-      title: 'Financial Report Generated',
-      description: 'Monthly financial report generated and sent',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-      type: 'payment',
-      user: 'Bursar',
-    },
-  ];
+      description: `${transaction.fee.name} payment of ${formatCurrency(transaction.amount)} from ${transaction.user.firstname} ${transaction.user.lastname}${transaction.user.regNo ? ` (${transaction.user.regNo})` : ''}`,
+      timestamp: new Date(transaction.trans_date),
+      type: 'payment' as const,
+      user: transaction.mode_of_payment === 'cash' ? 'Bursar Office' : 'Payment Gateway',
+    })) : [];
 
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
       <WelcomeCard />
 
-      {/* Financial Alert */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <div className="flex items-center">
-          <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2" />
-          <div>
-            <h4 className="text-sm font-medium text-yellow-800">
-              Payment Processing Alert
-            </h4>
-            <p className="text-sm text-yellow-700 mt-1">
-              47 payments are pending verification. Please review and process them today.
-            </p>
+      {/* Loading State */}
+      {dashboardLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          <span className="ml-3 text-secondary-600">Loading dashboard...</span>
+        </div>
+      )}
+
+      {/* Error State */}
+      {dashboardError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mr-2" />
+            <div>
+              <h4 className="text-sm font-medium text-red-800">
+                Error Loading Dashboard
+              </h4>
+              <p className="text-sm text-red-700 mt-1">
+                {dashboardError}. Please try refreshing the page.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Financial Alert */}
+      {dashboardData && dashboardData.financialStats.pendingPayments > 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2" />
+            <div>
+              <h4 className="text-sm font-medium text-yellow-800">
+                Payment Processing Alert
+              </h4>
+              <p className="text-sm text-yellow-700 mt-1">
+                {dashboardData.financialStats.pendingPayments} payments are pending verification. Please review and process them today.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Statistics Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <StatCard
-            key={`bursar-stat-${index}`}
-            title={stat.title}
-            value={stat.value}
-            change={stat.change}
-            changeType={stat.changeType}
-            icon={stat.icon}
-            iconColor={stat.iconColor}
-            description={stat.description}
-          />
-        ))}
-      </div>
+      {!dashboardLoading && (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat, index) => (
+            <StatCard
+              key={`bursar-stat-${index}`}
+              title={stat.title}
+              value={stat.value}
+              change={stat.change}
+              changeType={stat.changeType}
+              icon={stat.icon}
+              iconColor={stat.iconColor}
+              description={stat.description}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Payment Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <PaymentSummaryCard
-          title="Term Fee Collection"
-          totalAmount={52000000}
-          paidAmount={45800000}
-          pendingAmount={6200000}
-        />
-        <PaymentSummaryCard
-          title="Monthly Target"
-          totalAmount={15000000}
-          paidAmount={12450000}
-          pendingAmount={2550000}
-        />
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
-          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-            Payment Methods
-          </h3>
-          <div className="space-y-3">
-            {[
-              { method: 'Bank Transfer', amount: '₦28.5M', percentage: 62 },
-              { method: 'Online Payment', amount: '₦12.8M', percentage: 28 },
-              { method: 'Cash Payment', amount: '₦4.5M', percentage: 10 },
-            ].map((payment, index) => (
-              <div key={`payment-method-${index}`} className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium text-secondary-900">{payment.method}</div>
-                  <div className="text-sm text-secondary-600">{payment.amount}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-medium text-secondary-900">{payment.percentage}%</div>
-                  <div className="w-16 bg-secondary-200 rounded-full h-2 mt-1">
-                    <div
-                      className="bg-primary-600 h-2 rounded-full"
-                      style={{ width: `${payment.percentage}%` }}
-                    ></div>
+      {dashboardData && !dashboardLoading && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <PaymentSummaryCard
+            title="Total Revenue"
+            totalAmount={dashboardData.financialStats.totalRevenue}
+            paidAmount={dashboardData.financialStats.totalRevenue - dashboardData.financialStats.outstandingAmount}
+            pendingAmount={dashboardData.financialStats.outstandingAmount}
+          />
+          <PaymentSummaryCard
+            title="This Month"
+            totalAmount={dashboardData.financialStats.thisMonthRevenue + dashboardData.financialStats.outstandingAmount}
+            paidAmount={dashboardData.financialStats.thisMonthRevenue}
+            pendingAmount={dashboardData.financialStats.outstandingAmount}
+          />
+          <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+            <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+              Payment Methods
+            </h3>
+            <div className="space-y-3">
+              {dashboardData.paymentMethods.length > 0 ? (
+                dashboardData.paymentMethods.map((payment, index) => (
+                  <div key={`payment-method-${index}`} className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-secondary-900 capitalize">
+                        {payment.method.replace('_', ' ')}
+                      </div>
+                      <div className="text-sm text-secondary-600">
+                        {formatCurrency(payment.totalAmount)}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-secondary-900">{payment.percentage}%</div>
+                      <div className="w-16 bg-secondary-200 rounded-full h-2 mt-1">
+                        <div
+                          className="bg-primary-600 h-2 rounded-full"
+                          style={{ width: `${payment.percentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-secondary-600">No payment methods data available</p>
                 </div>
-              </div>
-            ))}
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -260,33 +301,42 @@ const BursarDashboard: React.FC = () => {
             Recent Transactions
           </h3>
           <div className="space-y-3">
-            {[
-              { student: 'John Doe', amount: '₦125,000', status: 'Completed', time: '2 hours ago' },
-              { student: 'Jane Smith', amount: '₦98,500', status: 'Pending', time: '3 hours ago' },
-              { student: 'Mike Johnson', amount: '₦110,000', status: 'Completed', time: '5 hours ago' },
-              { student: 'Sarah Wilson', amount: '₦87,500', status: 'Failed', time: '6 hours ago' },
-              { student: 'David Brown', amount: '₦156,000', status: 'Completed', time: '8 hours ago' },
-            ].map((transaction, index) => (
-              <div key={`transaction-${index}`} className="flex items-center justify-between p-3 border border-secondary-200 rounded-lg">
-                <div>
-                  <div className="font-medium text-secondary-900">{transaction.student}</div>
-                  <div className="text-sm text-secondary-600">{transaction.time}</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-medium text-secondary-900">{transaction.amount}</div>
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    transaction.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                    transaction.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {transaction.status === 'Completed' && <CheckCircleIcon className="h-3 w-3 mr-1" />}
-                    {transaction.status === 'Pending' && <ClockIcon className="h-3 w-3 mr-1" />}
-                    {transaction.status === 'Failed' && <ExclamationTriangleIcon className="h-3 w-3 mr-1" />}
-                    {transaction.status}
-                  </span>
-                </div>
+            {dashboardData && dashboardData.recentTransactions.length > 0 ? (
+              dashboardData.recentTransactions.slice(0, 5).map((transaction) => {
+                const timeAgo = new Date(transaction.trans_date).toLocaleDateString();
+                const statusDisplay = transaction.status === 'success' ? 'Completed' :
+                                    transaction.status === 'pending' ? 'Pending' : 'Failed';
+
+                return (
+                  <div key={transaction._id} className="flex items-center justify-between p-3 border border-secondary-200 rounded-lg">
+                    <div>
+                      <div className="font-medium text-secondary-900">
+                        {transaction.user.firstname} {transaction.user.lastname}
+                        {transaction.user.regNo && ` (${transaction.user.regNo})`}
+                      </div>
+                      <div className="text-sm text-secondary-600">{timeAgo}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium text-secondary-900">{formatCurrency(transaction.amount)}</div>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        statusDisplay === 'Completed' ? 'bg-green-100 text-green-800' :
+                        statusDisplay === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {statusDisplay === 'Completed' && <CheckCircleIcon className="h-3 w-3 mr-1" />}
+                        {statusDisplay === 'Pending' && <ClockIcon className="h-3 w-3 mr-1" />}
+                        {statusDisplay === 'Failed' && <ExclamationTriangleIcon className="h-3 w-3 mr-1" />}
+                        {statusDisplay}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-sm text-secondary-600">No recent transactions available</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>

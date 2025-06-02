@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   ServerIcon,
   CpuChipIcon,
@@ -9,6 +9,7 @@ import {
   DocumentTextIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 
 import {
   WelcomeCard,
@@ -18,47 +19,62 @@ import {
 } from '../widgets';
 
 import type { QuickAction, Activity } from '../widgets/QuickActionCard';
+import { useICTAdminStore } from '../../../store/ictAdminStore';
+import { ictAdminService } from '../../../services/ictAdminService';
 
 const ICTAdminDashboard: React.FC = () => {
-  // Mock data for ICT Admin metrics
-  const stats = [
+  const navigate = useNavigate();
+  const {
+    dashboardData,
+    dashboardLoading,
+    dashboardError,
+    fetchDashboardData,
+  } = useICTAdminStore();
+
+  // Fetch dashboard data on component mount
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  // Generate stats from dashboard data
+  const stats = dashboardData ? [
     {
       title: 'Server Uptime',
-      value: '99.9%',
-      change: '+0.1%',
-      changeType: 'increase' as const,
+      value: ictAdminService.formatUptime(dashboardData.systemMetrics.serverUptime),
+      change: dashboardData.systemHealth.status === 'healthy' ? 'Excellent' : 'Needs attention',
+      changeType: dashboardData.systemHealth.status === 'healthy' ? 'positive' as const : 'negative' as const,
       icon: ServerIcon,
-      iconColor: 'text-green-600',
-      description: 'Last 30 days',
+      iconColor: ictAdminService.getSystemHealthColor(dashboardData.systemHealth.status),
+      description: 'System availability',
     },
     {
       title: 'Active Users',
-      value: '1,847',
-      change: '+23',
-      changeType: 'increase' as const,
+      value: dashboardData.userMetrics.activeUsers.toLocaleString(),
+      change: `${dashboardData.userMetrics.onlineUsers} online`,
+      changeType: 'positive' as const,
       icon: UserPlusIcon,
       iconColor: 'text-blue-600',
-      description: 'Currently online',
+      description: 'Currently active',
     },
     {
       title: 'System Load',
-      value: '45%',
-      change: '-5%',
-      changeType: 'decrease' as const,
+      value: `${dashboardData.systemMetrics.cpuUsage}%`,
+      change: dashboardData.systemMetrics.cpuUsage < 70 ? 'Normal' : 'High',
+      changeType: dashboardData.systemMetrics.cpuUsage < 70 ? 'positive' as const : 'negative' as const,
       icon: CpuChipIcon,
-      iconColor: 'text-yellow-600',
+      iconColor: ictAdminService.getMetricColor(dashboardData.systemMetrics.cpuUsage, { warning: 70, critical: 90 }),
       description: 'CPU utilization',
     },
     {
       title: 'Security Score',
-      value: '98/100',
-      change: '+2',
-      changeType: 'increase' as const,
+      value: `${dashboardData.securityMetrics.securityScore}%`,
+      change: dashboardData.securityMetrics.securityScore >= 85 ? 'Secure' : 'Review needed',
+      changeType: dashboardData.securityMetrics.securityScore >= 85 ? 'positive' as const : 'negative' as const,
       icon: ShieldCheckIcon,
-      iconColor: 'text-purple-600',
-      description: 'Security rating',
+      iconColor: ictAdminService.getMetricColor(dashboardData.securityMetrics.securityScore, { warning: 75, critical: 60 }),
+      description: 'Security metrics',
     },
-  ];
+  ] : [];
 
   const quickActions: QuickAction[] = [
     {
@@ -103,84 +119,108 @@ const ICTAdminDashboard: React.FC = () => {
     },
   ];
 
-  const recentActivities: Activity[] = [
-    {
-      id: '1',
-      title: 'Database Backup Completed',
-      description: 'Automated daily backup finished successfully',
-      timestamp: new Date(Date.now() - 1000 * 60 * 15), // 15 minutes ago
-      type: 'system',
-      user: 'System',
-    },
-    {
-      id: '2',
-      title: 'User Account Created',
-      description: 'New teacher account for Mary Johnson',
-      timestamp: new Date(Date.now() - 1000 * 60 * 45), // 45 minutes ago
-      type: 'user',
-      user: 'ICT Admin',
-    },
-    {
-      id: '3',
-      title: 'Security Update Applied',
-      description: 'System security patches installed',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 hours ago
-      type: 'system',
-      user: 'ICT Admin',
-    },
-    {
-      id: '4',
-      title: 'Performance Alert',
-      description: 'High CPU usage detected and resolved',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8), // 8 hours ago
-      type: 'system',
-      user: 'Monitoring System',
-    },
-    {
-      id: '5',
-      title: 'User Password Reset',
-      description: 'Password reset for principal@school.com',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-      type: 'user',
-      user: 'ICT Admin',
-    },
-  ];
+  // Generate recent activities from dashboard data
+  const recentActivities: Activity[] = dashboardData ?
+    dashboardData.recentActivities.slice(0, 5).map((activity) => ({
+      id: activity._id,
+      title: activity.action,
+      description: activity.details,
+      timestamp: new Date(activity.timestamp),
+      type: activity.type as 'system' | 'user' | 'security' | 'backup' | 'maintenance',
+      user: activity.user || 'System',
+    })) : [];
 
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
       <WelcomeCard />
 
-      {/* System Health Alert (if any issues) */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <div className="flex items-center">
-          <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2" />
-          <div>
-            <h4 className="text-sm font-medium text-yellow-800">
-              System Maintenance Scheduled
-            </h4>
-            <p className="text-sm text-yellow-700 mt-1">
-              Routine maintenance scheduled for tonight at 2:00 AM. Expected downtime: 30 minutes.
-            </p>
+      {/* Loading State */}
+      {dashboardLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          <span className="ml-3 text-secondary-600">Loading system dashboard...</span>
+        </div>
+      )}
+
+      {/* Error State */}
+      {dashboardError && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mr-2" />
+            <div>
+              <h4 className="text-sm font-medium text-red-800">
+                Error Loading Dashboard
+              </h4>
+              <p className="text-sm text-red-700 mt-1">
+                {dashboardError}. Please try refreshing the page.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* System Health Alert */}
+      {dashboardData && (
+        <div className={`border rounded-lg p-4 ${
+          dashboardData.systemHealth.status === 'healthy'
+            ? 'bg-green-50 border-green-200'
+            : dashboardData.systemHealth.status === 'warning'
+            ? 'bg-yellow-50 border-yellow-200'
+            : 'bg-red-50 border-red-200'
+        }`}>
+          <div className="flex items-center">
+            <ExclamationTriangleIcon className={`h-5 w-5 mr-2 ${
+              dashboardData.systemHealth.status === 'healthy'
+                ? 'text-green-600'
+                : dashboardData.systemHealth.status === 'warning'
+                ? 'text-yellow-600'
+                : 'text-red-600'
+            }`} />
+            <div>
+              <h4 className={`text-sm font-medium ${
+                dashboardData.systemHealth.status === 'healthy'
+                  ? 'text-green-800'
+                  : dashboardData.systemHealth.status === 'warning'
+                  ? 'text-yellow-800'
+                  : 'text-red-800'
+              }`}>
+                System Status: {dashboardData.systemHealth.status === 'healthy' ? 'All Systems Operational' :
+                                dashboardData.systemHealth.status === 'warning' ? 'Minor Issues Detected' : 'Critical Issues'}
+              </h4>
+              <p className={`text-sm mt-1 ${
+                dashboardData.systemHealth.status === 'healthy'
+                  ? 'text-green-700'
+                  : dashboardData.systemHealth.status === 'warning'
+                  ? 'text-yellow-700'
+                  : 'text-red-700'
+              }`}>
+                Database: {dashboardData.systemHealth.databaseStatus} |
+                API Response: {dashboardData.systemHealth.apiResponseTime}ms |
+                Last Backup: {dashboardData.systemHealth.backupStatus}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Statistics Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <StatCard
-            key={index}
-            title={stat.title}
-            value={stat.value}
-            change={stat.change}
-            changeType={stat.changeType}
-            icon={stat.icon}
-            iconColor={stat.iconColor}
-            description={stat.description}
-          />
-        ))}
-      </div>
+      {!dashboardLoading && (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat, index) => (
+            <StatCard
+              key={index}
+              title={stat.title}
+              value={stat.value}
+              change={stat.change}
+              changeType={stat.changeType}
+              icon={stat.icon}
+              iconColor={stat.iconColor}
+              description={stat.description}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -157,6 +157,51 @@ export const API_ENDPOINTS = {
     UPDATE: '/address/update',
     DELETE: '/address/delete',
   },
+  DASHBOARDS: {
+    BURSAR: '/bursar/dashboard',
+    PARENT: '/parent/dashboard',
+    PRINCIPAL: '/principal/dashboard',
+    ADMIN: '/admin/dashboard',
+    STUDENT: '/student/dashboard',
+    AUDITOR: '/auditor/dashboard',
+    ICT_ADMIN: '/ict-admin/dashboard',
+  },
+  BURSAR: {
+    DASHBOARD: '/bursar/dashboard',
+    PAYMENT_REPORTS: '/bursar/payment-reports',
+    OUTSTANDING_FEES_REPORT: '/bursar/outstanding-fees-report',
+  },
+  PARENT: {
+    DASHBOARD: '/parent/dashboard',
+    CHILD_DETAILS: '/parent/child',
+    PAYMENT_HISTORY: '/parent/payment-history',
+  },
+  PRINCIPAL: {
+    DASHBOARD: '/principal/dashboard',
+    ACADEMIC_OVERVIEW: '/principal/academic-overview',
+    STAFF_MANAGEMENT: '/principal/staff-management',
+  },
+  ADMIN: {
+    DASHBOARD: '/admin/dashboard',
+    SYSTEM_OVERVIEW: '/admin/system-overview',
+    USER_MANAGEMENT: '/admin/user-management',
+    FINANCIAL_OVERVIEW: '/admin/financial-overview',
+  },
+  AUDITOR: {
+    DASHBOARD: '/auditor/dashboard',
+    USER_AUDIT_TRAIL: '/audit/users',
+    FINANCIAL_AUDIT: '/audit/financial/transactions',
+    SECURITY_AUDIT: '/audit/security/events',
+    FAILED_LOGINS: '/audit/security/failed-logins',
+  },
+  ICT_ADMIN: {
+    DASHBOARD: '/ict-admin/dashboard',
+    SYSTEM_STATUS: '/ict-admin/system-status',
+    USER_MANAGEMENT: '/user/all',
+    EMAIL_STATS: '/email/stats',
+    SYSTEM_LOGS: '/ict-admin/system-logs',
+    BACKUP_STATUS: '/ict-admin/backup-status',
+  },
 };
 
 // Local Storage Keys

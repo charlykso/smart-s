@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   AcademicCapIcon,
   CurrencyDollarIcon,
@@ -9,7 +9,10 @@ import {
   BookOpenIcon,
   ChartBarIcon,
   ExclamationTriangleIcon,
+  BuildingLibraryIcon,
+  BanknotesIcon,
 } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 
 import {
   WelcomeCard,
@@ -20,8 +23,13 @@ import {
 
 import type { QuickAction, Activity } from '../widgets/QuickActionCard';
 import { useStudentStore } from '../../../store/studentStore';
+import { useAuthStore } from '../../../store/authStore';
+import { FeeService } from '../../../services/feeService';
+import type { PaymentMethod } from '../../../types/fee';
 
 const StudentDashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
   const {
     dashboardData,
     dashboardLoading,
@@ -29,10 +37,48 @@ const StudentDashboard: React.FC = () => {
     fetchDashboardData,
   } = useStudentStore();
 
+  const [availablePaymentMethods, setAvailablePaymentMethods] = useState<PaymentMethod[]>([]);
+  const [loadingPaymentMethods, setLoadingPaymentMethods] = useState(false);
+
   // Fetch dashboard data on component mount
   useEffect(() => {
     fetchDashboardData();
+    loadAvailablePaymentMethods();
   }, [fetchDashboardData]);
+
+  // Load available payment methods for the school
+  const loadAvailablePaymentMethods = async () => {
+    if (!user?.school) return;
+
+    try {
+      setLoadingPaymentMethods(true);
+      const methods = await FeeService.getAvailablePaymentMethods(
+        typeof user.school === 'string' ? user.school : user.school._id
+      );
+      setAvailablePaymentMethods(methods);
+    } catch (error) {
+      console.error('Error loading payment methods:', error);
+      // Fallback: Show default payment methods if API fails
+      setAvailablePaymentMethods([
+        {
+          method: 'cash',
+          name: 'Cash Payment',
+          description: 'Pay at the Bursar office',
+          icon: 'banknotes',
+          enabled: true,
+        },
+        {
+          method: 'bank_transfer',
+          name: 'Bank Transfer',
+          description: 'Direct bank transfer (contact school for details)',
+          icon: 'building-library',
+          enabled: true,
+        },
+      ]);
+    } finally {
+      setLoadingPaymentMethods(false);
+    }
+  };
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -41,6 +87,37 @@ const StudentDashboard: React.FC = () => {
       currency: 'NGN',
       minimumFractionDigits: 0,
     }).format(amount);
+  };
+
+  // Get payment method icon
+  const getPaymentMethodIcon = (method: string) => {
+    switch (method) {
+      case 'paystack':
+      case 'flutterwave':
+        return <CreditCardIcon className="h-5 w-5" />;
+      case 'bank_transfer':
+        return <BuildingLibraryIcon className="h-5 w-5" />;
+      case 'cash':
+        return <BanknotesIcon className="h-5 w-5" />;
+      default:
+        return <CreditCardIcon className="h-5 w-5" />;
+    }
+  };
+
+  // Get payment method color
+  const getPaymentMethodColor = (method: string) => {
+    switch (method) {
+      case 'paystack':
+        return 'text-blue-600 bg-blue-50';
+      case 'flutterwave':
+        return 'text-orange-600 bg-orange-50';
+      case 'bank_transfer':
+        return 'text-green-600 bg-green-50';
+      case 'cash':
+        return 'text-purple-600 bg-purple-50';
+      default:
+        return 'text-gray-600 bg-gray-50';
+    }
   };
 
   // Calculate stats from dashboard data
@@ -89,7 +166,7 @@ const StudentDashboard: React.FC = () => {
       title: 'Make Payment',
       description: 'Pay outstanding fees online',
       icon: CreditCardIcon,
-      onClick: () => console.log('Make payment'),
+      onClick: () => navigate('/student/fees'),
       color: 'primary',
     },
     {
@@ -177,9 +254,10 @@ const StudentDashboard: React.FC = () => {
               <div className="mt-3">
                 <button
                   type="button"
-                  onClick={() => window.location.href = '/student/fees'}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  onClick={() => navigate('/student/fees')}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
                 >
+                  <CreditCardIcon className="h-4 w-4 mr-2" />
                   Pay Fees Now
                 </button>
               </div>
@@ -248,6 +326,68 @@ const StudentDashboard: React.FC = () => {
             activities={recentActivities}
             onViewAll={() => console.log('View all activities')}
           />
+        </div>
+      </div>
+
+      {/* Payment Methods Section */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium text-gray-900">Available Payment Methods</h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Payment channels configured by your school
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/student/fees')}
+              className="inline-flex items-center px-3 py-2 border border-primary-300 rounded-md shadow-sm text-sm font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+            >
+              <CreditCardIcon className="h-4 w-4 mr-2" />
+              Make Payment
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6">
+          {loadingPaymentMethods ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+              <span className="ml-3 text-secondary-600">Loading payment methods...</span>
+            </div>
+          ) : availablePaymentMethods.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {availablePaymentMethods.map((method) => (
+                <div
+                  key={method.method}
+                  className={`p-4 rounded-lg border border-gray-200 ${getPaymentMethodColor(method.method)}`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="flex-shrink-0">
+                      {getPaymentMethodIcon(method.method)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {method.name}
+                      </p>
+                      <p className="text-xs opacity-75 truncate">
+                        {method.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <ExclamationTriangleIcon className="h-12 w-12 text-yellow-400 mx-auto mb-4" />
+              <h4 className="text-sm font-medium text-gray-900 mb-2">No Payment Methods Available</h4>
+              <p className="text-sm text-gray-500">
+                Please contact the school administration to configure payment methods.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

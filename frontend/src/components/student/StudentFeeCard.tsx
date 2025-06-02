@@ -174,7 +174,7 @@ const StudentFeeCard: React.FC<StudentFeeCardProps> = ({
         <div className="pt-3 border-t border-gray-100">
           <div className="flex items-center text-xs text-gray-500">
             <CreditCardIcon className="h-3 w-3 mr-1" />
-            <span>Pay with Paystack, Flutterwave, or Cash (via Bursar)</span>
+            <span>Click to view available payment methods configured by your school</span>
           </div>
         </div>
       </div>
@@ -182,6 +182,7 @@ const StudentFeeCard: React.FC<StudentFeeCardProps> = ({
       {/* Action Button */}
       <div className="px-6 py-4 bg-gray-50 rounded-b-lg">
         <button
+          type="button"
           onClick={() => onPayNow(fee)}
           className={`w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white transition-colors ${
             isOverdue

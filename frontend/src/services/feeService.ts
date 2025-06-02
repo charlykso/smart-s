@@ -144,6 +144,22 @@ export class FeeService {
     return response.data!;
   }
 
+  // Get approved fees by term
+  static async getApprovedFeesByTerm(termId: string): Promise<Fee[]> {
+    const response = await ApiService.get<Fee[]>(
+      `${API_ENDPOINTS.FEES.ALL}/${termId}/get-approved-fees`
+    );
+    return response || [];
+  }
+
+  // Get approved fees by school
+  static async getApprovedFeesBySchool(schoolId: string): Promise<Fee[]> {
+    const response = await ApiService.get<Fee[]>(
+      `${API_ENDPOINTS.FEES.ALL}/school/${schoolId}`
+    );
+    return response || [];
+  }
+
   static async getPaymentsByPaystack(): Promise<Payment[]> {
     const response = await ApiService.get<Payment[]>(API_ENDPOINTS.PAYMENTS.PAYSTACK);
     return response || [];
