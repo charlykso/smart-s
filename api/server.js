@@ -13,9 +13,36 @@ const feeRoute = require('./route/feeRoute')
 const authRoute = require('./route/authRoute')
 const approveRoute = require('./route/approveRoute')
 const auditRoute = require('./route/auditRoute')
-
+const studentRoute = require('./route/studentRoute')
+const adminRoute = require('./route/adminRoute')
+const principalRoute = require('./route/principalRoute')
+const bursarRoute = require('./route/bursarRoute')
+const parentRoute = require('./route/parentRoute')
 
 const app = express()
+
+// CORS middleware
+app.use((req, res, next) => {
+  const allowedOrigins = ['http://localhost:3001', 'http://localhost:3002']
+  const origin = req.headers.origin
+
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin)
+  }
+
+  res.header('Access-Control-Allow-Credentials', 'true')
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+  )
+
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200)
+  } else {
+    next()
+  }
+})
 
 app.use(express.urlencoded({ extended: true }))
 
@@ -37,7 +64,13 @@ app.use('/api/v1/approve', approveRoute)
 app.use('/api/v1/auth', authRoute)
 app.use('/api/v1/payment', require('./route/paymentRoute'))
 app.use('/api/v1/notifications', require('./route/notificationRoute'))
+app.use('/api/v1/email', require('./routes/emailRoutesSimple'))
 app.use('/api/v1/audit', auditRoute)
+app.use('/api/v1/student', studentRoute)
+app.use('/api/v1/admin', adminRoute)
+app.use('/api/v1/principal', principalRoute)
+app.use('/api/v1/bursar', bursarRoute)
+app.use('/api/v1/parent', parentRoute)
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
