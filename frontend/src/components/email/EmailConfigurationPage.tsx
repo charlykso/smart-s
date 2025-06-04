@@ -14,6 +14,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { EmailService } from '../../services/emailService';
 import { EmailTemplatePreview } from './EmailTemplates';
+import MainLayout from '../layout/MainLayout';
 import LoadingSpinner from '../common/LoadingSpinner';
 import toast from 'react-hot-toast';
 
@@ -61,7 +62,7 @@ const EmailConfigurationPage: React.FC = () => {
         pass: '',
       },
       from: {
-        name: 'Smart-S School',
+        name: 'Ledgrio School',
         email: '',
       },
     },
@@ -139,38 +140,31 @@ const EmailConfigurationPage: React.FC = () => {
   };
 
   if (isLoading && !emailStats) {
-    return <LoadingSpinner />;
+    return (
+      <MainLayout>
+        <LoadingSpinner />
+      </MainLayout>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex items-center">
-              <button
-                type="button"
-                onClick={() => navigate('/dashboard')}
-                className="mr-4 inline-flex items-center px-3 py-2 border border-primary-300 rounded-md shadow-sm text-sm font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
-              >
-                <div className="w-4 h-4 bg-primary-500 rounded mr-2 flex items-center justify-center">
-                  <HomeIcon className="w-3 h-3 text-white" />
-                </div>
-                Dashboard
-              </button>
-              <EnvelopeIcon className="h-8 w-8 text-primary-600 mr-3" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Email Configuration</h1>
-                <p className="mt-1 text-sm text-gray-500">
-                  Configure Zoho email integration for notifications
-                </p>
-              </div>
+    <MainLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-secondary-200 dark:border-gray-700 p-6 transition-colors duration-200">
+          <div className="flex items-center">
+            <EnvelopeIcon className="h-8 w-8 text-primary-600 dark:text-primary-400 mr-3" />
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Email Configuration</h1>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Configure Zoho email integration for notifications
+              </p>
             </div>
+          </div>
 
             {/* Tab Navigation */}
             <div className="mt-6">
-              <nav className="flex space-x-8">
+              <nav className="flex flex-wrap gap-2 sm:gap-4 lg:gap-6 xl:gap-8">
                 {[
                   { id: 'config', name: 'Configuration', icon: CogIcon },
                   { id: 'templates', name: 'Templates', icon: EnvelopeIcon },
@@ -182,14 +176,15 @@ const EmailConfigurationPage: React.FC = () => {
                       key={tab.id}
                       type="button"
                       onClick={() => setActiveTab(tab.id as any)}
-                      className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                      className={`flex items-center px-3 py-2 text-sm font-medium rounded-md whitespace-nowrap ${
                         activeTab === tab.id
                           ? 'text-primary-600 bg-primary-50'
                           : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                       }`}
                     >
-                      <Icon className="h-4 w-4 mr-2" />
-                      {tab.name}
+                      <Icon className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <span className="hidden sm:inline">{tab.name}</span>
+                      <span className="sm:hidden">{tab.name.charAt(0)}</span>
                     </button>
                   );
                 })}
@@ -197,10 +192,9 @@ const EmailConfigurationPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Content */}
+        <div className="space-y-6">
         {/* Configuration Tab */}
         {activeTab === 'config' && (
           <div className="space-y-6">
@@ -426,9 +420,9 @@ const EmailConfigurationPage: React.FC = () => {
                       formattedAmount: '₦50,000',
                       dueDate: 'December 31, 2024',
                       daysUntilDue: 7,
-                      schoolName: 'Smart-S School',
-                      paymentUrl: 'https://smart-s.com/student/fees',
-                      supportEmail: 'support@smart-s.com',
+                      schoolName: 'Ledgrio School Accounting',
+                      paymentUrl: 'https://ledgrio.com/student/fees',
+                      supportEmail: 'accounting@ledgrio.com',
                     }}
                   />
                 </div>
@@ -513,8 +507,8 @@ const EmailConfigurationPage: React.FC = () => {
             )}
           </div>
         )}
-      </div>
-    </div>
+        </div>
+    </MainLayout>
   );
 };
 

@@ -65,10 +65,10 @@ export const API_ENDPOINTS = {
   GROUP_SCHOOLS: {
     ALL: '/groupSchool/all',
     CREATE: '/groupSchool/create',
-    UPDATE: '/groupSchool/update',
+    UPDATE: '/groupSchool',
     DELETE: '/groupSchool/delete',
     BY_ID: '/groupSchool',
-    UPLOAD_LOGO: '/groupSchool/upload',
+    UPLOAD_LOGO: '/groupSchool',
   },
   SESSIONS: {
     ALL: '/Session/all',

@@ -1,4 +1,4 @@
-# Ledgrio School Management System - Test User Credentials
+# Ledgrio School Accounting System - Test User Credentials
 
 ## 🔐 **Test User Login Details**
 

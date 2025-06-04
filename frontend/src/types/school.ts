@@ -66,10 +66,12 @@ export interface CreateGroupSchoolData {
   name: string;
   description: string;
   logo: string;
+  logoFile?: File;
 }
 
 export interface UpdateGroupSchoolData extends Partial<CreateGroupSchoolData> {
   _id: string;
+  logoFile?: File;
 }
 
 export interface CreateSchoolData {

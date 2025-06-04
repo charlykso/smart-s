@@ -28,7 +28,7 @@ const LandingPage: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-lg font-bold text-secondary-900 dark:text-gray-100">Ledgrio</h1>
-                <p className="text-xs text-secondary-600 dark:text-gray-400">School Management System</p>
+                <p className="text-xs text-secondary-600 dark:text-gray-400">School Accounting System</p>
               </div>
             </div>
 
@@ -70,13 +70,13 @@ const LandingPage: React.FC = () => {
       <section className="py-16 px-4">
         <div className="container mx-auto text-center">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary-600 dark:text-primary-400 mb-4 leading-tight">
-            Complete School Management
+            Complete School Accounting
             <br />
             <span className="text-primary-500 dark:text-primary-300">Solution</span>
           </h1>
 
           <p className="text-base md:text-lg text-secondary-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Streamline your educational institution with our comprehensive management
+            Streamline your educational institution's financial management with our comprehensive accounting
             system for nursery, primary, and secondary schools.
           </p>
 
@@ -99,10 +99,10 @@ const LandingPage: React.FC = () => {
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-3xl font-bold text-secondary-900 dark:text-gray-100 mb-3">
-              Everything You Need to Manage Your School
+              Everything You Need for School Financial Management
             </h2>
             <p className="text-base text-secondary-600 dark:text-gray-300 max-w-xl mx-auto">
-              Our comprehensive platform covers all aspects of school administration
+              Our comprehensive platform covers all aspects of school financial administration and accounting
             </p>
           </div>
 
@@ -112,9 +112,9 @@ const LandingPage: React.FC = () => {
               <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-3">
                 <UserGroupIcon className="w-5 h-5 text-blue-500 dark:text-blue-400" />
               </div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">User Management</h3>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Financial User Management</h3>
               <p className="text-gray-600 dark:text-gray-300 text-xs leading-relaxed">
-                Multi-role system supporting admins, teachers, students, and parents with secure authentication.
+                Multi-role system supporting financial admins, bursars, students, and parents with secure authentication.
               </p>
             </div>
 
@@ -123,9 +123,9 @@ const LandingPage: React.FC = () => {
               <div className="w-10 h-10 bg-yellow-50 dark:bg-yellow-900 rounded-lg flex items-center justify-center mb-3">
                 <CurrencyDollarIcon className="w-5 h-5 text-yellow-500 dark:text-yellow-400" />
               </div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Fee Management</h3>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Fee Collection & Management</h3>
               <p className="text-gray-600 dark:text-gray-300 text-xs leading-relaxed">
-                Complete fee collection system with Paystack integration and installment support.
+                Complete fee collection system with Paystack/Flutterwave integration and installment support.
               </p>
             </div>
 
@@ -134,9 +134,9 @@ const LandingPage: React.FC = () => {
               <div className="w-10 h-10 bg-purple-50 dark:bg-purple-900 rounded-lg flex items-center justify-center mb-3">
                 <BookOpenIcon className="w-5 h-5 text-purple-500 dark:text-purple-400" />
               </div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Academic Management</h3>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Academic Financial Structure</h3>
               <p className="text-gray-600 dark:text-gray-300 text-xs leading-relaxed">
-                Manage sessions, terms, classes, and academic structures with ease.
+                Manage sessions, terms, classes, and fee structures aligned with academic periods.
               </p>
             </div>
 
@@ -145,9 +145,9 @@ const LandingPage: React.FC = () => {
               <div className="w-10 h-10 bg-green-50 dark:bg-green-900 rounded-lg flex items-center justify-center mb-3">
                 <ChartBarIcon className="w-5 h-5 text-green-500 dark:text-green-400" />
               </div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Reports & Analytics</h3>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Financial Reports & Audit</h3>
               <p className="text-gray-600 dark:text-gray-300 text-xs leading-relaxed">
-                Comprehensive reporting and audit trails for financial and academic data.
+                Comprehensive financial reporting and audit trails for complete transparency and compliance.
               </p>
             </div>
 
@@ -156,9 +156,9 @@ const LandingPage: React.FC = () => {
               <div className="w-10 h-10 bg-red-50 dark:bg-red-900 rounded-lg flex items-center justify-center mb-3">
                 <ShieldCheckIcon className="w-5 h-5 text-red-500 dark:text-red-400" />
               </div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Security</h3>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Security & Compliance</h3>
               <p className="text-gray-600 dark:text-gray-300 text-xs leading-relaxed">
-                Advanced encryption, JWT authentication, and role-based access control.
+                Advanced encryption, JWT authentication, and role-based access control for financial data protection.
               </p>
             </div>
 
@@ -167,9 +167,9 @@ const LandingPage: React.FC = () => {
               <div className="w-10 h-10 bg-orange-50 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-3">
                 <BuildingOffice2Icon className="w-5 h-5 text-orange-500 dark:text-orange-400" />
               </div>
-              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Multi-School Support</h3>
+              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Real-time Financial Updates</h3>
               <p className="text-gray-600 dark:text-gray-300 text-xs leading-relaxed">
-                Manage multiple schools and school groups from a single platform.
+                Real-time payment processing and financial updates with instant notifications and reporting.
               </p>
             </div>
           </div>

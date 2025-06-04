@@ -57,29 +57,99 @@ export class SchoolService {
   }
 
   static async createGroupSchool(data: CreateGroupSchoolData): Promise<GroupSchool> {
-    const response = await ApiService.post<ApiResponse<GroupSchool>>(
-      API_ENDPOINTS.GROUP_SCHOOLS.CREATE,
-      data
-    );
-    
-    if (!response.success) {
+    let response: any;
+
+    if (data.logoFile) {
+      // Use FormData for file upload
+      const formData = new FormData();
+      formData.append('name', data.name);
+      formData.append('description', data.description);
+      formData.append('logo', data.logoFile);
+
+      response = await ApiService.postFormData(
+        API_ENDPOINTS.GROUP_SCHOOLS.CREATE,
+        formData
+      );
+    } else {
+      // Use JSON for URL-based logo
+      const jsonData = {
+        name: data.name,
+        description: data.description,
+        logo: data.logo || '',
+      };
+
+      response = await ApiService.post<ApiResponse<GroupSchool>>(
+        API_ENDPOINTS.GROUP_SCHOOLS.CREATE,
+        jsonData
+      );
+    }
+
+    // Handle different response formats
+    if (response.success === false) {
       throw new Error(response.message || 'Failed to create group school');
     }
-    
-    return response.data!;
+
+    // For FormData responses, the response is the direct backend response
+    if (data.logoFile) {
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to create group school');
+      }
+      return response.data;
+    } else {
+      // For JSON responses, check the ApiResponse wrapper
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to create group school');
+      }
+      return response.data!;
+    }
   }
 
   static async updateGroupSchool(data: UpdateGroupSchoolData): Promise<GroupSchool> {
-    const response = await ApiService.put<ApiResponse<GroupSchool>>(
-      `${API_ENDPOINTS.GROUP_SCHOOLS.UPDATE}/${data._id}`,
-      data
-    );
-    
-    if (!response.success) {
+    let response: any;
+
+    if (data.logoFile) {
+      // Use FormData for file upload
+      const formData = new FormData();
+      if (data.name) formData.append('name', data.name);
+      if (data.description) formData.append('description', data.description);
+      formData.append('logo', data.logoFile);
+
+      response = await ApiService.putFormData(
+        `${API_ENDPOINTS.GROUP_SCHOOLS.UPDATE}/${data._id}/update`,
+        formData
+      );
+    } else {
+      // Use JSON for regular updates
+      const jsonData = {
+        name: data.name,
+        description: data.description,
+        logo: data.logo,
+      };
+
+      response = await ApiService.put<ApiResponse<GroupSchool>>(
+        `${API_ENDPOINTS.GROUP_SCHOOLS.UPDATE}/${data._id}/update`,
+        jsonData
+      );
+    }
+
+    // Handle different response formats
+    if (response.success === false) {
       throw new Error(response.message || 'Failed to update group school');
     }
-    
-    return response.data!;
+
+    // For FormData responses, the response is the direct backend response
+    if (data.logoFile) {
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to update group school');
+      }
+      return response.data;
+    } else {
+      // For JSON responses, check the ApiResponse wrapper
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to update group school');
+      }
+      return response.data!;
+    }
   }
 
   static async deleteGroupSchool(id: string): Promise<void> {

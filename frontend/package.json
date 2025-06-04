@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "description": "Frontend application for Ledgrio School Accounting System - comprehensive financial management for educational institutions",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

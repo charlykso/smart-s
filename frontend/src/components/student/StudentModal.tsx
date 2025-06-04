@@ -207,7 +207,7 @@ const StudentModal: React.FC<StudentModalProps> = ({
 
           {/* Tab Navigation */}
           <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
+            <nav className="flex flex-wrap gap-2 sm:gap-4 lg:gap-6 xl:gap-8 px-4 sm:px-6">
               {[
                 { id: 'personal', name: 'Personal Info', icon: UserIcon },
                 { id: 'academic', name: 'Academic Info', icon: AcademicCapIcon },
@@ -220,14 +220,15 @@ const StudentModal: React.FC<StudentModalProps> = ({
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
+                    className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                       activeTab === tab.id
                         ? 'border-primary-500 text-primary-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
-                    <Icon className="h-4 w-4 mr-2" />
-                    {tab.name}
+                    <Icon className="h-4 w-4 mr-2 flex-shrink-0" />
+                    <span className="hidden sm:inline">{tab.name}</span>
+                    <span className="sm:hidden">{tab.name.split(' ')[0]}</span>
                   </button>
                 );
               })}

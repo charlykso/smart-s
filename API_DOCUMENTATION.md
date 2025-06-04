@@ -1,12 +1,15 @@
-# Smart-S API Documentation
+# Ledgrio School Accounting System API Documentation
 
 ## Base URL
+
 ```
 http://localhost:3000/api/v1
 ```
 
 ## Authentication
+
 All protected endpoints require a Bearer token in the Authorization header:
+
 ```
 Authorization: Bearer <jwt_token>
 ```
@@ -14,10 +17,13 @@ Authorization: Bearer <jwt_token>
 ## API Endpoints
 
 ### Authentication
+
 #### POST /auth/login
+
 Login user and receive authentication tokens.
 
 **Request Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -26,6 +32,7 @@ Login user and receive authentication tokens.
 ```
 
 **Response:**
+
 ```json
 {
   "user": {
@@ -43,12 +50,15 @@ Login user and receive authentication tokens.
 ```
 
 ### User Management
+
 #### GET /user/all
+
 Get all users (Admin only).
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Response:**
+
 ```json
 [
   {
@@ -68,11 +78,13 @@ Get all users (Admin only).
 ```
 
 #### POST /user/student/create
+
 Create a new student.
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Request Body:**
+
 ```json
 {
   "school_id": "school_id",
@@ -89,10 +101,13 @@ Create a new student.
 ```
 
 ### School Management
+
 #### GET /school/all
+
 Get all schools.
 
 **Response:**
+
 ```json
 [
   {
@@ -108,11 +123,13 @@ Get all schools.
 ```
 
 #### POST /school/create
+
 Create a new school (Admin only).
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Request Body:**
+
 ```json
 {
   "groupSchool_id": "group_id",
@@ -129,10 +146,13 @@ Create a new school (Admin only).
 ```
 
 ### Fee Management
+
 #### GET /fee/all
+
 Get all fees.
 
 **Response:**
+
 ```json
 [
   {
@@ -156,11 +176,13 @@ Get all fees.
 ```
 
 #### POST /fee/create
+
 Create a new fee.
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Request Body:**
+
 ```json
 {
   "term_id": "term_id",
@@ -175,10 +197,13 @@ Create a new fee.
 ```
 
 ### Payment Processing
+
 #### POST /payment/initiate
+
 Initiate a payment.
 
 **Request Body:**
+
 ```json
 {
   "user_id": "user_id",
@@ -188,6 +213,7 @@ Initiate a payment.
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Payment initiated",
@@ -196,9 +222,11 @@ Initiate a payment.
 ```
 
 #### GET /payment/all
+
 Get all payments.
 
 **Response:**
+
 ```json
 [
   {
@@ -221,11 +249,13 @@ Get all payments.
 ```
 
 #### POST /payment/pay-with-cash
+
 Record cash payment (Student/Admin only).
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Request Body:**
+
 ```json
 {
   "user_id": "user_id",
@@ -234,17 +264,21 @@ Record cash payment (Student/Admin only).
 ```
 
 ### Academic Management
+
 #### GET /Session/all
+
 Get all academic sessions.
 
 **Headers:** `Authorization: Bearer <token>`
 
 #### POST /Session/create
+
 Create academic session.
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Request Body:**
+
 ```json
 {
   "school_id": "school_id",
@@ -255,16 +289,19 @@ Create academic session.
 ```
 
 #### GET /Term/all
+
 Get all terms.
 
 **Headers:** `Authorization: Bearer <token>`
 
 #### POST /Term/create
+
 Create academic term.
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Request Body:**
+
 ```json
 {
   "session_id": "session_id",
@@ -275,17 +312,21 @@ Create academic term.
 ```
 
 ### Class Management
+
 #### GET /ClassArm/all
+
 Get all class arms.
 
 **Headers:** `Authorization: Bearer <token>`
 
 #### POST /ClassArm/
+
 Create class arm.
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Request Body:**
+
 ```json
 {
   "school_id": "school_id",
@@ -295,10 +336,13 @@ Create class arm.
 ```
 
 ### Audit & Reporting
+
 #### GET /audit/user/:user_id
+
 Get all payments by user.
 
 **Response:**
+
 ```json
 [
   {
@@ -322,18 +366,23 @@ Get all payments by user.
 ```
 
 #### GET /audit/user/:user_id/term/:term_id
+
 Get user payments for specific term.
 
 #### GET /audit/user/:user_id/session/:session_id
+
 Get user payments for specific session.
 
 ### Fee Approval
+
 #### PUT /approve/:fee_id/approve
+
 Approve a fee (Principal/Admin only).
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Request Body:**
+
 ```json
 {
   "isApproved": true
@@ -341,6 +390,7 @@ Approve a fee (Principal/Admin only).
 ```
 
 ## Error Responses
+
 All endpoints return standardized error responses:
 
 ```json
@@ -351,6 +401,7 @@ All endpoints return standardized error responses:
 ```
 
 Common HTTP status codes:
+
 - `200`: Success
 - `201`: Created
 - `400`: Bad Request
@@ -361,6 +412,7 @@ Common HTTP status codes:
 - `500`: Internal Server Error
 
 ## Role-Based Access Control
+
 Different endpoints require different role permissions:
 
 - **Admin**: Full access to all endpoints

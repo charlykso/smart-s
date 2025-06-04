@@ -12,7 +12,7 @@ const uploadToCloud = async (filePath, fileType, folderName, publicId) => {
         
         const result = await cloudinary.uploader.upload(filePath, {
           resource_type: fileType,
-          folder: 'Smart-s/' + folderName,
+          folder: 'Ledgrio/' + folderName,
           public_id: publicId,
           notification_url: 'http://localhost:3000/api/v1/notifications/cloudinary',
           overwrite: true,

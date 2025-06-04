@@ -15,6 +15,7 @@ import { useStudentManagementStore } from '../../store/studentManagementStore';
 import { useSchoolStore } from '../../store/schoolStore';
 import { useAuthStore } from '../../store/authStore';
 import type { Student, StudentFilters } from '../../types/student';
+import MainLayout from '../../components/layout/MainLayout';
 import CenteredLoader from '../../components/common/CenteredLoader';
 import StudentCard from '../../components/student/StudentCard';
 import StudentModal from '../../components/student/StudentModal';
@@ -152,35 +153,28 @@ const StudentManagementPage: React.FC = () => {
   };
 
   if (isLoading && students.length === 0) {
-    return <CenteredLoader message="Loading students..." />;
+    return (
+      <MainLayout>
+        <CenteredLoader message="Loading students..." />
+      </MainLayout>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-900 transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <button
-                  type="button"
-                  onClick={() => navigate('/dashboard')}
-                  className="mr-4 inline-flex items-center px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-md shadow-sm text-sm font-medium text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-900 hover:bg-primary-100 dark:hover:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-800 focus:ring-primary-500 transition-colors"
-                >
-                  <div className="w-4 h-4 bg-primary-500 dark:bg-primary-600 rounded mr-2 flex items-center justify-center">
-                    <HomeIcon className="w-3 h-3 text-white" />
-                  </div>
-                  Dashboard
-                </button>
-                <UserGroupIcon className="h-8 w-8 text-primary-600 dark:text-primary-400 mr-3" />
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Student Management</h1>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Manage student records and academic information
-                  </p>
-                </div>
+    <MainLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-secondary-200 dark:border-gray-700 p-6 transition-colors duration-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <UserGroupIcon className="h-8 w-8 text-primary-600 dark:text-primary-400 mr-3" />
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Student Management</h1>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  Manage student records and academic information
+                </p>
               </div>
+            </div>
 
               <div className="flex items-center space-x-4">
                 <button
@@ -205,39 +199,39 @@ const StudentManagementPage: React.FC = () => {
 
             {/* Tab Navigation */}
             <div className="mt-6">
-              <nav className="flex space-x-8">
+              <nav className="flex flex-wrap gap-2 sm:gap-4 lg:gap-6 xl:gap-8">
                 <button
                   type="button"
                   onClick={() => setActiveTab('list')}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${
                     activeTab === 'list'
                       ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900'
                       : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
-                  <UserGroupIcon className="h-4 w-4 mr-2" />
-                  Student List
+                  <UserGroupIcon className="h-4 w-4 mr-2 flex-shrink-0" />
+                  <span className="hidden sm:inline">Student List</span>
+                  <span className="sm:hidden">List</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('stats')}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors whitespace-nowrap ${
                     activeTab === 'stats'
                       ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900'
                       : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
-                  <ChartBarIcon className="h-4 w-4 mr-2" />
-                  Statistics
+                  <ChartBarIcon className="h-4 w-4 mr-2 flex-shrink-0" />
+                  <span className="hidden sm:inline">Statistics</span>
+                  <span className="sm:hidden">Stats</span>
                 </button>
               </nav>
-            </div>
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Content */}
+        <div className="space-y-6">
         {/* Error Message */}
         {error && (
           <div className="mb-6 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-md p-4 transition-colors duration-200">
@@ -364,6 +358,7 @@ const StudentManagementPage: React.FC = () => {
             )}
           </>
         )}
+        </div>
       </div>
 
       {/* Student Modal */}
@@ -377,7 +372,7 @@ const StudentManagementPage: React.FC = () => {
         schools={schools}
         onSubmit={handleStudentSubmit}
       />
-    </div>
+    </MainLayout>
   );
 };
 

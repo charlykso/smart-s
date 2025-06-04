@@ -97,6 +97,44 @@
   .card-responsive {
     @apply w-full h-full flex flex-col;
   }
+
+  /* Table responsive utilities */
+  .table-container {
+    @apply overflow-x-auto shadow ring-1 ring-black ring-opacity-5 md:rounded-lg;
+  }
+
+  .table-cell-truncate {
+    @apply truncate max-w-0;
+  }
+
+  .table-cell-user {
+    @apply min-w-0 px-3 py-4;
+  }
+
+  .table-cell-fixed {
+    @apply whitespace-nowrap px-3 py-4;
+  }
+
+  /* Navigation responsive utilities */
+  .nav-tabs-responsive {
+    @apply flex flex-wrap gap-2 sm:gap-4 lg:gap-6 xl:gap-8;
+  }
+
+  .nav-tab-button {
+    @apply flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 whitespace-nowrap;
+  }
+
+  .nav-tab-icon {
+    @apply h-4 w-4 mr-2 flex-shrink-0;
+  }
+
+  .nav-tab-text-responsive {
+    @apply hidden sm:inline;
+  }
+
+  .nav-tab-text-mobile {
+    @apply sm:hidden;
+  }
 }
 
 /* Custom scrollbar */

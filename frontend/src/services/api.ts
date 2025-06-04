@@ -163,6 +163,42 @@ export class ApiService {
     return response.data;
   }
 
+  // POST with FormData
+  static async postFormData<T = any>(url: string, formData: FormData, onProgress?: (progress: number) => void): Promise<T> {
+    const config: AxiosRequestConfig = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(progress);
+        }
+      },
+    };
+
+    const response = await api.post<T>(url, formData, config);
+    return response.data;
+  }
+
+  // PUT with FormData
+  static async putFormData<T = any>(url: string, formData: FormData, onProgress?: (progress: number) => void): Promise<T> {
+    const config: AxiosRequestConfig = {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent) => {
+        if (onProgress && progressEvent.total) {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(progress);
+        }
+      },
+    };
+
+    const response = await api.put<T>(url, formData, config);
+    return response.data;
+  }
+
   // Download file
   static async downloadFile(url: string, filename?: string): Promise<void> {
     const response = await api.get(url, {

@@ -12,6 +12,7 @@ import {
   FunnelIcon,
 } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
+import MainLayout from '../../components/layout/MainLayout';
 import CenteredLoader from '../../components/common/CenteredLoader';
 
 interface Notification {
@@ -203,17 +204,22 @@ const NotificationsPage: React.FC = () => {
   };
 
   if (loading) {
-    return <CenteredLoader />;
+    return (
+      <MainLayout>
+        <CenteredLoader />
+      </MainLayout>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <MainLayout>
+      <div className="space-y-6">
         {/* Breadcrumb */}
-        <nav className="flex mb-8" aria-label="Breadcrumb">
+        <nav className="flex" aria-label="Breadcrumb">
           <ol className="inline-flex items-center space-x-1 md:space-x-3">
             <li className="inline-flex items-center">
               <button
+                type="button"
                 onClick={() => navigate('/dashboard')}
                 className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-600 dark:text-gray-400 dark:hover:text-white"
               >
@@ -409,7 +415,7 @@ const NotificationsPage: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </MainLayout>
   );
 };
 

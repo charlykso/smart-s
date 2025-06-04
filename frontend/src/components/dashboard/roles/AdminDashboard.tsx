@@ -21,6 +21,7 @@ import {
 
 import type { QuickAction, Activity } from '../widgets/QuickActionCard';
 import { useAdminStore } from '../../../store/adminStore';
+import { useAuthStore } from '../../../store/authStore';
 import { adminService } from '../../../services/adminService';
 
 const AdminDashboard: React.FC = () => {
@@ -30,12 +31,20 @@ const AdminDashboard: React.FC = () => {
     dashboardLoading,
     dashboardError,
     fetchDashboardData,
+    systemActivities,
+    systemActivitiesLoading,
+    systemActivitiesError,
+    fetchSystemActivities,
   } = useAdminStore();
+  const { user, token, isAuthenticated } = useAuthStore();
 
   // Fetch dashboard data on component mount
   useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
+    if (isAuthenticated && user && token) {
+      fetchDashboardData();
+      fetchSystemActivities(5); // Fetch 5 recent activities
+    }
+  }, [fetchDashboardData, fetchSystemActivities, isAuthenticated, user, token]);
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -125,27 +134,15 @@ const AdminDashboard: React.FC = () => {
     },
   ];
 
-  // Generate recent activities from dashboard data
-  const recentActivities: Activity[] = dashboardData ? [
-    // Recent user registrations
-    ...dashboardData.recentActivities.users.slice(0, 3).map((user) => ({
-      id: `user-${user._id}`,
-      title: 'New User Registered',
-      description: `${user.firstname} ${user.lastname} (${user.roles.join(', ')}) joined the system`,
-      timestamp: new Date(user.createdAt),
-      type: 'user' as const,
-      user: 'System Admin',
-    })),
-    // Recent payments
-    ...dashboardData.recentActivities.payments.slice(0, 2).map((payment) => ({
-      id: `payment-${payment._id}`,
-      title: 'Payment Processed',
-      description: `${payment.fee.name} payment of ${formatCurrency(payment.amount)} from ${payment.user.firstname} ${payment.user.lastname}`,
-      timestamp: new Date(payment.trans_date),
-      type: 'payment' as const,
-      user: 'Payment System',
-    }))
-  ].slice(0, 5) : [];
+  // Transform system activities to match the Activity interface
+  const recentActivities: Activity[] = systemActivities.map((activity) => ({
+    id: activity.id,
+    title: activity.title,
+    description: activity.description,
+    timestamp: new Date(activity.timestamp),
+    type: activity.type as Activity['type'],
+    user: activity.user,
+  }));
 
   return (
     <div className="space-y-6">
@@ -153,7 +150,7 @@ const AdminDashboard: React.FC = () => {
       <WelcomeCard />
 
       {/* Loading State */}
-      {dashboardLoading && (
+      {(dashboardLoading || systemActivitiesLoading) && (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 dark:border-primary-400"></div>
           <span className="ml-3 text-secondary-600 dark:text-gray-400">Loading dashboard...</span>
@@ -161,7 +158,7 @@ const AdminDashboard: React.FC = () => {
       )}
 
       {/* Error State */}
-      {dashboardError && (
+      {(dashboardError || systemActivitiesError) && (
         <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg p-4 transition-colors duration-200">
           <div className="flex items-center">
             <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-400 mr-2" />
@@ -170,7 +167,7 @@ const AdminDashboard: React.FC = () => {
                 Error Loading Dashboard
               </h4>
               <p className="text-sm text-red-700 dark:text-red-300 mt-1">
-                {dashboardError}. Please try refreshing the page.
+                {dashboardError || systemActivitiesError}. Please try refreshing the page.
               </p>
             </div>
           </div>

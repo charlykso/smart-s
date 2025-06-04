@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { adminService, type AdminDashboardData, type SystemOverview, type UserManagement, type FinancialOverview } from '../services/adminService';
+import { adminService, type AdminDashboardData, type SystemOverview, type UserManagement, type FinancialOverview, type SystemActivity } from '../services/adminService';
 
 interface AdminState {
   // Dashboard data
@@ -22,11 +22,17 @@ interface AdminState {
   financialOverviewLoading: boolean;
   financialOverviewError: string | null;
 
+  // System activities
+  systemActivities: SystemActivity[];
+  systemActivitiesLoading: boolean;
+  systemActivitiesError: string | null;
+
   // Actions
   fetchDashboardData: () => Promise<void>;
   fetchSystemOverview: () => Promise<void>;
   fetchUserManagement: () => Promise<void>;
   fetchFinancialOverview: (period?: string) => Promise<void>;
+  fetchSystemActivities: (limit?: number) => Promise<void>;
   clearErrors: () => void;
   reset: () => void;
 }
@@ -49,19 +55,24 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   financialOverviewLoading: false,
   financialOverviewError: null,
 
+  systemActivities: [],
+  systemActivitiesLoading: false,
+  systemActivitiesError: null,
+
   // Actions
   fetchDashboardData: async () => {
     set({ dashboardLoading: true, dashboardError: null });
-    
+
     try {
       const data = await adminService.getDashboardData();
-      set({ 
+      set({
         dashboardData: data,
         dashboardLoading: false,
-        dashboardError: null 
+        dashboardError: null
       });
     } catch (error) {
-      set({ 
+      console.error('AdminStore - Dashboard data fetch error:', error);
+      set({
         dashboardLoading: false,
         dashboardError: error instanceof Error ? error.message : 'Failed to fetch dashboard data'
       });
@@ -106,18 +117,36 @@ export const useAdminStore = create<AdminState>((set, get) => ({
 
   fetchFinancialOverview: async (period = '30') => {
     set({ financialOverviewLoading: true, financialOverviewError: null });
-    
+
     try {
       const data = await adminService.getFinancialOverview(period);
-      set({ 
+      set({
         financialOverview: data,
         financialOverviewLoading: false,
-        financialOverviewError: null 
+        financialOverviewError: null
       });
     } catch (error) {
-      set({ 
+      set({
         financialOverviewLoading: false,
         financialOverviewError: error instanceof Error ? error.message : 'Failed to fetch financial overview'
+      });
+    }
+  },
+
+  fetchSystemActivities: async (limit = 10) => {
+    set({ systemActivitiesLoading: true, systemActivitiesError: null });
+
+    try {
+      const data = await adminService.getSystemActivities(limit);
+      set({
+        systemActivities: data,
+        systemActivitiesLoading: false,
+        systemActivitiesError: null
+      });
+    } catch (error) {
+      set({
+        systemActivitiesLoading: false,
+        systemActivitiesError: error instanceof Error ? error.message : 'Failed to fetch system activities'
       });
     }
   },
@@ -128,6 +157,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       systemOverviewError: null,
       userManagementError: null,
       financialOverviewError: null,
+      systemActivitiesError: null,
     });
   },
 
@@ -145,6 +175,9 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       financialOverview: null,
       financialOverviewLoading: false,
       financialOverviewError: null,
+      systemActivities: [],
+      systemActivitiesLoading: false,
+      systemActivitiesError: null,
     });
   },
 }));

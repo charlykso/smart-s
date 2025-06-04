@@ -288,19 +288,20 @@ const StudentFeePaymentPage: React.FC = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
-          <nav className="flex space-x-8">
+        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-4 lg:p-6">
+          <nav className="flex flex-wrap gap-2 sm:gap-4 lg:gap-6 xl:gap-8">
             <button
               type="button"
               onClick={() => setActiveTab('fees')}
-              className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+              className={`flex items-center px-3 py-2 text-sm font-medium rounded-md whitespace-nowrap ${
                 activeTab === 'fees'
                   ? 'text-primary-600 bg-primary-50'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <AcademicCapIcon className="h-4 w-4 mr-2" />
-              Approved Fees
+              <AcademicCapIcon className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="hidden sm:inline">Approved Fees</span>
+              <span className="sm:hidden">Fees</span>
               {approvedFees.length > 0 && (
                 <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                   {approvedFees.length}

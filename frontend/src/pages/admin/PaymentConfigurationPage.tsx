@@ -227,8 +227,8 @@ const PaymentConfigurationPage: React.FC = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
-          <nav className="flex space-x-8">
+        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-4 lg:p-6">
+          <nav className="flex flex-wrap gap-2 sm:gap-4 lg:gap-6 xl:gap-8">
             {[
               { id: 'paystack', name: 'Paystack', icon: CreditCardIcon },
               { id: 'flutterwave', name: 'Flutterwave', icon: CreditCardIcon },
@@ -242,14 +242,15 @@ const PaymentConfigurationPage: React.FC = () => {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'text-primary-600 bg-primary-50'
                       : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                   }`}
                 >
-                  <Icon className="h-4 w-4 mr-2" />
-                  {tab.name}
+                  <Icon className="h-4 w-4 mr-2 flex-shrink-0" />
+                  <span className="hidden sm:inline">{tab.name}</span>
+                  <span className="sm:hidden">{tab.name.split(' ')[0]}</span>
                 </button>
               );
             })}

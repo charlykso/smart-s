@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, PhotoIcon, CloudArrowUpIcon } from '@heroicons/react/24/outline';
 import { useSchoolStore } from '../../store/schoolStore';
 import type { CreateGroupSchoolData, UpdateGroupSchoolData, GroupSchool } from '../../types/school';
 
@@ -28,6 +28,9 @@ const GroupSchoolModal: React.FC<GroupSchoolModalProps> = ({
   onSubmit,
 }) => {
   const { createGroupSchool, updateGroupSchool, isLoading } = useSchoolStore();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [uploadMethod, setUploadMethod] = useState<'file' | 'url'>('file');
 
   const {
     register,
@@ -46,36 +49,85 @@ const GroupSchoolModal: React.FC<GroupSchoolModalProps> = ({
           description: groupSchool.description,
           logo: groupSchool.logo || '',
         });
+        setPreviewUrl(groupSchool.logo || '');
+        setUploadMethod('url');
       } else {
         reset({
           name: '',
           description: '',
           logo: '',
         });
+        setPreviewUrl('');
+        setUploadMethod('file');
       }
+      setSelectedFile(null);
     }
   }, [isOpen, groupSchool, reset]);
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB');
+        return;
+      }
+
+      setSelectedFile(file);
+
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    setPreviewUrl('');
+    // Reset file input
+    const fileInput = document.getElementById('logo-file') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
 
   const handleFormSubmit = async (data: GroupSchoolFormData) => {
     try {
       if (groupSchool) {
+        // Update existing group school
         const updateData: UpdateGroupSchoolData = {
           _id: groupSchool._id,
-          ...data,
+          name: data.name,
+          description: data.description,
+          logo: uploadMethod === 'url' ? data.logo : undefined,
+          logoFile: uploadMethod === 'file' ? selectedFile : undefined,
         };
         await updateGroupSchool(updateData);
       } else {
+        // Create new group school
         const createData: CreateGroupSchoolData = {
-          ...data,
-          logo: data.logo || '',
+          name: data.name,
+          description: data.description,
+          logo: uploadMethod === 'url' ? data.logo || '' : '',
+          logoFile: uploadMethod === 'file' ? selectedFile : undefined,
         };
         await createGroupSchool(createData);
       }
-      
+
       onSubmit(data);
       onClose();
     } catch (error) {
       // Error is handled in the store
+      console.error('Form submission error:', error);
     }
   };
 
@@ -138,17 +190,111 @@ const GroupSchoolModal: React.FC<GroupSchoolModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Logo URL
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Logo
                   </label>
-                  <input
-                    type="url"
-                    {...register('logo')}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="https://example.com/logo.png"
-                  />
-                  {errors.logo && (
-                    <p className="mt-1 text-sm text-red-600">{errors.logo.message}</p>
+
+                  {/* Upload Method Toggle */}
+                  <div className="flex space-x-4 mb-4">
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        value="file"
+                        checked={uploadMethod === 'file'}
+                        onChange={(e) => setUploadMethod(e.target.value as 'file' | 'url')}
+                        className="mr-2"
+                      />
+                      <CloudArrowUpIcon className="h-4 w-4 mr-1" />
+                      Upload File
+                    </label>
+                    <label className="flex items-center">
+                      <input
+                        type="radio"
+                        value="url"
+                        checked={uploadMethod === 'url'}
+                        onChange={(e) => setUploadMethod(e.target.value as 'file' | 'url')}
+                        className="mr-2"
+                      />
+                      <PhotoIcon className="h-4 w-4 mr-1" />
+                      Use URL
+                    </label>
+                  </div>
+
+                  {uploadMethod === 'file' ? (
+                    <div>
+                      {/* File Upload */}
+                      <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
+                        <div className="space-y-1 text-center">
+                          {previewUrl ? (
+                            <div className="relative">
+                              <img
+                                src={previewUrl}
+                                alt="Logo preview"
+                                className="mx-auto h-32 w-32 object-cover rounded-lg"
+                              />
+                              <button
+                                type="button"
+                                onClick={handleRemoveFile}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                              >
+                                <XMarkIcon className="h-4 w-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <PhotoIcon className="mx-auto h-12 w-12 text-gray-400" />
+                              <div className="flex text-sm text-gray-600">
+                                <label
+                                  htmlFor="logo-file"
+                                  className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500"
+                                >
+                                  <span>Upload a file</span>
+                                  <input
+                                    id="logo-file"
+                                    name="logo-file"
+                                    type="file"
+                                    accept="image/*"
+                                    className="sr-only"
+                                    onChange={handleFileSelect}
+                                  />
+                                </label>
+                                <p className="pl-1">or drag and drop</p>
+                              </div>
+                              <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      {selectedFile && (
+                        <p className="mt-2 text-sm text-gray-600">
+                          Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div>
+                      {/* URL Input */}
+                      <input
+                        type="url"
+                        {...register('logo')}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="https://example.com/logo.png"
+                        onChange={(e) => setPreviewUrl(e.target.value)}
+                      />
+                      {errors.logo && (
+                        <p className="mt-1 text-sm text-red-600">{errors.logo.message}</p>
+                      )}
+                      {previewUrl && (
+                        <div className="mt-3">
+                          <img
+                            src={previewUrl}
+                            alt="Logo preview"
+                            className="h-20 w-20 object-cover rounded-lg"
+                            onError={() => setPreviewUrl('')}
+                          />
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

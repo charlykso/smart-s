@@ -200,8 +200,8 @@ const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
             </svg>
           </div>
           <div className="ml-3">
-            <h1 className="text-white text-lg font-semibold">Smart-S</h1>
-            <p className="text-primary-200 dark:text-primary-300 text-xs">School Management</p>
+            <h1 className="text-white text-lg font-semibold">Ledgrio</h1>
+            <p className="text-primary-200 dark:text-primary-300 text-xs">School Accounting System</p>
           </div>
         </div>
       </div>

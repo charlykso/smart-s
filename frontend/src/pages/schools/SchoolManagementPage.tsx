@@ -183,8 +183,8 @@ const SchoolManagementPage: React.FC = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900 border border-secondary-200 dark:border-gray-700 p-6 transition-colors duration-200">
-          <nav className="flex space-x-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900 border border-secondary-200 dark:border-gray-700 p-4 lg:p-6 transition-colors duration-200">
+          <nav className="flex flex-wrap gap-2 sm:gap-4 lg:gap-6 xl:gap-8">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
@@ -192,14 +192,15 @@ const SchoolManagementPage: React.FC = () => {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900'
                       : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
-                  <Icon className="h-4 w-4 mr-2" />
-                  {tab.name}
+                  <Icon className="h-4 w-4 mr-2 flex-shrink-0" />
+                  <span className="hidden sm:inline">{tab.name}</span>
+                  <span className="sm:hidden">{tab.name.charAt(0)}</span>
                 </button>
               );
             })}

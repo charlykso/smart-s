@@ -2,7 +2,7 @@
 
 ## Overview
 
-The landing page for Ledgrio School Management System is designed to showcase the platform's features and encourage user sign-ups. It follows modern web design principles with a focus on user experience and accessibility.
+The landing page for Ledgrio School Accounting System is designed to showcase the platform's financial management features and encourage user sign-ups. It follows modern web design principles with a focus on user experience and accessibility.
 
 ## Features
 
@@ -36,13 +36,13 @@ The landing page for Ledgrio School Management System is designed to showcase th
 
 #### Features Section
 
-- Six feature cards highlighting key capabilities:
-  - User Management
-  - Fee Management
-  - Academic Management
-  - Audit & Reports
-  - Security & Reliability
-  - Real-time Updates
+- Six feature cards highlighting key accounting capabilities:
+  - Financial User Management
+  - Fee Collection & Management
+  - Payment Processing
+  - Audit & Financial Reports
+  - Security & Compliance
+  - Real-time Financial Updates
 
 #### Call-to-Action Section
 

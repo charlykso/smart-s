@@ -1,8 +1,8 @@
-# Ledgrio: School Management & Accounting System
+# Ledgrio: School Accounting System
 
 ## Overview
 
-Ledgrio is a comprehensive school management and accounting software designed for nursery, primary, and secondary schools. The system provides a complete solution for managing school operations, student information, fee collection, and financial transactions.
+Ledgrio is a comprehensive accounting system specifically designed for educational institutions including nursery, primary, and secondary schools. The system provides a complete financial management solution for schools, focusing on fee collection, payment tracking, financial reporting, and audit compliance.
 
 ## Technology Stack
 
@@ -179,7 +179,7 @@ The system is fully functional with:
 3. Start development server: `npm run dev`
 4. Start production server: `npm start`
 
-This system provides a robust foundation for school management with particular strength in financial management and payment processing, making it suitable for educational institutions of various sizes.
+This system provides a robust foundation for school financial management with comprehensive accounting capabilities, payment processing, and audit compliance, making it suitable for educational institutions of various sizes seeking professional financial management solutions.
 
 ## Detailed Technical Implementation
 

@@ -164,6 +164,115 @@ exports.getSystemOverview = async (req, res) => {
   }
 }
 
+// Get system activities for admin dashboard
+exports.getSystemActivities = async (req, res) => {
+  try {
+    const { limit = 10 } = req.query
+    const activities = []
+
+    // Get recent user registrations
+    const recentUsers = await User.find()
+      .sort({ createdAt: -1 })
+      .limit(Math.ceil(limit / 2))
+      .select('firstname lastname email roles createdAt')
+
+    // Transform user registrations to activities
+    recentUsers.forEach((user) => {
+      activities.push({
+        id: `user-${user._id}`,
+        title: 'New User Registered',
+        description: `${user.firstname} ${user.lastname} (${user.roles.join(
+          ', '
+        )}) joined the system`,
+        timestamp: user.createdAt,
+        type: 'user',
+        user: 'System Admin',
+        metadata: {
+          userId: user._id,
+          userEmail: user.email,
+          userRoles: user.roles,
+        },
+      })
+    })
+
+    // Get recent successful payments
+    const recentPayments = await Payment.find({ status: 'success' })
+      .sort({ trans_date: -1 })
+      .limit(Math.ceil(limit / 2))
+      .populate('user', 'firstname lastname email regNo')
+      .populate('fee', 'name amount')
+
+    // Transform payments to activities
+    recentPayments.forEach((payment) => {
+      activities.push({
+        id: `payment-${payment._id}`,
+        title: 'Payment Processed',
+        description: `${
+          payment.fee.name
+        } payment of ₦${payment.amount.toLocaleString()} from ${
+          payment.user.firstname
+        } ${payment.user.lastname}`,
+        timestamp: payment.trans_date,
+        type: 'payment',
+        user: 'Payment System',
+        metadata: {
+          paymentId: payment._id,
+          amount: payment.amount,
+          feeName: payment.fee.name,
+          userId: payment.user._id,
+          userRegNo: payment.user.regNo,
+        },
+      })
+    })
+
+    // Get recent fee approvals
+    const recentFees = await Fee.find({ isApproved: true })
+      .sort({ updatedAt: -1 })
+      .limit(Math.ceil(limit / 3))
+      .populate('school', 'name')
+      .populate('term', 'name')
+
+    // Transform fee approvals to activities
+    recentFees.forEach((fee) => {
+      activities.push({
+        id: `fee-${fee._id}`,
+        title: 'Fee Approved',
+        description: `${
+          fee.name
+        } (₦${fee.amount.toLocaleString()}) approved for ${fee.school.name}`,
+        timestamp: fee.updatedAt,
+        type: 'fee',
+        user: 'Fee Administrator',
+        metadata: {
+          feeId: fee._id,
+          feeName: fee.name,
+          amount: fee.amount,
+          schoolName: fee.school.name,
+          termName: fee.term?.name,
+        },
+      })
+    })
+
+    // Sort all activities by timestamp (most recent first)
+    activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+
+    // Limit to requested number
+    const limitedActivities = activities.slice(0, parseInt(limit))
+
+    return res.status(200).json({
+      success: true,
+      data: limitedActivities,
+      total: limitedActivities.length,
+    })
+  } catch (error) {
+    console.error('System activities error:', error)
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+    })
+  }
+}
+
 // Get user management data
 exports.getUserManagement = async (req, res) => {
   try {

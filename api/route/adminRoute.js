@@ -22,6 +22,14 @@ router.get(
   adminController.getSystemOverview
 )
 
+// System activities
+router.get(
+  '/system-activities',
+  authenticateToken,
+  verifyRoles(roleList.Admin),
+  adminController.getSystemActivities
+)
+
 // User management
 router.get(
   '/user-management',

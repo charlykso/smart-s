@@ -118,6 +118,16 @@ export interface FinancialOverview {
   };
 }
 
+export interface SystemActivity {
+  id: string;
+  title: string;
+  description: string;
+  timestamp: string;
+  type: 'user' | 'payment' | 'fee' | 'system' | 'audit';
+  user: string;
+  metadata?: Record<string, any>;
+}
+
 class AdminService {
   /**
    * Get admin dashboard data
@@ -185,6 +195,27 @@ class AdminService {
       return response.data;
     } catch (error) {
       console.error('Error fetching financial overview:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get system activities
+   */
+  async getSystemActivities(limit: number = 10): Promise<SystemActivity[]> {
+    try {
+      const response = await apiService.get(`/admin/system-activities?limit=${limit}`);
+
+      // Handle different response formats
+      if (response.success && response.data) {
+        return response.data;
+      } else if (response.data) {
+        return response.data;
+      } else {
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching system activities:', error);
       throw error;
     }
   }
