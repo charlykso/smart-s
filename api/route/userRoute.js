@@ -12,6 +12,7 @@ router
     verifyRoles(roleList.Admin),
     userController.getAllUsers
   )
+
 router
   .route('/admin/create')
   .post(
@@ -41,10 +42,7 @@ router
   .route('/ict-admin/create')
   .post(
     authenticateToken,
-    verifyRoles(
-        roleList.Admin, 
-        roleList.ICT_administrator
-    ),
+    verifyRoles(roleList.Admin, roleList.ICT_administrator),
     userController.createICT_administrator
   )
 router
@@ -110,11 +108,7 @@ router
     verifyRoles(roleList.Admin, roleList.Proprietor),
     userController.getProprietor
   )
-router
-  .route('/proprietor/create')
-  .post(
-    userController.createProprietor
-  )
+router.route('/proprietor/create').post(userController.createProprietor)
 router
   .route('/proprietor/:id/update')
   .put(
@@ -178,11 +172,7 @@ router
     verifyRoles(roleList.Admin, roleList.Headteacher),
     userController.getHeadteacher
   )
-router
-  .route('/headteacher/create')
-  .post(
-    userController.createHeadteacher
-  )
+router.route('/headteacher/create').post(userController.createHeadteacher)
 router
   .route('/headteacher/:id/update')
   .put(
@@ -400,6 +390,10 @@ router
       roleList.Parent
     ),
     userController.deleteParent
-)
-router.get('/staff/:school_id', userController.getStaffBySchool);
-module.exports = router;
+  )
+router.get('/staff/:school_id', userController.getStaffBySchool)
+
+// Get current user profile
+router.route('/profile').get(authenticateToken, userController.getCurrentUser)
+
+module.exports = router

@@ -1,8 +1,9 @@
-# Smart-S Frontend Setup Guide
+# Ledgrio Frontend Setup Guide
 
 ## Quick Start
 
 ### 1. Project Initialization
+
 ```bash
 # Navigate to frontend directory
 cd frontend
@@ -15,6 +16,7 @@ npm install
 ```
 
 ### 2. Install Required Packages
+
 ```bash
 # Core dependencies
 npm install react-router-dom zustand @tanstack/react-query axios
@@ -53,6 +55,7 @@ npm install -D @tailwindcss/forms @tailwindcss/typography
 ```
 
 ### 3. Configure Tailwind CSS
+
 ```bash
 # Initialize Tailwind CSS
 npx tailwindcss init -p
@@ -62,6 +65,7 @@ npm install -D @tailwindcss/forms @tailwindcss/typography
 ```
 
 ### 4. Project Structure Setup
+
 ```bash
 # Create directory structure
 mkdir -p src/{components/{ui,forms,layout,common,charts},pages/{auth,dashboard,users,schools,fees,payments,reports,settings},hooks,services,store,types,utils,constants}
@@ -74,11 +78,13 @@ mkdir -p src/pages/{auth,dashboard,users,schools,fees,payments,reports,settings}
 ## Configuration Files
 
 ### 1. Environment Variables
+
 Create `.env` file in frontend root:
+
 ```env
 # API Configuration
 VITE_API_BASE_URL=http://localhost:3000/api/v1
-VITE_APP_NAME=Smart-S School Management
+VITE_APP_NAME=Ledgrio School Management
 
 # Payment Configuration
 VITE_PAYSTACK_PUBLIC_KEY=your_paystack_public_key
@@ -93,7 +99,9 @@ VITE_APP_ENVIRONMENT=development
 ```
 
 ### 2. TypeScript Configuration
+
 Update `tsconfig.json`:
+
 ```json
 {
   "compilerOptions": {
@@ -131,11 +139,13 @@ Update `tsconfig.json`:
 ```
 
 ### 3. Vite Configuration
+
 Update `vite.config.ts`:
+
 ```typescript
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
@@ -165,18 +175,17 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
   },
-})
+});
 ```
 
 ### 4. Tailwind Configuration
+
 Update `tailwind.config.js`:
+
 ```javascript
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -227,8 +236,8 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       spacing: {
-        '18': '4.5rem',
-        '88': '22rem',
+        18: '4.5rem',
+        88: '22rem',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
@@ -246,15 +255,14 @@ export default {
       },
     },
   },
-  plugins: [
-    require('@tailwindcss/forms'),
-    require('@tailwindcss/typography'),
-  ],
-}
+  plugins: [require('@tailwindcss/forms'), require('@tailwindcss/typography')],
+};
 ```
 
 ### 5. ESLint Configuration
+
 Create `.eslintrc.cjs`:
+
 ```javascript
 module.exports = {
   root: true,
@@ -284,11 +292,13 @@ module.exports = {
       version: 'detect',
     },
   },
-}
+};
 ```
 
 ### 6. Prettier Configuration
+
 Create `.prettierrc`:
+
 ```json
 {
   "semi": true,
@@ -306,6 +316,7 @@ Create `.prettierrc`:
 ## Initial File Structure
 
 ### 1. Create Base Types
+
 ```typescript
 // src/types/index.ts
 export interface User {
@@ -364,19 +375,20 @@ export interface Payment {
   updatedAt: string;
 }
 
-export type UserRole = 
-  | 'Admin' 
-  | 'ICT_administrator' 
-  | 'Auditor' 
-  | 'Proprietor' 
-  | 'Principal' 
-  | 'Headteacher' 
-  | 'Bursar' 
-  | 'Student' 
+export type UserRole =
+  | 'Admin'
+  | 'ICT_administrator'
+  | 'Auditor'
+  | 'Proprietor'
+  | 'Principal'
+  | 'Headteacher'
+  | 'Bursar'
+  | 'Student'
   | 'Parent';
 ```
 
 ### 2. Create Constants
+
 ```typescript
 // src/constants/index.ts
 export const USER_ROLES: Record<UserRole, string> = {
@@ -434,6 +446,7 @@ export const API_ENDPOINTS = {
 ## Development Workflow
 
 ### 1. Start Development Server
+
 ```bash
 # Start frontend development server
 npm run dev
@@ -444,6 +457,7 @@ npm run dev
 ```
 
 ### 2. Code Quality Commands
+
 ```bash
 # Lint code
 npm run lint
@@ -459,6 +473,7 @@ npm run type-check
 ```
 
 ### 3. Build for Production
+
 ```bash
 # Build for production
 npm run build
@@ -467,4 +482,4 @@ npm run build
 npm run preview
 ```
 
-This setup guide provides everything needed to get the Smart-S frontend project up and running with a solid foundation for development.
+This setup guide provides everything needed to get the Ledgrio frontend project up and running with a solid foundation for development.

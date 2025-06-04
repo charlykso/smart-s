@@ -26,6 +26,9 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+    headers: {
+      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' http://localhost:3000;",
+    },
   },
   build: {
     outDir: 'dist',

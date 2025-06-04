@@ -1,4 +1,4 @@
-SMART-S SCHOOL MANAGEMENT SYSTEM - QUICK LOGIN REFERENCE
+LEDGRIO SCHOOL MANAGEMENT SYSTEM - QUICK LOGIN REFERENCE
 ========================================================
 
 🔐 ALL USERS PASSWORD: password123
@@ -7,15 +7,15 @@ SMART-S SCHOOL MANAGEMENT SYSTEM - QUICK LOGIN REFERENCE
 ┌─────────────────────┬─────────────────────────────┬─────────────────────────┐
 │ ROLE                │ EMAIL                       │ NAME                    │
 ├─────────────────────┼─────────────────────────────┼─────────────────────────┤
-│ Admin               │ admin@smart-s.com           │ Admin User              │
-│ Student             │ student@smart-s.com         │ John Student            │
-│ Principal           │ principal@smart-s.com       │ Dr. Sarah Principal     │
-│ Bursar              │ bursar@smart-s.com          │ Michael Bursar          │
-│ Parent              │ parent@smart-s.com          │ Mary Parent             │
-│ Auditor             │ auditor@smart-s.com         │ James Auditor           │
-│ ICT Admin           │ ictadmin@smart-s.com        │ David ICTAdmin          │
-│ Proprietor          │ proprietor@smart-s.com      │ Robert Proprietor       │
-│ Headteacher         │ headteacher@smart-s.com     │ Mrs. Jane Headteacher   │
+│ Admin               │ admin@ledgrio.com           │ Admin User              │
+│ Student             │ student@ledgrio.com         │ John Student            │
+│ Principal           │ principal@ledgrio.com       │ Dr. Sarah Principal     │
+│ Bursar              │ bursar@ledgrio.com          │ Michael Bursar          │
+│ Parent              │ parent@ledgrio.com          │ Mary Parent             │
+│ Auditor             │ auditor@ledgrio.com         │ James Auditor           │
+│ ICT Admin           │ ictadmin@ledgrio.com        │ David ICTAdmin          │
+│ Proprietor          │ proprietor@ledgrio.com      │ Robert Proprietor       │
+│ Headteacher         │ headteacher@ledgrio.com     │ Mrs. Jane Headteacher   │
 └─────────────────────┴─────────────────────────────┴─────────────────────────┘
 
 🌐 APPLICATION URLS:
@@ -54,7 +54,7 @@ Login:    http://localhost:3001/login
 🧪 API TEST:
 curl -X POST http://localhost:3000/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@smart-s.com","password":"password123"}'
+  -d '{"email":"admin@ledgrio.com","password":"password123"}'
 
 📊 DASHBOARD FEATURES:
 - Admin: System overview, user management, analytics

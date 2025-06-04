@@ -9,7 +9,6 @@ import type { ClassArmModalProps, CreateClassArmData, UpdateClassArmData } from 
 const classArmSchema = z.object({
   school_id: z.string().min(1, 'School is required'),
   name: z.string().min(1, 'Class arm name is required'),
-  totalNumberOfStudents: z.number().min(0, 'Number of students must be 0 or greater').optional(),
 });
 
 type ClassArmFormData = z.infer<typeof classArmSchema>;
@@ -35,20 +34,18 @@ const ClassArmModal: React.FC<ClassArmModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       if (classArm) {
-        const schoolId = typeof classArm.school === 'string' 
-          ? classArm.school 
+        const schoolId = typeof classArm.school === 'string'
+          ? classArm.school
           : classArm.school?._id || '';
 
         reset({
           school_id: schoolId,
           name: classArm.name,
-          totalNumberOfStudents: classArm.totalNumberOfStudents || 0,
         });
       } else {
         reset({
           school_id: '',
           name: '',
-          totalNumberOfStudents: 0,
         });
       }
     }
@@ -134,22 +131,6 @@ const ClassArmModal: React.FC<ClassArmModalProps> = ({
                   />
                   {errors.name && (
                     <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Total Number of Students
-                  </label>
-                  <input
-                    type="number"
-                    {...register('totalNumberOfStudents', { valueAsNumber: true })}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="0"
-                    min="0"
-                  />
-                  {errors.totalNumberOfStudents && (
-                    <p className="mt-1 text-sm text-red-600">{errors.totalNumberOfStudents.message}</p>
                   )}
                 </div>
               </div>

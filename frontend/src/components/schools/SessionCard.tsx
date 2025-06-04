@@ -30,7 +30,7 @@ const SessionCard: React.FC<SessionCardProps> = ({
 
   const getSchoolName = () => {
     if (typeof session.school === 'string') {
-      return 'Unknown School';
+      return 'Loading...';
     }
     return session.school?.name || 'No School';
   };

@@ -6,16 +6,16 @@ import { API_ENDPOINTS } from '../constants';
 export class AuthService {
   // Login user
   static async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await ApiService.post<ApiResponse<AuthResponse>>(
+    const response = await ApiService.post<any>(
       API_ENDPOINTS.AUTH.LOGIN,
       credentials
     );
-    
+
     if (!response.success) {
       throw new Error(response.message || 'Login failed');
     }
-    
-    return response.data!;
+
+    return response.data;
   }
 
   // Logout user
@@ -30,16 +30,16 @@ export class AuthService {
 
   // Refresh access token
   static async refreshToken(refreshToken: string): Promise<{ token: string; refreshToken: string }> {
-    const response = await ApiService.post<ApiResponse<{ token: string; refreshToken: string }>>(
+    const response = await ApiService.post<any>(
       API_ENDPOINTS.AUTH.REFRESH,
       { refreshToken }
     );
-    
+
     if (!response.success) {
       throw new Error(response.message || 'Token refresh failed');
     }
-    
-    return response.data!;
+
+    return response.data;
   }
 
   // Forgot password

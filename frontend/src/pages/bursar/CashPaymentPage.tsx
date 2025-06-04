@@ -7,15 +7,14 @@ import {
   CheckCircleIcon,
   PrinterIcon,
   DocumentTextIcon,
-  HomeIcon,
 } from '@heroicons/react/24/outline';
-import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useFeeStore } from '../../store/feeStore';
 import { useUserStore } from '../../store/userStore';
 import { FeeService } from '../../services/feeService';
+import MainLayout from '../../components/layout/MainLayout';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import toast from 'react-hot-toast';
 
@@ -30,7 +29,6 @@ const cashPaymentSchema = z.object({
 type CashPaymentFormData = z.infer<typeof cashPaymentSchema>;
 
 const CashPaymentPage: React.FC = () => {
-  const navigate = useNavigate();
   const { processCashPayment, fees, loadFees, isLoading } = useFeeStore();
   const { users, loadUsers } = useUserStore();
   
@@ -128,8 +126,8 @@ const CashPaymentPage: React.FC = () => {
 
   if (paymentSuccess) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <MainLayout>
+        <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-lg shadow-lg p-8">
             {/* Success Header */}
             <div className="text-center mb-8">
@@ -175,14 +173,16 @@ const CashPaymentPage: React.FC = () => {
             {/* Actions */}
             <div className="flex justify-center space-x-4">
               <button
+                type="button"
                 onClick={handlePrintReceipt}
                 className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
               >
                 <PrinterIcon className="h-4 w-4 mr-2" />
                 Print Receipt
               </button>
-              
+
               <button
+                type="button"
                 onClick={handleNewPayment}
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
               >
@@ -192,41 +192,30 @@ const CashPaymentPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex items-center">
-              <button
-                type="button"
-                onClick={() => navigate('/dashboard')}
-                className="mr-4 inline-flex items-center px-3 py-2 border border-primary-300 rounded-md shadow-sm text-sm font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
-              >
-                <div className="w-4 h-4 bg-primary-500 rounded mr-2 flex items-center justify-center">
-                  <HomeIcon className="w-3 h-3 text-white" />
-                </div>
-                Dashboard
-              </button>
-              <BanknotesIcon className="h-8 w-8 text-green-600 mr-3" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Cash Payment Processing</h1>
-                <p className="mt-1 text-sm text-gray-500">
-                  Process cash payments for student fees
-                </p>
-              </div>
+    <MainLayout>
+      <div className="space-y-6">
+        {/* Page Header */}
+        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+          <div className="flex items-center">
+            <BanknotesIcon className="h-8 w-8 text-green-600 mr-3" />
+            <div>
+              <h1 className="text-2xl font-bold text-secondary-900">
+                Cash Payment Processing
+              </h1>
+              <p className="text-secondary-600 mt-1">
+                Process cash payments for student fees
+              </p>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Content */}
+        <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow p-6">
           <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
             {/* Student Search */}
@@ -441,8 +430,9 @@ const CashPaymentPage: React.FC = () => {
             </div>
           </form>
         </div>
+        </div>
       </div>
-    </div>
+    </MainLayout>
   );
 };
 

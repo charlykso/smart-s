@@ -206,12 +206,12 @@ export const API_ENDPOINTS = {
 
 // Local Storage Keys
 export const STORAGE_KEYS = {
-  ACCESS_TOKEN: 'smart_s_access_token',
-  REFRESH_TOKEN: 'smart_s_refresh_token',
-  USER_DATA: 'smart_s_user_data',
-  REMEMBER_ME: 'smart_s_remember_me',
-  THEME: 'smart_s_theme',
-  SIDEBAR_COLLAPSED: 'smart_s_sidebar_collapsed',
+  ACCESS_TOKEN: 'ledgrio_access_token',
+  REFRESH_TOKEN: 'ledgrio_refresh_token',
+  USER_DATA: 'ledgrio_user_data',
+  REMEMBER_ME: 'ledgrio_remember_me',
+  THEME: 'ledgrio_theme',
+  SIDEBAR_COLLAPSED: 'ledgrio_sidebar_collapsed',
 };
 
 // Query Keys for React Query
@@ -369,7 +369,7 @@ export const BREAKPOINTS = {
 // Environment Variables
 export const ENV = {
   API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1',
-  APP_NAME: import.meta.env.VITE_APP_NAME || 'Smart-S School Management',
+  APP_NAME: import.meta.env.VITE_APP_NAME || 'Ledgrio School Management',
   PAYSTACK_PUBLIC_KEY: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
   CLOUDINARY_CLOUD_NAME: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || '',
   CLOUDINARY_UPLOAD_PRESET: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || '',

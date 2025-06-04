@@ -57,7 +57,6 @@ export interface ClassArm {
   _id: string;
   school: School | string;
   name: string;
-  totalNumberOfStudents?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -118,7 +117,6 @@ export interface UpdateTermData extends Partial<CreateTermData> {
 export interface CreateClassArmData {
   school_id: string;
   name: string;
-  totalNumberOfStudents?: number;
 }
 
 export interface UpdateClassArmData extends Partial<CreateClassArmData> {

@@ -203,32 +203,32 @@ const UserManagementPage: React.FC = () => {
 
   const getRoleColor = (role: string) => {
     const colorMap: Record<string, string> = {
-      'Admin': 'bg-red-100 text-red-800',
-      'ICT_administrator': 'bg-blue-100 text-blue-800',
-      'Principal': 'bg-purple-100 text-purple-800',
-      'Headteacher': 'bg-green-100 text-green-800',
-      'Bursar': 'bg-yellow-100 text-yellow-800',
-      'Auditor': 'bg-orange-100 text-orange-800',
-      'Student': 'bg-gray-100 text-gray-800',
-      'Parent': 'bg-pink-100 text-pink-800',
+      'Admin': 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200',
+      'ICT_administrator': 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200',
+      'Principal': 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200',
+      'Headteacher': 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200',
+      'Bursar': 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200',
+      'Auditor': 'bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200',
+      'Student': 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200',
+      'Parent': 'bg-pink-100 dark:bg-pink-900 text-pink-800 dark:text-pink-200',
     };
-    return colorMap[role] || 'bg-gray-100 text-gray-800';
+    return colorMap[role] || 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
   };
 
   const getStatusColor = (status: string) => {
-    return status === 'active' 
-      ? 'bg-green-100 text-green-800' 
-      : 'bg-red-100 text-red-800';
+    return status === 'active'
+      ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
+      : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
   };
 
   if (!hasPermission) {
     return (
       <MainLayout>
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <h3 className="text-lg font-medium text-red-800 mb-2">
+        <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg p-6 transition-colors duration-200">
+          <h3 className="text-lg font-medium text-red-800 dark:text-red-200 mb-2">
             Access Denied
           </h3>
-          <p className="text-red-700">
+          <p className="text-red-700 dark:text-red-300">
             You don't have permission to access user management. This feature is only available to Administrators and ICT Administrators.
           </p>
         </div>
@@ -240,15 +240,15 @@ const UserManagementPage: React.FC = () => {
     <MainLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900 border border-secondary-200 dark:border-gray-700 p-6 transition-colors duration-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <UsersIcon className="h-8 w-8 text-primary-600 mr-3" />
+              <UsersIcon className="h-8 w-8 text-primary-600 dark:text-primary-400 mr-3" />
               <div>
-                <h1 className="text-2xl font-bold text-secondary-900">
+                <h1 className="text-2xl font-bold text-secondary-900 dark:text-gray-100">
                   User Management
                 </h1>
-                <p className="text-secondary-600 mt-1">
+                <p className="text-secondary-600 dark:text-gray-400 mt-1">
                   Manage system users and their roles
                 </p>
               </div>
@@ -265,17 +265,17 @@ const UserManagementPage: React.FC = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900 border border-secondary-200 dark:border-gray-700 p-6 transition-colors duration-200">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div className="relative">
-              <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary-400" />
+              <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="Search users..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="pl-10 pr-4 py-2 w-full border border-secondary-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
               />
             </div>
 
@@ -283,7 +283,8 @@ const UserManagementPage: React.FC = () => {
             <select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
-              className="px-3 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="px-3 py-2 border border-secondary-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors"
+              title="Filter by role"
             >
               <option value="all">All Roles</option>
               <option value="Admin">Admin</option>
@@ -300,7 +301,8 @@ const UserManagementPage: React.FC = () => {
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-3 py-2 border border-secondary-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="px-3 py-2 border border-secondary-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors"
+              title="Filter by status"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -308,8 +310,12 @@ const UserManagementPage: React.FC = () => {
             </select>
 
             {/* Advanced Filters */}
-            <button className="flex items-center justify-center px-4 py-2 border border-secondary-300 rounded-lg hover:bg-secondary-50 transition-colors">
-              <FunnelIcon className="h-5 w-5 mr-2 text-secondary-600" />
+            <button
+              type="button"
+              className="flex items-center justify-center px-4 py-2 border border-secondary-300 dark:border-gray-600 rounded-lg hover:bg-secondary-50 dark:hover:bg-gray-700 transition-colors text-secondary-600 dark:text-gray-300"
+              title="More filters"
+            >
+              <FunnelIcon className="h-5 w-5 mr-2" />
               More Filters
             </button>
           </div>
@@ -323,72 +329,75 @@ const UserManagementPage: React.FC = () => {
         />
 
         {/* Users Table */}
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-secondary-200">
-            <h3 className="text-lg font-semibold text-secondary-900">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900 border border-secondary-200 dark:border-gray-700 overflow-hidden transition-colors duration-200">
+          <div className="px-6 py-4 border-b border-secondary-200 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-secondary-900 dark:text-gray-100">
               Users ({filteredUsers.length})
             </h3>
           </div>
 
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-              <span className="ml-3 text-secondary-600">Loading users...</span>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 dark:border-primary-400"></div>
+              <span className="ml-3 text-secondary-600 dark:text-gray-400">Loading users...</span>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-secondary-200">
-                <thead className="bg-secondary-50">
+              <table className="min-w-full divide-y divide-secondary-200 dark:divide-gray-700">
+                <thead className="bg-secondary-50 dark:bg-gray-700">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 dark:text-gray-400 uppercase tracking-wider">
+                      <span className="sr-only">Select all</span>
                       <input
                         type="checkbox"
                         checked={selectedUserIds.length === filteredUsers.length && filteredUsers.length > 0}
                         onChange={handleSelectAll}
-                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
+                        title="Select all users"
                       />
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 dark:text-gray-400 uppercase tracking-wider">
                       User
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 dark:text-gray-400 uppercase tracking-wider">
                       Role
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 dark:text-gray-400 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 dark:text-gray-400 uppercase tracking-wider">
                       Last Login
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-secondary-500 dark:text-gray-400 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-secondary-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-secondary-200 dark:divide-gray-700">
                   {filteredUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-secondary-500">
+                      <td colSpan={6} className="px-6 py-12 text-center text-secondary-500 dark:text-gray-400">
                         No users found matching your criteria.
                       </td>
                     </tr>
                   ) : (
                     filteredUsers.map((user) => (
-                      <tr key={user.id} className="hover:bg-secondary-50">
+                      <tr key={user.id} className="hover:bg-secondary-50 dark:hover:bg-gray-700 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <input
                             type="checkbox"
                             checked={selectedUserIds.includes(user.id)}
                             onChange={() => handleSelectUser(user.id)}
-                            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 rounded"
+                            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-secondary-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
+                            title={`Select ${user.firstname} ${user.lastname}`}
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
-                            <div className="text-sm font-medium text-secondary-900">
+                            <div className="text-sm font-medium text-secondary-900 dark:text-gray-100">
                               {user.firstname} {user.lastname}
                             </div>
-                            <div className="text-sm text-secondary-500">
+                            <div className="text-sm text-secondary-500 dark:text-gray-400">
                               {user.email}
                             </div>
                           </div>
@@ -410,11 +419,15 @@ const UserManagementPage: React.FC = () => {
                             {user.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-secondary-500 dark:text-gray-400">
                           {user.lastLogin ? user.lastLogin.toLocaleDateString() : 'Never'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button className="text-secondary-400 hover:text-secondary-600">
+                          <button
+                            type="button"
+                            className="text-secondary-400 dark:text-gray-500 hover:text-secondary-600 dark:hover:text-gray-300 transition-colors"
+                            title={`Actions for ${user.firstname} ${user.lastname}`}
+                          >
                             <EllipsisVerticalIcon className="h-5 w-5" />
                           </button>
                         </td>

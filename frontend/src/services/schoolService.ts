@@ -25,15 +25,23 @@ import type {
 export class SchoolService {
   // Group School Management
   static async getGroupSchools(): Promise<GroupSchool[]> {
-    const response = await ApiService.get<ApiResponse<GroupSchool[]>>(
-      API_ENDPOINTS.GROUP_SCHOOLS.ALL
-    );
-    
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to fetch group schools');
+    try {
+      const response = await ApiService.get<any>(API_ENDPOINTS.GROUP_SCHOOLS.ALL);
+
+      // Handle different response formats
+      if (Array.isArray(response)) {
+        return response;
+      } else if (response.success && response.data) {
+        return response.data;
+      } else if (response.data && Array.isArray(response.data)) {
+        return response.data;
+      }
+
+      return [];
+    } catch (error) {
+      console.error('Error fetching group schools:', error);
+      throw error;
     }
-    
-    return response.data || [];
   }
 
   static async getGroupSchool(id: string): Promise<GroupSchool> {
@@ -99,15 +107,23 @@ export class SchoolService {
 
   // School Management
   static async getSchools(): Promise<School[]> {
-    const response = await ApiService.get<ApiResponse<School[]>>(
-      API_ENDPOINTS.SCHOOLS.ALL
-    );
-    
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to fetch schools');
+    try {
+      const response = await ApiService.get<any>(API_ENDPOINTS.SCHOOLS.ALL);
+
+      // Handle different response formats
+      if (Array.isArray(response)) {
+        return response;
+      } else if (response.success && response.data) {
+        return response.data;
+      } else if (response.data && Array.isArray(response.data)) {
+        return response.data;
+      }
+
+      return [];
+    } catch (error) {
+      console.error('Error fetching schools:', error);
+      throw error;
     }
-    
-    return response.data || [];
   }
 
   static async getSchool(id: string): Promise<School> {
@@ -172,15 +188,23 @@ export class SchoolService {
 
   // Session Management
   static async getSessions(): Promise<Session[]> {
-    const response = await ApiService.get<ApiResponse<Session[]>>(
-      API_ENDPOINTS.SESSIONS.ALL
-    );
-    
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to fetch sessions');
+    try {
+      const response = await ApiService.get<any>(API_ENDPOINTS.SESSIONS.ALL);
+
+      // Handle different response formats
+      if (Array.isArray(response)) {
+        return response;
+      } else if (response.success && response.data) {
+        return response.data;
+      } else if (response.data && Array.isArray(response.data)) {
+        return response.data;
+      }
+
+      return [];
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
+      throw error;
     }
-    
-    return response.data || [];
   }
 
   static async getSession(id: string): Promise<Session> {
@@ -233,15 +257,23 @@ export class SchoolService {
 
   // Term Management
   static async getTerms(): Promise<Term[]> {
-    const response = await ApiService.get<ApiResponse<Term[]>>(
-      API_ENDPOINTS.TERMS.ALL
-    );
-    
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to fetch terms');
+    try {
+      const response = await ApiService.get<any>(API_ENDPOINTS.TERMS.ALL);
+
+      // Handle different response formats
+      if (Array.isArray(response)) {
+        return response;
+      } else if (response.success && response.data) {
+        return response.data;
+      } else if (response.data && Array.isArray(response.data)) {
+        return response.data;
+      }
+
+      return [];
+    } catch (error) {
+      console.error('Error fetching terms:', error);
+      throw error;
     }
-    
-    return response.data || [];
   }
 
   static async getTerm(id: string): Promise<Term> {
@@ -294,15 +326,23 @@ export class SchoolService {
 
   // Class Arm Management
   static async getClassArms(): Promise<ClassArm[]> {
-    const response = await ApiService.get<ApiResponse<ClassArm[]>>(
-      API_ENDPOINTS.CLASS_ARMS.ALL
-    );
-    
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to fetch class arms');
+    try {
+      const response = await ApiService.get<any>(API_ENDPOINTS.CLASS_ARMS.ALL);
+
+      // Handle different response formats
+      if (Array.isArray(response)) {
+        return response;
+      } else if (response.success && response.data) {
+        return response.data;
+      } else if (response.data && Array.isArray(response.data)) {
+        return response.data;
+      }
+
+      return [];
+    } catch (error) {
+      console.error('Error fetching class arms:', error);
+      throw error;
     }
-    
-    return response.data || [];
   }
 
   static async getClassArm(id: string): Promise<ClassArm> {

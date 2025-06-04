@@ -88,7 +88,7 @@ const AdminDashboard: React.FC = () => {
       title: 'Add New School',
       description: 'Register a new school in the system',
       icon: BuildingOfficeIcon,
-      onClick: () => console.log('Add school'),
+      onClick: () => navigate('/schools'),
       color: 'primary',
     },
     {
@@ -96,7 +96,7 @@ const AdminDashboard: React.FC = () => {
       title: 'Create User Account',
       description: 'Add new admin or staff user',
       icon: UserPlusIcon,
-      onClick: () => console.log('Create user'),
+      onClick: () => navigate('/users'),
       color: 'success',
     },
     {
@@ -104,7 +104,7 @@ const AdminDashboard: React.FC = () => {
       title: 'System Configuration',
       description: 'Manage global system settings',
       icon: CogIcon,
-      onClick: () => console.log('System settings'),
+      onClick: () => navigate('/settings'),
       color: 'secondary',
     },
     {
@@ -112,7 +112,7 @@ const AdminDashboard: React.FC = () => {
       title: 'Generate Audit Report',
       description: 'Create comprehensive system audit',
       icon: DocumentTextIcon,
-      onClick: () => console.log('Audit report'),
+      onClick: () => navigate('/reports'),
       color: 'warning',
     },
     {
@@ -120,7 +120,7 @@ const AdminDashboard: React.FC = () => {
       title: 'Security Review',
       description: 'Review security logs and alerts',
       icon: ShieldCheckIcon,
-      onClick: () => console.log('Security review'),
+      onClick: () => navigate('/audit'),
       color: 'error',
     },
   ];
@@ -155,21 +155,21 @@ const AdminDashboard: React.FC = () => {
       {/* Loading State */}
       {dashboardLoading && (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-          <span className="ml-3 text-secondary-600">Loading dashboard...</span>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 dark:border-primary-400"></div>
+          <span className="ml-3 text-secondary-600 dark:text-gray-400">Loading dashboard...</span>
         </div>
       )}
 
       {/* Error State */}
       {dashboardError && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg p-4 transition-colors duration-200">
           <div className="flex items-center">
-            <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mr-2" />
+            <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-400 mr-2" />
             <div>
-              <h4 className="text-sm font-medium text-red-800">
+              <h4 className="text-sm font-medium text-red-800 dark:text-red-200">
                 Error Loading Dashboard
               </h4>
-              <p className="text-sm text-red-700 mt-1">
+              <p className="text-sm text-red-700 dark:text-red-300 mt-1">
                 {dashboardError}. Please try refreshing the page.
               </p>
             </div>
@@ -179,14 +179,14 @@ const AdminDashboard: React.FC = () => {
 
       {/* System Alert */}
       {dashboardData && dashboardData.statistics.pendingPayments > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4 transition-colors duration-200">
           <div className="flex items-center">
-            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2" />
+            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mr-2" />
             <div>
-              <h4 className="text-sm font-medium text-yellow-800">
+              <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
                 System Alert
               </h4>
-              <p className="text-sm text-yellow-700 mt-1">
+              <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
                 There are {dashboardData.statistics.pendingPayments} pending payments requiring attention across the system.
               </p>
             </div>
@@ -197,9 +197,9 @@ const AdminDashboard: React.FC = () => {
       {/* Statistics Grid */}
       {!dashboardLoading && (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat, index) => (
+          {stats.map((stat) => (
             <StatCard
-              key={index}
+              key={stat.title}
               title={stat.title}
               value={stat.value}
               change={stat.change}
@@ -227,7 +227,7 @@ const AdminDashboard: React.FC = () => {
           <RecentActivityCard
             title="Recent System Activities"
             activities={recentActivities}
-            onViewAll={() => console.log('View all activities')}
+            onViewAll={() => navigate('/audit')}
           />
         </div>
       </div>

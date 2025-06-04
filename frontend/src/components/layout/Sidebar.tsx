@@ -182,7 +182,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       {/* Logo */}
-      <div className="flex items-center h-16 flex-shrink-0 px-4 bg-primary-600">
+      <div className="flex items-center h-16 flex-shrink-0 px-4 bg-primary-600 dark:bg-primary-700">
         <div className="flex items-center">
           <div className="flex-shrink-0">
             <svg
@@ -201,19 +201,19 @@ const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
           </div>
           <div className="ml-3">
             <h1 className="text-white text-lg font-semibold">Smart-S</h1>
-            <p className="text-primary-200 text-xs">School Management</p>
+            <p className="text-primary-200 dark:text-primary-300 text-xs">School Management</p>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="mt-5 flex-1 px-2 bg-white space-y-1 overflow-y-auto">
+      <nav className="mt-5 flex-1 px-2 bg-white dark:bg-gray-800 space-y-1 overflow-y-auto transition-colors duration-200">
         {filteredNavigation.map((item) => {
           if (item.children) {
             // Render submenu
             return (
               <div key={item.id} className="space-y-1">
-                <div className="text-gray-500 text-xs font-semibold uppercase tracking-wide px-3 py-2">
+                <div className="text-gray-500 dark:text-gray-400 text-xs font-semibold uppercase tracking-wide px-3 py-2">
                   {item.label}
                 </div>
                 {item.children
@@ -225,9 +225,9 @@ const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
                       onClick={() => handleNavigation(child.path)}
                       className={cn(
                         isActiveRoute(child.path)
-                          ? 'bg-primary-100 text-primary-900'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                        'group w-full flex items-center pl-7 pr-2 py-2 text-sm font-medium rounded-md'
+                          ? 'bg-primary-100 dark:bg-primary-900 text-primary-900 dark:text-primary-100'
+                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100',
+                        'group w-full flex items-center pl-7 pr-2 py-2 text-sm font-medium rounded-md transition-colors duration-150'
                       )}
                     >
                       {child.label}
@@ -245,16 +245,18 @@ const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
               onClick={() => handleNavigation(item.path)}
               className={cn(
                 isActiveRoute(item.path)
-                  ? 'bg-primary-100 text-primary-900'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                'group w-full flex items-center px-2 py-2 text-sm font-medium rounded-md'
+                  ? 'bg-primary-100 dark:bg-primary-900 text-primary-900 dark:text-primary-100'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100',
+                'group w-full flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors duration-150'
               )}
             >
               {item.icon && (
                 <item.icon
                   className={cn(
-                    isActiveRoute(item.path) ? 'text-primary-500' : 'text-gray-400 group-hover:text-gray-500',
-                    'mr-3 flex-shrink-0 h-6 w-6'
+                    isActiveRoute(item.path)
+                      ? 'text-primary-500 dark:text-primary-400'
+                      : 'text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400',
+                    'mr-3 flex-shrink-0 h-6 w-6 transition-colors duration-150'
                   )}
                   aria-hidden="true"
                 />
@@ -266,20 +268,20 @@ const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
       </nav>
 
       {/* User info */}
-      <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
+      <div className="flex-shrink-0 flex border-t border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-800 transition-colors duration-200">
         <div className="flex items-center">
           <div className="flex-shrink-0">
-            <div className="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
-              <span className="text-sm font-medium text-primary-600">
+            <div className="h-8 w-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
+              <span className="text-sm font-medium text-primary-600 dark:text-primary-300">
                 {user ? user.firstname.charAt(0) + user.lastname.charAt(0) : 'U'}
               </span>
             </div>
           </div>
           <div className="ml-3">
-            <p className="text-sm font-medium text-gray-700">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
               {user ? `${user.firstname} ${user.lastname}` : 'User'}
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               {user?.roles?.[0] || 'User'}
             </p>
           </div>
@@ -315,7 +317,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
               leaveFrom="translate-x-0"
               leaveTo="-translate-x-full"
             >
-              <Dialog.Panel className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
+              <Dialog.Panel className="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-gray-800">
                 <Transition.Child
                   as={Fragment}
                   enter="ease-in-out duration-300"
@@ -346,7 +348,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
 
       {/* Static sidebar for desktop */}
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
-        <div className="flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white">
+        <div className="flex-1 flex flex-col min-h-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 transition-colors duration-200">
           <SidebarContent />
         </div>
       </div>

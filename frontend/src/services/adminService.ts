@@ -125,7 +125,15 @@ class AdminService {
   async getDashboardData(): Promise<AdminDashboardData> {
     try {
       const response = await apiService.get('/admin/dashboard');
-      return response.data;
+
+      // Handle different response formats
+      if (response.success && response.data) {
+        return response.data;
+      } else if (response.data) {
+        return response.data;
+      } else {
+        return response;
+      }
     } catch (error) {
       console.error('Error fetching admin dashboard data:', error);
       throw error;
@@ -151,7 +159,15 @@ class AdminService {
   async getUserManagement(): Promise<UserManagement> {
     try {
       const response = await apiService.get('/admin/user-management');
-      return response.data;
+
+      // Handle different response formats
+      if (response.success && response.data) {
+        return response.data;
+      } else if (response.data) {
+        return response.data;
+      } else {
+        return response;
+      }
     } catch (error) {
       console.error('Error fetching user management data:', error);
       throw error;

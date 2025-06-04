@@ -1,8 +1,8 @@
-# Smart-S: School Management & Accounting System
+# Ledgrio: School Management & Accounting System
 
 ## Overview
 
-Smart-S is a comprehensive school management and accounting software designed for nursery, primary, and secondary schools. The system provides a complete solution for managing school operations, student information, fee collection, and financial transactions.
+Ledgrio is a comprehensive school management and accounting software designed for nursery, primary, and secondary schools. The system provides a complete solution for managing school operations, student information, fee collection, and financial transactions.
 
 ## Technology Stack
 

@@ -8,13 +8,12 @@ import {
   ClockIcon,
   XCircleIcon,
   FunnelIcon,
-  HomeIcon,
 } from '@heroicons/react/24/outline';
-import { useNavigate } from 'react-router-dom';
 import { useFeeStore } from '../../store/feeStore';
 import { useSchoolStore } from '../../store/schoolStore';
 import { useAuthStore } from '../../store/authStore';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import MainLayout from '../../components/layout/MainLayout';
+import CenteredLoader from '../../components/common/CenteredLoader';
 import FeeCard from '../../components/fees/FeeCard';
 import PaymentCard from '../../components/fees/PaymentCard';
 import FeeModal from '../../components/fees/FeeModal';
@@ -24,7 +23,6 @@ import FeeStats from '../../components/fees/FeeStats';
 import PaymentStats from '../../components/fees/PaymentStats';
 
 const FeeManagementPage: React.FC = () => {
-  const navigate = useNavigate();
   const { user } = useAuthStore();
   const {
     fees,
@@ -96,7 +94,11 @@ const FeeManagementPage: React.FC = () => {
   );
 
   if (isLoading && fees.length === 0) {
-    return <LoadingSpinner />;
+    return (
+      <MainLayout>
+        <CenteredLoader message="Loading fee data..." />
+      </MainLayout>
+    );
   }
 
   const tabs = [
@@ -146,77 +148,66 @@ const FeeManagementPage: React.FC = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
+    <MainLayout>
+      <div className="space-y-6">
+        {/* Page Header */}
+        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <CurrencyDollarIcon className="h-8 w-8 text-primary-600 mr-3" />
+              <div>
+                <h1 className="text-2xl font-bold text-secondary-900">
+                  Fee Management
+                </h1>
+                <p className="text-secondary-600 mt-1">
+                  Manage fees, process payments, and track financial transactions
+                </p>
+              </div>
+            </div>
+
+            {canManageFees && (
+              <div className="flex space-x-3">
                 <button
                   type="button"
-                  onClick={() => navigate('/dashboard')}
-                  className="mr-4 inline-flex items-center px-3 py-2 border border-primary-300 rounded-md shadow-sm text-sm font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                  onClick={handleCreateFee}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
                 >
-                  <div className="w-4 h-4 bg-primary-500 rounded mr-2 flex items-center justify-center">
-                    <HomeIcon className="w-3 h-3 text-white" />
-                  </div>
-                  Dashboard
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  New Fee
                 </button>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Fee Management</h1>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Manage fees, process payments, and track financial transactions
-                  </p>
-                </div>
               </div>
-              
-              {canManageFees && (
-                <div className="flex space-x-3">
-                  <button
-                    onClick={handleCreateFee}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
-                  >
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    New Fee
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Tab Navigation */}
-            <div className="mt-6">
-              <nav className="flex space-x-8">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id as any)}
-                      className={`flex items-center px-3 py-2 text-sm font-medium rounded-md relative ${
-                        activeTab === tab.id
-                          ? 'text-primary-600 bg-primary-50'
-                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      <Icon className="h-4 w-4 mr-2" />
-                      {tab.name}
-                      {tab.badge && tab.badge > 0 && (
-                        <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          {tab.badge}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </nav>
-            </div>
+            )}
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Tab Navigation */}
+        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+          <nav className="flex space-x-8">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md relative ${
+                    activeTab === tab.id
+                      ? 'text-primary-600 bg-primary-50'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <Icon className="h-4 w-4 mr-2" />
+                  {tab.name}
+                  {tab.badge && tab.badge > 0 && (
+                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                      {tab.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
             <p className="text-sm text-red-600">{error}</p>
@@ -480,7 +471,7 @@ const FeeManagementPage: React.FC = () => {
           setIsApprovalModalOpen(false);
         }}
       />
-    </div>
+    </MainLayout>
   );
 };
 

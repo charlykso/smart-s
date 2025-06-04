@@ -14,6 +14,7 @@ import { useAuthStore } from '../../store/authStore';
 import { ROUTES } from '../../constants';
 import { getFullName, getInitials, cn } from '../../utils';
 import NotificationBell from '../notifications/NotificationBell';
+import ThemeToggle from '../ui/ThemeToggle';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -52,11 +53,11 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   ];
 
   return (
-    <div className="relative z-10 flex-shrink-0 flex h-16 bg-white shadow">
+    <div className="relative z-10 flex-shrink-0 flex h-16 bg-white dark:bg-gray-800 shadow dark:shadow-gray-700 transition-colors duration-200">
       {/* Mobile menu button */}
       <button
         type="button"
-        className="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 md:hidden"
+        className="px-4 border-r border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 md:hidden"
         onClick={onMenuClick}
       >
         <span className="sr-only">Open sidebar</span>
@@ -67,7 +68,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         {/* Search bar placeholder */}
         <div className="flex-1 flex">
           <div className="w-full flex md:ml-0">
-            <div className="relative w-full text-gray-400 focus-within:text-gray-600">
+            <div className="relative w-full text-gray-400 dark:text-gray-500 focus-within:text-gray-600 dark:focus-within:text-gray-300">
               <div className="absolute inset-y-0 left-0 flex items-center pointer-events-none">
                 <svg
                   className="h-5 w-5"
@@ -85,7 +86,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
               </div>
               <input
                 id="search-field"
-                className="block w-full h-full pl-8 pr-3 py-2 border-transparent text-gray-900 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-0 focus:border-transparent sm:text-sm"
+                className="block w-full h-full pl-8 pr-3 py-2 border-transparent text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 dark:focus:placeholder-gray-300 focus:ring-0 focus:border-transparent sm:text-sm bg-transparent"
                 placeholder="Search..."
                 type="search"
                 name="search"
@@ -96,13 +97,16 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
 
         {/* Right side */}
         <div className="ml-4 flex items-center md:ml-6">
+          {/* Theme Toggle */}
+          <ThemeToggle variant="button" size="md" className="mr-3" />
+
           {/* Notifications */}
           <NotificationBell />
 
           {/* Profile dropdown */}
           <Menu as="div" className="ml-3 relative">
             <div>
-              <Menu.Button className="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+              <Menu.Button className="max-w-xs bg-white dark:bg-gray-800 flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:ring-offset-gray-800">
                 <span className="sr-only">Open user menu</span>
                 {user?.profile?.profilePicture ? (
                   <img
@@ -128,13 +132,13 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
               leaveFrom="transform opacity-100 scale-100"
               leaveTo="transform opacity-0 scale-95"
             >
-              <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+              <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black dark:ring-gray-700 ring-opacity-5 focus:outline-none">
                 {/* User info */}
-                <div className="px-4 py-2 border-b border-gray-100">
-                  <p className="text-sm font-medium text-gray-900">
+                <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     {user ? getFullName(user) : 'User'}
                   </p>
-                  <p className="text-sm text-gray-500">{user?.email}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</p>
                 </div>
 
                 {/* Navigation items */}
@@ -145,8 +149,8 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                         type="button"
                         onClick={item.onClick}
                         className={cn(
-                          active ? 'bg-gray-100' : '',
-                          'w-full text-left px-4 py-2 text-sm text-gray-700 flex items-center'
+                          active ? 'bg-gray-100 dark:bg-gray-700' : '',
+                          'w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 flex items-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150'
                         )}
                       >
                         <item.icon className="mr-3 h-4 w-4" aria-hidden="true" />

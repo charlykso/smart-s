@@ -12,12 +12,11 @@ import {
   EyeIcon,
   EyeSlashIcon,
   ChartBarIcon,
-  HomeIcon,
 } from '@heroicons/react/24/outline';
-import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { FeeService } from '../../services/feeService';
 import type { PaymentProfile, PaymentMethod } from '../../types/fee';
+import MainLayout from '../../components/layout/MainLayout';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import PaymentMethodTestCard from '../../components/admin/PaymentMethodTestCard';
 import PaymentAnalyticsDashboard from '../../components/admin/PaymentAnalyticsDashboard';
@@ -48,7 +47,6 @@ const paymentConfigSchema = z.object({
 type PaymentConfigFormData = z.infer<typeof paymentConfigSchema>;
 
 const PaymentConfigurationPage: React.FC = () => {
-  const navigate = useNavigate();
   const { user } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -203,70 +201,63 @@ const PaymentConfigurationPage: React.FC = () => {
   };
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return (
+      <MainLayout>
+        <LoadingSpinner />
+      </MainLayout>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex items-center">
-              <button
-                type="button"
-                onClick={() => navigate('/dashboard')}
-                className="mr-4 inline-flex items-center px-3 py-2 border border-primary-300 rounded-md shadow-sm text-sm font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
-              >
-                <div className="w-4 h-4 bg-primary-500 rounded mr-2 flex items-center justify-center">
-                  <HomeIcon className="w-3 h-3 text-white" />
-                </div>
-                Dashboard
-              </button>
-              <CogIcon className="h-8 w-8 text-primary-600 mr-3" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Payment Configuration</h1>
-                <p className="mt-1 text-sm text-gray-500">
-                  Configure payment methods for your school
-                </p>
-              </div>
-            </div>
-
-            {/* Tab Navigation */}
-            <div className="mt-6">
-              <nav className="flex space-x-8">
-                {[
-                  { id: 'paystack', name: 'Paystack', icon: CreditCardIcon },
-                  { id: 'flutterwave', name: 'Flutterwave', icon: CreditCardIcon },
-                  { id: 'bank', name: 'Bank Transfer', icon: BuildingLibraryIcon },
-                  { id: 'settings', name: 'Settings', icon: CogIcon },
-                  { id: 'analytics', name: 'Analytics', icon: ChartBarIcon },
-                ].map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setActiveTab(tab.id as any)}
-                      className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                        activeTab === tab.id
-                          ? 'text-primary-600 bg-primary-50'
-                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      <Icon className="h-4 w-4 mr-2" />
-                      {tab.name}
-                    </button>
-                  );
-                })}
-              </nav>
+    <MainLayout>
+      <div className="space-y-6">
+        {/* Page Header */}
+        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+          <div className="flex items-center">
+            <CogIcon className="h-8 w-8 text-primary-600 mr-3" />
+            <div>
+              <h1 className="text-2xl font-bold text-secondary-900">
+                Payment Configuration
+              </h1>
+              <p className="text-secondary-600 mt-1">
+                Configure payment methods for your school
+              </p>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Tab Navigation */}
+        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+          <nav className="flex space-x-8">
+            {[
+              { id: 'paystack', name: 'Paystack', icon: CreditCardIcon },
+              { id: 'flutterwave', name: 'Flutterwave', icon: CreditCardIcon },
+              { id: 'bank', name: 'Bank Transfer', icon: BuildingLibraryIcon },
+              { id: 'settings', name: 'Settings', icon: CogIcon },
+              { id: 'analytics', name: 'Analytics', icon: ChartBarIcon },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                    activeTab === tab.id
+                      ? 'text-primary-600 bg-primary-50'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <Icon className="h-4 w-4 mr-2" />
+                  {tab.name}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Content */}
+        <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Configuration Form */}
           <div className="lg:col-span-2">
@@ -674,8 +665,9 @@ const PaymentConfigurationPage: React.FC = () => {
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </MainLayout>
   );
 };
 

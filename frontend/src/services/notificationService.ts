@@ -390,37 +390,60 @@ export class NotificationService {
 
   // Browser notification (if permission granted)
   static async showBrowserNotification(notification: Notification): Promise<void> {
-    if ('Notification' in window && Notification.permission === 'granted') {
-      const browserNotification = new Notification(notification.title, {
-        body: notification.message,
-        icon: '/favicon.ico',
-        badge: '/favicon.ico',
-        tag: notification._id,
-        requireInteraction: notification.type === 'error' || notification.type === 'payment_overdue',
-      });
+    try {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        const browserNotification = new Notification(notification.title, {
+          body: notification.message,
+          icon: '/favicon.ico',
+          badge: '/favicon.ico',
+          tag: notification._id,
+          requireInteraction: notification.type === 'error' || notification.type === 'payment_overdue',
+        });
 
-      browserNotification.onclick = () => {
-        window.focus();
-        if (notification.actionUrl) {
-          window.location.href = notification.actionUrl;
+        browserNotification.onclick = () => {
+          try {
+            window.focus();
+            if (notification.actionUrl) {
+              window.location.href = notification.actionUrl;
+            }
+            browserNotification.close();
+          } catch (error) {
+            console.warn('Error handling notification click:', error);
+          }
+        };
+
+        browserNotification.onerror = (error) => {
+          console.warn('Browser notification error:', error);
+        };
+
+        // Auto-close after 5 seconds for non-critical notifications
+        if (notification.type !== 'error' && notification.type !== 'payment_overdue') {
+          setTimeout(() => {
+            try {
+              browserNotification.close();
+            } catch (error) {
+              console.warn('Error closing notification:', error);
+            }
+          }, 5000);
         }
-        browserNotification.close();
-      };
-
-      // Auto-close after 5 seconds for non-critical notifications
-      if (notification.type !== 'error' && notification.type !== 'payment_overdue') {
-        setTimeout(() => browserNotification.close(), 5000);
       }
+    } catch (error) {
+      console.warn('Failed to show browser notification:', error);
     }
   }
 
   // Request browser notification permission
   static async requestNotificationPermission(): Promise<NotificationPermission> {
-    if ('Notification' in window) {
-      const permission = await Notification.requestPermission();
-      return permission;
+    try {
+      if ('Notification' in window) {
+        const permission = await Notification.requestPermission();
+        return permission;
+      }
+      return 'denied';
+    } catch (error) {
+      console.warn('Failed to request notification permission:', error);
+      return 'denied';
     }
-    return 'denied';
   }
 
   // Utility methods

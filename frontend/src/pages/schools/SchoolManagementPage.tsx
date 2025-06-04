@@ -4,15 +4,13 @@ import {
   AcademicCapIcon,
   CalendarDaysIcon,
   PlusIcon,
-  Cog6ToothIcon,
   ChartBarIcon,
-  UsersIcon,
-  HomeIcon
+  UsersIcon
 } from '@heroicons/react/24/outline';
-import { useNavigate } from 'react-router-dom';
 import { useSchoolStore } from '../../store/schoolStore';
 import { useAuthStore } from '../../store/authStore';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import MainLayout from '../../components/layout/MainLayout';
+import CenteredLoader from '../../components/common/CenteredLoader';
 import SchoolCard from '../../components/schools/SchoolCard';
 import SessionCard from '../../components/schools/SessionCard';
 import TermCard from '../../components/schools/TermCard';
@@ -25,7 +23,6 @@ import GroupSchoolModal from '../../components/schools/GroupSchoolModal';
 import SchoolStats from '../../components/schools/SchoolStats';
 
 const SchoolManagementPage: React.FC = () => {
-  const navigate = useNavigate();
   const { user } = useAuthStore();
   const {
     schools,
@@ -84,7 +81,11 @@ const SchoolManagementPage: React.FC = () => {
   );
 
   if (isLoading && schools.length === 0) {
-    return <LoadingSpinner />;
+    return (
+      <MainLayout>
+        <CenteredLoader message="Loading school data..." />
+      </MainLayout>
+    );
   }
 
   const tabs = [
@@ -141,81 +142,71 @@ const SchoolManagementPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
+    <MainLayout>
+      <div className="space-y-6">
+        {/* Page Header */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900 border border-secondary-200 dark:border-gray-700 p-6 transition-colors duration-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <BuildingOfficeIcon className="h-8 w-8 text-primary-600 dark:text-primary-400 mr-3" />
+              <div>
+                <h1 className="text-2xl font-bold text-secondary-900 dark:text-gray-100">
+                  School Management
+                </h1>
+                <p className="text-secondary-600 dark:text-gray-400 mt-1">
+                  Manage schools, academic sessions, terms, and class structures
+                </p>
+              </div>
+            </div>
+
+            {canManageSchools && (
+              <div className="flex space-x-3">
                 <button
                   type="button"
-                  onClick={() => navigate('/dashboard')}
-                  className="mr-4 inline-flex items-center px-3 py-2 border border-primary-300 rounded-md shadow-sm text-sm font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                  onClick={handleCreateGroupSchool}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                 >
-                  <div className="w-4 h-4 bg-primary-500 rounded mr-2 flex items-center justify-center">
-                    <HomeIcon className="w-3 h-3 text-white" />
-                  </div>
-                  Dashboard
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  Group School
                 </button>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">School Management</h1>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Manage schools, academic sessions, terms, and class structures
-                  </p>
-                </div>
+                <button
+                  type="button"
+                  onClick={handleCreateSchool}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-600 transition-colors"
+                >
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  New School
+                </button>
               </div>
-              
-              {canManageSchools && (
-                <div className="flex space-x-3">
-                  <button
-                    onClick={handleCreateGroupSchool}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Group School
-                  </button>
-                  <button
-                    onClick={handleCreateSchool}
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
-                  >
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    New School
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Tab Navigation */}
-            <div className="mt-6">
-              <nav className="flex space-x-8">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id as any)}
-                      className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                        activeTab === tab.id
-                          ? 'text-primary-600 bg-primary-50'
-                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      <Icon className="h-4 w-4 mr-2" />
-                      {tab.name}
-                    </button>
-                  );
-                })}
-              </nav>
-            </div>
+            )}
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Tab Navigation */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900 border border-secondary-200 dark:border-gray-700 p-6 transition-colors duration-200">
+          <nav className="flex space-x-8">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                    activeTab === tab.id
+                      ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <Icon className="h-4 w-4 mr-2" />
+                  {tab.name}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="bg-red-50 border border-red-200 rounded-md p-4">
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
@@ -224,56 +215,60 @@ const SchoolManagementPage: React.FC = () => {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             <SchoolStats />
-            
+
             {/* Quick Actions */}
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+            <div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-900 rounded-lg border dark:border-gray-700 p-6 transition-colors duration-200">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Quick Actions</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {canManageSchools && (
                   <button
+                    type="button"
                     onClick={handleCreateSchool}
-                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                    className="flex items-center p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                   >
-                    <BuildingOfficeIcon className="h-8 w-8 text-primary-600 mr-3" />
+                    <BuildingOfficeIcon className="h-8 w-8 text-primary-600 dark:text-primary-400 mr-3" />
                     <div className="text-left">
-                      <p className="font-medium text-gray-900">Add School</p>
-                      <p className="text-sm text-gray-500">Create new school</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">Add School</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Create new school</p>
                     </div>
                   </button>
                 )}
-                
+
                 {canManageSessions && (
                   <button
+                    type="button"
                     onClick={handleCreateSession}
-                    className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                    className="flex items-center p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                   >
-                    <CalendarDaysIcon className="h-8 w-8 text-primary-600 mr-3" />
+                    <CalendarDaysIcon className="h-8 w-8 text-primary-600 dark:text-primary-400 mr-3" />
                     <div className="text-left">
-                      <p className="font-medium text-gray-900">New Session</p>
-                      <p className="text-sm text-gray-500">Create academic session</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">New Session</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Create academic session</p>
                     </div>
                   </button>
                 )}
-                
+
                 <button
+                  type="button"
                   onClick={handleCreateTerm}
-                  className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                  className="flex items-center p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                 >
-                  <AcademicCapIcon className="h-8 w-8 text-primary-600 mr-3" />
+                  <AcademicCapIcon className="h-8 w-8 text-primary-600 dark:text-primary-400 mr-3" />
                   <div className="text-left">
-                    <p className="font-medium text-gray-900">New Term</p>
-                    <p className="text-sm text-gray-500">Create academic term</p>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">New Term</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Create academic term</p>
                   </div>
                 </button>
-                
+
                 <button
+                  type="button"
                   onClick={handleCreateClassArm}
-                  className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                  className="flex items-center p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
                 >
-                  <UsersIcon className="h-8 w-8 text-primary-600 mr-3" />
+                  <UsersIcon className="h-8 w-8 text-primary-600 dark:text-primary-400 mr-3" />
                   <div className="text-left">
-                    <p className="font-medium text-gray-900">New Class</p>
-                    <p className="text-sm text-gray-500">Create class arm</p>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">New Class</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Create class arm</p>
                   </div>
                 </button>
               </div>
@@ -288,6 +283,7 @@ const SchoolManagementPage: React.FC = () => {
               <h2 className="text-lg font-medium text-gray-900">Schools ({schools.length})</h2>
               {canManageSchools && (
                 <button
+                  type="button"
                   onClick={handleCreateSchool}
                   className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
                 >
@@ -296,8 +292,8 @@ const SchoolManagementPage: React.FC = () => {
                 </button>
               )}
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
               {schools.map((school) => (
                 <SchoolCard
                   key={school._id}
@@ -318,6 +314,7 @@ const SchoolManagementPage: React.FC = () => {
               <h2 className="text-lg font-medium text-gray-900">Academic Sessions ({sessions.length})</h2>
               {canManageSessions && (
                 <button
+                  type="button"
                   onClick={handleCreateSession}
                   className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
                 >
@@ -326,8 +323,8 @@ const SchoolManagementPage: React.FC = () => {
                 </button>
               )}
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
               {sessions.map((session) => (
                 <SessionCard
                   key={session._id}
@@ -347,6 +344,7 @@ const SchoolManagementPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-medium text-gray-900">Academic Terms ({terms.length})</h2>
               <button
+                type="button"
                 onClick={handleCreateTerm}
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
               >
@@ -354,8 +352,8 @@ const SchoolManagementPage: React.FC = () => {
                 Add Term
               </button>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
               {terms.map((term) => (
                 <TermCard
                   key={term._id}
@@ -375,6 +373,7 @@ const SchoolManagementPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-medium text-gray-900">Class Arms ({classArms.length})</h2>
               <button
+                type="button"
                 onClick={handleCreateClassArm}
                 className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
               >
@@ -382,8 +381,8 @@ const SchoolManagementPage: React.FC = () => {
                 Add Class
               </button>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
               {classArms.map((classArm) => (
                 <ClassArmCard
                   key={classArm._id}
@@ -451,7 +450,7 @@ const SchoolManagementPage: React.FC = () => {
           setIsGroupSchoolModalOpen(false);
         }}
       />
-    </div>
+    </MainLayout>
   );
 };
 

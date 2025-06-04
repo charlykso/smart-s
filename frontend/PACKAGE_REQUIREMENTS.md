@@ -3,11 +3,13 @@
 ## Package Installation Commands
 
 ### 1. Initialize React Project with Vite
+
 ```bash
 npm create vite@latest . -- --template react-ts
 ```
 
 ### 2. Core Dependencies
+
 ```bash
 npm install react@^18.2.0 react-dom@^18.2.0
 npm install react-router-dom@^6.8.0
@@ -15,6 +17,7 @@ npm install typescript@^4.9.0
 ```
 
 ### 3. State Management & Data Fetching
+
 ```bash
 npm install zustand@^4.3.0
 npm install @tanstack/react-query@^4.24.0
@@ -22,6 +25,7 @@ npm install axios@^1.3.0
 ```
 
 ### 4. UI Framework & Styling
+
 ```bash
 npm install tailwindcss@^3.2.0 autoprefixer@^10.4.0 postcss@^8.4.0
 npm install @headlessui/react@^1.7.0
@@ -31,6 +35,7 @@ npm install tailwind-merge@^1.10.0
 ```
 
 ### 5. Forms & Validation
+
 ```bash
 npm install react-hook-form@^7.43.0
 npm install @hookform/resolvers@^2.9.0
@@ -38,12 +43,14 @@ npm install zod@^3.20.0
 ```
 
 ### 6. Notifications & UI Feedback
+
 ```bash
 npm install react-hot-toast@^2.4.0
 npm install framer-motion@^10.0.0
 ```
 
 ### 7. Charts & Data Visualization
+
 ```bash
 npm install chart.js@^4.2.0
 npm install react-chartjs-2@^5.2.0
@@ -51,23 +58,27 @@ npm install @tanstack/react-table@^8.7.0
 ```
 
 ### 8. File Handling & Media
+
 ```bash
 npm install react-dropzone@^14.2.0
 npm install react-image-crop@^10.1.0
 ```
 
 ### 9. Payment Integration
+
 ```bash
 npm install react-paystack@^3.0.0
 ```
 
 ### 10. Date & Time
+
 ```bash
 npm install date-fns@^2.29.0
 npm install react-datepicker@^4.10.0
 ```
 
 ### 11. Utilities
+
 ```bash
 npm install lodash@^4.17.0
 npm install @types/lodash@^4.14.0
@@ -76,6 +87,7 @@ npm install @types/uuid@^9.0.0
 ```
 
 ### 12. Development Dependencies
+
 ```bash
 npm install -D @types/react@^18.0.0
 npm install -D @types/react-dom@^18.0.0
@@ -95,6 +107,7 @@ npm install -D lint-staged@^13.1.0
 ```
 
 ### 13. Testing (Optional)
+
 ```bash
 npm install -D vitest@^0.28.0
 npm install -D @testing-library/react@^14.0.0
@@ -107,7 +120,7 @@ npm install -D jsdom@^21.1.0
 
 ```json
 {
-  "name": "smart-s-frontend",
+  "name": "ledgrio-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -177,13 +190,8 @@ npm install -D jsdom@^21.1.0
     "jsdom": "^21.1.0"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,css,md}": [
-      "prettier --write"
-    ]
+    "*.{ts,tsx,js,jsx}": ["eslint --fix", "prettier --write"],
+    "*.{json,css,md}": ["prettier --write"]
   }
 }
 ```
@@ -191,13 +199,11 @@ npm install -D jsdom@^21.1.0
 ## Configuration Files
 
 ### tailwind.config.js
+
 ```javascript
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
@@ -212,25 +218,23 @@ export default {
           500: '#64748b',
           600: '#475569',
           700: '#334155',
-        }
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
     },
   },
-  plugins: [
-    require('@tailwindcss/forms'),
-    require('@tailwindcss/typography'),
-  ],
-}
+  plugins: [require('@tailwindcss/forms'), require('@tailwindcss/typography')],
+};
 ```
 
 ### vite.config.ts
+
 ```typescript
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
@@ -255,10 +259,11 @@ export default defineConfig({
       },
     },
   },
-})
+});
 ```
 
 ### tsconfig.json
+
 ```json
 {
   "compilerOptions": {
@@ -295,6 +300,7 @@ export default defineConfig({
 ```
 
 ### .eslintrc.cjs
+
 ```javascript
 module.exports = {
   root: true,
@@ -323,7 +329,7 @@ module.exports = {
       version: 'detect',
     },
   },
-}
+};
 ```
 
 This comprehensive package requirements document provides everything needed to set up the Smart-S frontend project with all necessary dependencies and configurations.

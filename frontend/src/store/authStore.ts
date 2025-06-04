@@ -176,22 +176,31 @@ export const useAuthStore = create<AuthStore>()(
             // Validate token by trying to refresh it
             const tokenResponse = await AuthService.refreshToken(refreshToken);
 
+            // Get current user data
+            const userData = await AuthService.getCurrentUser();
+
             set({
+              user: userData,
               token: tokenResponse.token,
               refreshToken: tokenResponse.refreshToken,
               isAuthenticated: true,
               rememberMe: true,
             });
 
-            // Note: User data is already included in the token refresh response
-            // If we need fresh user data, we can implement a dedicated endpoint later
+            // Update localStorage with new tokens
+            localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, tokenResponse.token);
+            localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokenResponse.refreshToken);
           } catch (error) {
             console.error('Token validation failed:', error);
             // Clear invalid tokens
             localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
             localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
             localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
+            set(initialState);
           }
+        } else {
+          // No valid tokens, ensure state is cleared
+          set(initialState);
         }
       },
     }),

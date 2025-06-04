@@ -1,25 +1,26 @@
-# Smart-S Frontend Routing & Navigation Structure
+# Ledgrio Frontend Routing & Navigation Structure
 
 ## Route Hierarchy
 
 ### Public Routes (No Authentication Required)
+
 ```typescript
 // src/routes/publicRoutes.ts
 export const publicRoutes = [
   {
     path: '/login',
     component: LoginPage,
-    title: 'Login - Smart-S',
+    title: 'Login - Ledgrio',
   },
   {
     path: '/forgot-password',
     component: ForgotPasswordPage,
-    title: 'Forgot Password - Smart-S',
+    title: 'Forgot Password - Ledgrio',
   },
   {
     path: '/reset-password/:token',
     component: ResetPasswordPage,
-    title: 'Reset Password - Smart-S',
+    title: 'Reset Password - Ledgrio',
   },
   {
     path: '/',
@@ -29,6 +30,7 @@ export const publicRoutes = [
 ```
 
 ### Protected Routes (Authentication Required)
+
 ```typescript
 // src/routes/protectedRoutes.ts
 export const protectedRoutes = [
@@ -50,7 +52,7 @@ export const protectedRoutes = [
       },
     ],
   },
-  
+
   // User Management Routes
   {
     path: '/users',
@@ -161,7 +163,14 @@ export const protectedRoutes = [
   {
     path: '/payments',
     component: PaymentLayout,
-    roles: ['Admin', 'ICT_administrator', 'Principal', 'Bursar', 'Student', 'Parent'],
+    roles: [
+      'Admin',
+      'ICT_administrator',
+      'Principal',
+      'Bursar',
+      'Student',
+      'Parent',
+    ],
     children: [
       {
         path: '',
@@ -254,6 +263,7 @@ export const protectedRoutes = [
 ## Navigation Menu Structure
 
 ### Role-Based Menu Items
+
 ```typescript
 // src/constants/navigation.ts
 export const navigationItems: Record<UserRole, NavigationItem[]> = {
@@ -484,6 +494,7 @@ export const navigationItems: Record<UserRole, NavigationItem[]> = {
 ## Route Protection Implementation
 
 ### Protected Route Component
+
 ```typescript
 // src/components/auth/ProtectedRoute.tsx
 interface ProtectedRouteProps {
@@ -509,10 +520,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (requiredRoles.length > 0 && user) {
-    const hasRequiredRole = requiredRoles.some(role => 
+    const hasRequiredRole = requiredRoles.some(role =>
       user.roles.includes(role)
     );
-    
+
     if (!hasRequiredRole) {
       return fallback;
     }
@@ -523,6 +534,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 ```
 
 ### Route Configuration
+
 ```typescript
 // src/routes/index.tsx
 export const AppRoutes: React.FC = () => {
@@ -531,7 +543,7 @@ export const AppRoutes: React.FC = () => {
       {/* Public Routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      
+
       {/* Protected Routes */}
       <Route
         path="/dashboard/*"
@@ -541,7 +553,7 @@ export const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
-      
+
       <Route
         path="/users/*"
         element={
@@ -550,7 +562,7 @@ export const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
-      
+
       <Route
         path="/schools/*"
         element={
@@ -559,7 +571,7 @@ export const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
-      
+
       {/* Catch all route */}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
@@ -570,6 +582,7 @@ export const AppRoutes: React.FC = () => {
 ## Breadcrumb Navigation
 
 ### Breadcrumb Configuration
+
 ```typescript
 // src/utils/breadcrumbs.ts
 export const generateBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
@@ -579,10 +592,10 @@ export const generateBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
   ];
 
   let currentPath = '';
-  
+
   pathSegments.forEach((segment, index) => {
     currentPath += `/${segment}`;
-    
+
     const breadcrumbConfig = breadcrumbMap[segment];
     if (breadcrumbConfig) {
       breadcrumbs.push({
@@ -608,4 +621,4 @@ const breadcrumbMap: Record<string, { name: string }> = {
 };
 ```
 
-This routing structure provides a comprehensive navigation system with role-based access control, ensuring users only see and can access the features appropriate for their role in the Smart-S school management system.
+This routing structure provides a comprehensive navigation system with role-based access control, ensuring users only see and can access the features appropriate for their role in the Ledgrio school management system.

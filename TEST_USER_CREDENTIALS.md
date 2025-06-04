@@ -1,4 +1,4 @@
-# Smart-S School Management System - Test User Credentials
+# Ledgrio School Management System - Test User Credentials
 
 ## 🔐 **Test User Login Details**
 
@@ -11,7 +11,8 @@ All test users use the same password for easy testing.
 ## 👥 **User Accounts by Role**
 
 ### **1. System Administrator**
-- **Email**: `admin@smart-s.com`
+
+- **Email**: `admin@ledgrio.com`
 - **Password**: `password123`
 - **Name**: Admin User
 - **RegNo**: ADM001
@@ -19,7 +20,8 @@ All test users use the same password for easy testing.
 - **Dashboard**: System-wide overview, user management, financial analytics
 
 ### **2. Student Account**
-- **Email**: `student@smart-s.com`
+
+- **Email**: `student@ledgrio.com`
 - **Password**: `password123`
 - **Name**: John Student
 - **RegNo**: STU001
@@ -27,7 +29,8 @@ All test users use the same password for easy testing.
 - **Dashboard**: Personal academic progress, fee payments, assignments
 
 ### **3. School Principal**
-- **Email**: `principal@smart-s.com`
+
+- **Email**: `principal@ledgrio.com`
 - **Password**: `password123`
 - **Name**: Dr. Sarah Principal
 - **RegNo**: PRI001
@@ -35,7 +38,8 @@ All test users use the same password for easy testing.
 - **Dashboard**: School management, academic oversight, staff management
 
 ### **4. School Bursar**
-- **Email**: `bursar@smart-s.com`
+
+- **Email**: `bursar@ledgrio.com`
 - **Password**: `password123`
 - **Name**: Michael Bursar
 - **RegNo**: BUR001
@@ -43,7 +47,8 @@ All test users use the same password for easy testing.
 - **Dashboard**: Financial management, fee tracking, payment reports
 
 ### **5. Parent Account**
-- **Email**: `parent@smart-s.com`
+
+- **Email**: `parent@ledgrio.com`
 - **Password**: `password123`
 - **Name**: Mary Parent
 - **RegNo**: PAR001
@@ -51,7 +56,8 @@ All test users use the same password for easy testing.
 - **Dashboard**: Children's progress, payment history, school communication
 
 ### **6. System Auditor**
-- **Email**: `auditor@smart-s.com`
+
+- **Email**: `auditor@ledgrio.com`
 - **Password**: `password123`
 - **Name**: James Auditor
 - **RegNo**: AUD001
@@ -59,7 +65,8 @@ All test users use the same password for easy testing.
 - **Dashboard**: Financial auditing, system reports, compliance tracking
 
 ### **7. ICT Administrator**
-- **Email**: `ictadmin@smart-s.com`
+
+- **Email**: `ictadmin@ledgrio.com`
 - **Password**: `password123`
 - **Name**: David ICTAdmin
 - **RegNo**: ICT001
@@ -67,7 +74,8 @@ All test users use the same password for easy testing.
 - **Dashboard**: System administration, technical management
 
 ### **8. School Proprietor**
-- **Email**: `proprietor@smart-s.com`
+
+- **Email**: `proprietor@ledgrio.com`
 - **Password**: `password123`
 - **Name**: Robert Proprietor
 - **RegNo**: PRO001
@@ -75,6 +83,7 @@ All test users use the same password for easy testing.
 - **Dashboard**: Multi-school oversight, business management
 
 ### **9. Headteacher**
+
 - **Email**: `headteacher@smart-s.com`
 - **Password**: `password123`
 - **Name**: Mrs. Jane Headteacher
@@ -87,10 +96,12 @@ All test users use the same password for easy testing.
 ## 🌐 **Application URLs**
 
 ### **Frontend Application**
+
 - **URL**: `http://localhost:3001`
 - **Login Page**: `http://localhost:3001/login`
 
 ### **Backend API**
+
 - **Base URL**: `http://localhost:3000`
 - **API Base**: `http://localhost:3000/api/v1`
 
@@ -99,6 +110,7 @@ All test users use the same password for easy testing.
 ## 🧪 **Testing Instructions**
 
 ### **Step 1: Start the Application**
+
 ```bash
 # Start Backend (Terminal 1)
 cd api
@@ -110,6 +122,7 @@ npm run dev
 ```
 
 ### **Step 2: Test User Login**
+
 1. Navigate to: `http://localhost:3001/login`
 2. Enter any email from the list above
 3. Enter password: `password123`
@@ -117,6 +130,7 @@ npm run dev
 5. Verify role-specific dashboard loads
 
 ### **Step 3: Test API Endpoints**
+
 ```bash
 # Login via API
 curl -X POST http://localhost:3000/api/v1/auth/login \
@@ -133,27 +147,32 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 ## 📊 **Available API Endpoints by Role**
 
 ### **Admin Endpoints** (`/api/v1/admin/`)
+
 - `GET /dashboard` - System overview
 - `GET /system-overview` - Active sessions and terms
 - `GET /user-management` - User management with pagination
 - `GET /financial-overview` - Financial analytics
 
 ### **Principal Endpoints** (`/api/v1/principal/`)
+
 - `GET /dashboard` - School overview
 - `GET /academic-overview` - Academic statistics
 - `GET /staff-management` - Staff management
 
 ### **Bursar Endpoints** (`/api/v1/bursar/`)
+
 - `GET /dashboard` - Financial overview
 - `GET /payment-reports` - Payment analytics
 - `GET /outstanding-fees-report` - Outstanding fees
 
 ### **Parent Endpoints** (`/api/v1/parent/`)
+
 - `GET /dashboard` - Children overview
 - `GET /child/:childId` - Child details
 - `GET /payment-history` - Payment history
 
 ### **Student Endpoints** (`/api/v1/student/`)
+
 - `GET /dashboard` - Student overview
 - `GET /payments` - Payment history
 - `GET /outstanding-fees` - Outstanding fees
@@ -164,6 +183,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 ## 🔧 **Quick Test Commands**
 
 ### **Test All User Logins**
+
 ```bash
 # Admin Login
 curl -X POST http://localhost:3000/api/v1/auth/login -H "Content-Type: application/json" -d '{"email":"admin@smart-s.com","password":"password123"}'
@@ -186,30 +206,35 @@ curl -X POST http://localhost:3000/api/v1/auth/login -H "Content-Type: applicati
 ## 🎯 **Expected Dashboard Features**
 
 ### **Admin Dashboard**
+
 - Total users, students, teachers, schools
 - System-wide revenue and payment statistics
 - Recent user registrations and activities
 - Monthly revenue trends and analytics
 
 ### **Principal Dashboard**
+
 - School-specific student and staff counts
 - Academic session and term information
 - Recent school activities and registrations
 - School financial overview
 
 ### **Bursar Dashboard**
+
 - Detailed financial statistics (daily, monthly, total revenue)
 - Payment method breakdowns
 - Fee collection status by fee type
 - Outstanding fees tracking
 
 ### **Parent Dashboard**
+
 - Children's academic progress and attendance
 - Payment history and outstanding fees
 - Recent activities for all children
 - Overall family financial summary
 
 ### **Student Dashboard**
+
 - Personal academic progress and attendance
 - Outstanding fees and payment history
 - Assignment completion status
@@ -220,18 +245,21 @@ curl -X POST http://localhost:3000/api/v1/auth/login -H "Content-Type: applicati
 ## 🚨 **Troubleshooting**
 
 ### **If Login Fails:**
+
 1. Verify backend is running on port 3000
 2. Check MongoDB connection
 3. Ensure user exists in database
 4. Verify password is exactly `password123`
 
 ### **If Dashboard is Empty:**
+
 1. Check browser console for errors
 2. Verify API endpoints are accessible
 3. Check JWT token in localStorage
 4. Ensure role-based access is working
 
 ### **If API Calls Fail:**
+
 1. Check CORS settings
 2. Verify authentication headers
 3. Check backend logs for errors

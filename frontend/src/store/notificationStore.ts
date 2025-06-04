@@ -81,7 +81,8 @@ export const useNotificationStore = create<NotificationStore>()(
           const unreadCount = await NotificationService.getUnreadCount();
           set({ unreadCount });
         } catch (error) {
-          console.error('Failed to load unread count:', error);
+          // Silently handle errors to prevent console spam
+          console.warn('Failed to load unread count:', error);
         }
       },
 
@@ -296,14 +297,23 @@ let notificationInterval: NodeJS.Timeout | null = null;
 
 export const startNotificationPolling = () => {
   if (notificationInterval) return;
-  
-  notificationInterval = setInterval(() => {
-    const store = useNotificationStore.getState();
-    store.loadUnreadCount();
-    
-    // Refresh notifications if last fetch was more than 5 minutes ago
-    if (!store.lastFetch || Date.now() - store.lastFetch.getTime() > 5 * 60 * 1000) {
-      store.loadNotifications();
+
+  notificationInterval = setInterval(async () => {
+    try {
+      // Don't poll if page is hidden or document is not visible
+      if (document.hidden || document.visibilityState === 'hidden') {
+        return;
+      }
+
+      const store = useNotificationStore.getState();
+      await store.loadUnreadCount();
+
+      // Refresh notifications if last fetch was more than 5 minutes ago
+      if (!store.lastFetch || Date.now() - store.lastFetch.getTime() > 5 * 60 * 1000) {
+        await store.loadNotifications();
+      }
+    } catch (error) {
+      console.warn('Error during notification polling:', error);
     }
   }, 30000);
 };

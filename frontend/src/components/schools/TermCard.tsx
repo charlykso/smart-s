@@ -25,9 +25,19 @@ const TermCard: React.FC<TermCardProps> = ({
 
   const getSessionName = () => {
     if (typeof term.session === 'string') {
-      return 'Unknown Session';
+      return 'Loading...';
     }
     return term.session?.name || 'No Session';
+  };
+
+  const getSchoolName = () => {
+    if (typeof term.session === 'string') {
+      return 'Loading...';
+    }
+    if (typeof term.session?.school === 'string') {
+      return 'Loading...';
+    }
+    return term.session?.school?.name || 'No School';
   };
 
   const formatDate = (dateString: string) => {
@@ -60,6 +70,7 @@ const TermCard: React.FC<TermCardProps> = ({
                 {term.name}
               </h3>
               <p className="text-sm text-gray-500">{getSessionName()}</p>
+              <p className="text-xs text-gray-400">{getSchoolName()}</p>
             </div>
           </div>
           

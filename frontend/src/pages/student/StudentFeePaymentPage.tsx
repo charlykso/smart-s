@@ -7,15 +7,14 @@ import {
   ExclamationTriangleIcon,
   CalendarIcon,
   BanknotesIcon,
-  HomeIcon,
   AcademicCapIcon,
   FunnelIcon,
 } from '@heroicons/react/24/outline';
-import { useNavigate } from 'react-router-dom';
 import { useStudentStore } from '../../store/studentStore';
 import { useFeeStore } from '../../store/feeStore';
 import { useAuthStore } from '../../store/authStore';
 import { useNotificationStore } from '../../store/notificationStore';
+import MainLayout from '../../components/layout/MainLayout';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import StudentFeeCard from '../../components/student/StudentFeeCard';
 import EnhancedPaymentModal from '../../components/student/EnhancedPaymentModal';
@@ -26,7 +25,6 @@ import type { Session, Term } from '../../types/school';
 import type { Fee } from '../../types/fee';
 
 const StudentFeePaymentPage: React.FC = () => {
-  const navigate = useNavigate();
   const { user } = useAuthStore();
   const {
     dashboardData,
@@ -178,7 +176,11 @@ const StudentFeePaymentPage: React.FC = () => {
   };
 
   if (loadingSessions) {
-    return <LoadingSpinner />;
+    return (
+      <MainLayout>
+        <LoadingSpinner />
+      </MainLayout>
+    );
   }
 
   // Calculate fee statistics
@@ -200,139 +202,127 @@ const StudentFeePaymentPage: React.FC = () => {
   const totalFeesAmount = approvedFees.reduce((sum, fee) => sum + fee.amount, 0);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <button
-                  type="button"
-                  onClick={() => navigate('/dashboard')}
-                  className="mr-4 inline-flex items-center px-3 py-2 border border-primary-300 rounded-md shadow-sm text-sm font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
-                >
-                  <div className="w-4 h-4 bg-primary-500 rounded mr-2 flex items-center justify-center">
-                    <HomeIcon className="w-3 h-3 text-white" />
-                  </div>
-                  Dashboard
-                </button>
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Fee Payments</h1>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Manage your fee payments and view payment history
-                  </p>
-                </div>
-              </div>
-              
-              <div className="text-right">
-                <p className="text-sm text-gray-500">Total Fees Amount</p>
-                <p className={`text-2xl font-bold ${totalFeesAmount > 0 ? 'text-primary-600' : 'text-gray-600'}`}>
-                  {FeeService.formatAmount(totalFeesAmount)}
+    <MainLayout>
+      <div className="space-y-6">
+        {/* Page Header */}
+        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <CurrencyDollarIcon className="h-8 w-8 text-primary-600 mr-3" />
+              <div>
+                <h1 className="text-2xl font-bold text-secondary-900">
+                  Fee Payments
+                </h1>
+                <p className="text-secondary-600 mt-1">
+                  Manage your fee payments and view payment history
                 </p>
               </div>
             </div>
 
-            {/* Term/Session Selection Filters */}
-            <div className="mt-6 bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center space-x-4">
-                <FunnelIcon className="h-5 w-5 text-gray-600" />
-                <span className="text-sm font-medium text-gray-700">Filter by:</span>
-
-                {/* Session Selection */}
-                <div className="flex items-center space-x-2">
-                  <label htmlFor="session-select" className="text-sm text-gray-600">Session:</label>
-                  <select
-                    id="session-select"
-                    value={selectedSession}
-                    onChange={(e) => handleSessionChange(e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  >
-                    <option value="">Select Session</option>
-                    {sessions.map(session => (
-                      <option key={session._id} value={session._id}>
-                        {session.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Term Selection */}
-                <div className="flex items-center space-x-2">
-                  <label htmlFor="term-select" className="text-sm text-gray-600">Term:</label>
-                  <select
-                    id="term-select"
-                    value={selectedTerm}
-                    onChange={(e) => handleTermChange(e.target.value)}
-                    className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  >
-                    <option value="">Select Term</option>
-                    {(selectedSession ? getTermsForSession(selectedSession) : terms).map(term => (
-                      <option key={term._id} value={term._id}>
-                        {term.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Clear Filters */}
-                {(selectedSession || selectedTerm) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedSession('');
-                      setSelectedTerm('');
-                      setApprovedFees([]);
-                    }}
-                    className="text-sm text-primary-600 hover:text-primary-700 font-medium"
-                  >
-                    Clear Filters
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Tab Navigation */}
-            <div className="mt-6">
-              <nav className="flex space-x-8">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('fees')}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                    activeTab === 'fees'
-                      ? 'text-primary-600 bg-primary-50'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <AcademicCapIcon className="h-4 w-4 mr-2" />
-                  Approved Fees
-                  {approvedFees.length > 0 && (
-                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                      {approvedFees.length}
-                    </span>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('history')}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                    activeTab === 'history'
-                      ? 'text-primary-600 bg-primary-50'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <CheckCircleIcon className="h-4 w-4 mr-2" />
-                  Payment History
-                </button>
-              </nav>
+            <div className="text-right">
+              <p className="text-sm text-gray-500">Total Fees Amount</p>
+              <p className={`text-2xl font-bold ${totalFeesAmount > 0 ? 'text-primary-600' : 'text-gray-600'}`}>
+                {FeeService.formatAmount(totalFeesAmount)}
+              </p>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Term/Session Selection Filters */}
+        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+          <div className="flex items-center space-x-4">
+            <FunnelIcon className="h-5 w-5 text-gray-600" />
+            <span className="text-sm font-medium text-gray-700">Filter by:</span>
+
+            {/* Session Selection */}
+            <div className="flex items-center space-x-2">
+              <label htmlFor="session-select" className="text-sm text-gray-600">Session:</label>
+              <select
+                id="session-select"
+                value={selectedSession}
+                onChange={(e) => handleSessionChange(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="">Select Session</option>
+                {sessions.map(session => (
+                  <option key={session._id} value={session._id}>
+                    {session.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Term Selection */}
+            <div className="flex items-center space-x-2">
+              <label htmlFor="term-select" className="text-sm text-gray-600">Term:</label>
+              <select
+                id="term-select"
+                value={selectedTerm}
+                onChange={(e) => handleTermChange(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              >
+                <option value="">Select Term</option>
+                {(selectedSession ? getTermsForSession(selectedSession) : terms).map(term => (
+                  <option key={term._id} value={term._id}>
+                    {term.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Clear Filters */}
+            {(selectedSession || selectedTerm) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedSession('');
+                  setSelectedTerm('');
+                  setApprovedFees([]);
+                }}
+                className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+          <nav className="flex space-x-8">
+            <button
+              type="button"
+              onClick={() => setActiveTab('fees')}
+              className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                activeTab === 'fees'
+                  ? 'text-primary-600 bg-primary-50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <AcademicCapIcon className="h-4 w-4 mr-2" />
+              Approved Fees
+              {approvedFees.length > 0 && (
+                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                  {approvedFees.length}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('history')}
+              className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                activeTab === 'history'
+                  ? 'text-primary-600 bg-primary-50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <CheckCircleIcon className="h-4 w-4 mr-2" />
+              Payment History
+            </button>
+          </nav>
+        </div>
+
         {/* Alert Banners */}
         {overdueFees.length > 0 && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
@@ -519,7 +509,7 @@ const StudentFeePaymentPage: React.FC = () => {
         fee={selectedFee}
         onSuccess={handlePaymentSuccess}
       />
-    </div>
+    </MainLayout>
   );
 };
 

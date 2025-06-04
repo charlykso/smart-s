@@ -39,7 +39,7 @@ export class UserService {
   // Get all users with filters
   static async getUsers(filters?: UserFilters): Promise<UserListResponse> {
     const params = new URLSearchParams();
-    
+
     if (filters?.search) params.append('search', filters.search);
     if (filters?.role && filters.role !== 'all') params.append('role', filters.role);
     if (filters?.status && filters.status !== 'all') params.append('status', filters.status);
@@ -48,8 +48,51 @@ export class UserService {
 
     const queryString = params.toString();
     const url = queryString ? `${API_ENDPOINTS.USERS.ALL}?${queryString}` : API_ENDPOINTS.USERS.ALL;
-    
-    return ApiService.get<UserListResponse>(url);
+
+    try {
+      const response = await ApiService.get<any>(url);
+
+      // Helper function to normalize user data
+      const normalizeUser = (user: any): User => ({
+        ...user,
+        id: user._id || user.id,
+        status: user.status || 'active',
+        isActive: user.isActive !== undefined ? user.isActive : true,
+        lastLogin: user.lastLogin ? new Date(user.lastLogin) : undefined,
+        createdAt: user.createdAt ? new Date(user.createdAt) : new Date(),
+        updatedAt: user.updatedAt ? new Date(user.updatedAt) : new Date(),
+      });
+
+      // Handle different response formats from backend
+      if (Array.isArray(response)) {
+        // Direct array response from /user/all endpoint
+        return {
+          users: response.map(normalizeUser),
+          total: response.length,
+          page: filters?.page || 1,
+          limit: filters?.limit || 50,
+        };
+      } else if (response.success && response.data) {
+        // Admin endpoint response format
+        return {
+          users: (response.data.users || []).map(normalizeUser),
+          total: response.data.pagination?.total || 0,
+          page: response.data.pagination?.page || 1,
+          limit: response.data.pagination?.limit || 10,
+        };
+      } else {
+        // Fallback
+        return {
+          users: (response.users || []).map(normalizeUser),
+          total: response.total || 0,
+          page: response.page || 1,
+          limit: response.limit || 10,
+        };
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      throw error;
+    }
   }
 
   // Create new user

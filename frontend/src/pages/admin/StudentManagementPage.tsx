@@ -15,7 +15,7 @@ import { useStudentManagementStore } from '../../store/studentManagementStore';
 import { useSchoolStore } from '../../store/schoolStore';
 import { useAuthStore } from '../../store/authStore';
 import type { Student, StudentFilters } from '../../types/student';
-import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import CenteredLoader from '../../components/common/CenteredLoader';
 import StudentCard from '../../components/student/StudentCard';
 import StudentModal from '../../components/student/StudentModal';
 import StudentFiltersPanel from '../../components/student/StudentFiltersPanel';
@@ -152,13 +152,13 @@ const StudentManagementPage: React.FC = () => {
   };
 
   if (isLoading && students.length === 0) {
-    return <LoadingSpinner />;
+    return <CenteredLoader message="Loading students..." />;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       {/* Header */}
-      <div className="bg-white shadow">
+      <div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-900 transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-6">
             <div className="flex items-center justify-between">
@@ -166,17 +166,17 @@ const StudentManagementPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/dashboard')}
-                  className="mr-4 inline-flex items-center px-3 py-2 border border-primary-300 rounded-md shadow-sm text-sm font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+                  className="mr-4 inline-flex items-center px-3 py-2 border border-primary-300 dark:border-primary-600 rounded-md shadow-sm text-sm font-medium text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-900 hover:bg-primary-100 dark:hover:bg-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-800 focus:ring-primary-500 transition-colors"
                 >
-                  <div className="w-4 h-4 bg-primary-500 rounded mr-2 flex items-center justify-center">
+                  <div className="w-4 h-4 bg-primary-500 dark:bg-primary-600 rounded mr-2 flex items-center justify-center">
                     <HomeIcon className="w-3 h-3 text-white" />
                   </div>
                   Dashboard
                 </button>
-                <UserGroupIcon className="h-8 w-8 text-primary-600 mr-3" />
+                <UserGroupIcon className="h-8 w-8 text-primary-600 dark:text-primary-400 mr-3" />
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Student Management</h1>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Student Management</h1>
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     Manage student records and academic information
                   </p>
                 </div>
@@ -184,16 +184,18 @@ const StudentManagementPage: React.FC = () => {
 
               <div className="flex items-center space-x-4">
                 <button
+                  type="button"
                   onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                 >
                   <FunnelIcon className="h-4 w-4 mr-2" />
                   Filters
                 </button>
 
                 <button
+                  type="button"
                   onClick={handleCreateStudent}
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-600 transition-colors"
                 >
                   <PlusIcon className="h-4 w-4 mr-2" />
                   Add Student
@@ -205,22 +207,24 @@ const StudentManagementPage: React.FC = () => {
             <div className="mt-6">
               <nav className="flex space-x-8">
                 <button
+                  type="button"
                   onClick={() => setActiveTab('list')}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                     activeTab === 'list'
-                      ? 'text-primary-600 bg-primary-50'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   <UserGroupIcon className="h-4 w-4 mr-2" />
                   Student List
                 </button>
                 <button
+                  type="button"
                   onClick={() => setActiveTab('stats')}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                     activeTab === 'stats'
-                      ? 'text-primary-600 bg-primary-50'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   <ChartBarIcon className="h-4 w-4 mr-2" />
@@ -236,11 +240,11 @@ const StudentManagementPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Error Message */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="mb-6 bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-md p-4 transition-colors duration-200">
             <div className="flex">
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Error</h3>
-                <div className="mt-2 text-sm text-red-700">
+                <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
+                <div className="mt-2 text-sm text-red-700 dark:text-red-300">
                   <p>{error}</p>
                 </div>
               </div>
@@ -273,13 +277,13 @@ const StudentManagementPage: React.FC = () => {
               <div className="flex-1 max-w-lg">
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                   </div>
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 focus:outline-none focus:placeholder-gray-400 dark:focus:placeholder-gray-300 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-colors"
                     placeholder="Search students by name, email, or registration number..."
                   />
                 </div>
@@ -287,14 +291,22 @@ const StudentManagementPage: React.FC = () => {
 
               {selectedStudents.length > 0 && (
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
                     {selectedStudents.length} selected
                   </span>
-                  <button className="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                  <button
+                    type="button"
+                    className="inline-flex items-center px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                    title="Export selected students"
+                  >
                     <DocumentArrowDownIcon className="h-4 w-4 mr-1" />
                     Export
                   </button>
-                  <button className="inline-flex items-center px-3 py-1 border border-red-300 rounded-md text-sm font-medium text-red-700 bg-white hover:bg-red-50">
+                  <button
+                    type="button"
+                    className="inline-flex items-center px-3 py-1 border border-red-300 dark:border-red-600 rounded-md text-sm font-medium text-red-700 dark:text-red-400 bg-white dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900 transition-colors"
+                    title="Delete selected students"
+                  >
                     Delete Selected
                   </button>
                 </div>
@@ -329,9 +341,9 @@ const StudentManagementPage: React.FC = () => {
               </>
             ) : (
               <div className="text-center py-12">
-                <AcademicCapIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No students found</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <AcademicCapIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No students found</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   {searchQuery || Object.keys(filters).length > 2
                     ? 'Try adjusting your search or filters.'
                     : 'Get started by adding your first student.'}
@@ -339,8 +351,9 @@ const StudentManagementPage: React.FC = () => {
                 {!searchQuery && Object.keys(filters).length <= 2 && (
                   <div className="mt-6">
                     <button
+                      type="button"
                       onClick={handleCreateStudent}
-                      className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                      className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-600 transition-colors"
                     >
                       <PlusIcon className="h-4 w-4 mr-2" />
                       Add Student

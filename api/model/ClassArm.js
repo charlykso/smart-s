@@ -1,19 +1,18 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
-const ClassArmSchema = new mongoose.Schema({
-    
+const ClassArmSchema = new mongoose.Schema(
+  {
     school: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'School',
-        required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'School',
+      required: true,
     },
     name: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
-    totalNumberOfStudents: {
-        type: Number,
-    }
-}, { timestamps: true });
+  },
+  { timestamps: true }
+)
 
-module.exports = mongoose.model('ClassArm', ClassArmSchema);
+module.exports = mongoose.model('ClassArm', ClassArmSchema)

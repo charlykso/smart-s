@@ -16,12 +16,17 @@ const api: AxiosInstance = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
+    // Don't make requests if page is being unloaded
+    if (document.visibilityState === 'hidden' && performance.navigation?.type === 1) {
+      return Promise.reject(new Error('Page is being unloaded'));
+    }
+
     const token = useAuthStore.getState().token || localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-    
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     return config;
   },
   (error) => {
@@ -37,6 +42,12 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Skip error handling if page is being unloaded
+    if (error.message === 'Page is being unloaded' ||
+        document.visibilityState === 'hidden') {
+      return Promise.reject(error);
+    }
+
     // Handle 401 errors (unauthorized)
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
@@ -44,7 +55,7 @@ api.interceptors.response.use(
       try {
         // Try to refresh the token
         await useAuthStore.getState().refreshAccessToken();
-        
+
         // Retry the original request with new token
         const newToken = useAuthStore.getState().token;
         if (newToken) {
@@ -62,29 +73,36 @@ api.interceptors.response.use(
     // Handle other errors
     if (error.response) {
       const { status, data } = error.response;
-      
-      switch (status) {
-        case 400:
-          toast.error(data.message || 'Bad request');
-          break;
-        case 403:
-          toast.error('You are not authorized to perform this action');
-          break;
-        case 404:
-          toast.error('Resource not found');
-          break;
-        case 422:
-          toast.error(data.message || 'Validation error');
-          break;
-        case 500:
-          toast.error('Internal server error. Please try again later.');
-          break;
-        default:
-          toast.error(data.message || 'An unexpected error occurred');
+
+      // Don't show toast errors if page is hidden
+      if (document.visibilityState !== 'hidden') {
+        switch (status) {
+          case 400:
+            toast.error(data.message || 'Bad request');
+            break;
+          case 403:
+            toast.error('You are not authorized to perform this action');
+            break;
+          case 404:
+            // Don't show 404 errors for notification endpoints
+            if (!originalRequest.url?.includes('/notification/')) {
+              toast.error('Resource not found');
+            }
+            break;
+          case 422:
+            toast.error(data.message || 'Validation error');
+            break;
+          case 500:
+            toast.error('Internal server error. Please try again later.');
+            break;
+          default:
+            toast.error(data.message || 'An unexpected error occurred');
+        }
       }
-    } else if (error.request) {
+    } else if (error.request && document.visibilityState !== 'hidden') {
+      // Only show network errors if page is visible
       toast.error('Network error. Please check your connection.');
-    } else {
+    } else if (document.visibilityState !== 'hidden') {
       toast.error('An unexpected error occurred');
     }
 

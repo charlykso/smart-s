@@ -89,13 +89,13 @@ const WelcomeCard: React.FC<WelcomeCardProps> = ({
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-secondary-200 p-6 ${className}`}>
+    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900 border border-secondary-200 dark:border-gray-700 p-6 transition-colors duration-200 ${className}`}>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-secondary-900 mb-1">
+          <h1 className="text-2xl font-bold text-secondary-900 dark:text-gray-100 mb-1">
             {getWelcomeMessage()}
           </h1>
-          <p className="text-secondary-600 mb-2">
+          <p className="text-secondary-600 dark:text-gray-400 mb-2">
             {getSubMessage()}
           </p>
           {showRole && user?.roles && (
@@ -103,7 +103,7 @@ const WelcomeCard: React.FC<WelcomeCardProps> = ({
               {user.roles.map((role, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800"
+                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200"
                 >
                   {getRoleDisplayName(role)}
                 </span>
@@ -113,10 +113,10 @@ const WelcomeCard: React.FC<WelcomeCardProps> = ({
         </div>
         {showDate && (
           <div className="text-right">
-            <p className="text-sm text-secondary-500 font-medium">
+            <p className="text-sm text-secondary-500 dark:text-gray-400 font-medium">
               {getCurrentDate()}
             </p>
-            <p className="text-xs text-secondary-400 mt-1">
+            <p className="text-xs text-secondary-400 dark:text-gray-500 mt-1">
               {getCurrentTime()}
             </p>
           </div>
