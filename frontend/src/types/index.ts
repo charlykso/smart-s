@@ -41,8 +41,8 @@ export interface School {
 export interface ClassArm {
   _id: string;
   name: string;
-  capacity: number;
-  school: School;
+  capacity?: number;
+  school: School | string;
   createdAt: string;
   updatedAt: string;
 }
@@ -67,8 +67,8 @@ export interface User {
   email: string;
   phone: string;
   roles: UserRole[];
-  school?: School;
-  classArm?: ClassArm;
+  school?: School | string;
+  classArm?: ClassArm | string;
   profile?: Profile;
   createdAt: string;
   updatedAt: string;
