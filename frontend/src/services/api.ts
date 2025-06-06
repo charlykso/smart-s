@@ -10,6 +10,8 @@ const api: AxiosInstance = axios.create({
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache',
   },
 });
 
@@ -48,8 +50,14 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Handle 401 errors (unauthorized)
+    // Handle 401 errors (unauthorized) - but not for login requests
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Don't try to refresh token for login requests
+      if (originalRequest.url?.includes('/auth/login')) {
+        // For login failures, let the error pass through normally
+        return Promise.reject(error);
+      }
+
       originalRequest._retry = true;
 
       try {
@@ -79,6 +87,14 @@ api.interceptors.response.use(
         switch (status) {
           case 400:
             toast.error(data.message || 'Bad request');
+            break;
+          case 401:
+            // For login failures, show the specific error message
+            if (originalRequest.url?.includes('/auth/login')) {
+              toast.error(data.message || 'Invalid email or password');
+            } else {
+              toast.error('Session expired. Please login again.');
+            }
             break;
           case 403:
             toast.error('You are not authorized to perform this action');

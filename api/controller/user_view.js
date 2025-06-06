@@ -2,6 +2,57 @@ const User = require('../model/User')
 const bcrypt = require('bcryptjs')
 const Profile = require('../model/Profile')
 const { autoUpdateClassArmStudentCount } = require('../helpers/classArmHelpers')
+// Import GroupSchool for the helper function
+const GroupSchool = require('../model/GroupSchool')
+
+// Helper function to check if a proprietor already exists for a GroupSchool
+const checkExistingProprietorInGroupSchool = async (
+  schoolId,
+  excludeUserId = null
+) => {
+  const School = require('../model/School')
+
+  // Get the school without populate to avoid hanging
+  const school = await School.findById(schoolId)
+  if (!school) {
+    throw new Error('School not found')
+  }
+
+  if (!school.groupSchool) {
+    throw new Error('School is not associated with a GroupSchool')
+  }
+
+  // Get the GroupSchool separately
+  const groupSchoolId = school.groupSchool
+  const groupSchool = await GroupSchool.findById(groupSchoolId)
+  if (!groupSchool) {
+    throw new Error('GroupSchool not found')
+  }
+
+  // Find all schools in the same GroupSchool
+  const schoolsInGroup = await School.find({ groupSchool: groupSchoolId })
+  const schoolIdsInGroup = schoolsInGroup.map((s) => s._id)
+
+  // Check for existing proprietor
+  const query = {
+    school: { $in: schoolIdsInGroup },
+    roles: 'Proprietor',
+  }
+
+  // Exclude current user if updating
+  if (excludeUserId) {
+    query._id = { $ne: excludeUserId }
+  }
+
+  const existingProprietor = await User.findOne(query)
+
+  return {
+    exists: !!existingProprietor,
+    proprietor: existingProprietor,
+    groupSchool: groupSchool,
+    school: school,
+  }
+}
 
 exports.getAllUsers = async (req, res) => {
   try {
@@ -18,9 +69,16 @@ exports.getAllUsers = async (req, res) => {
 
 exports.getICT_administrators = async (req, res) => {
   try {
-    const ICT_administrators = await User.find({ roles: 'ICT_administrator' })
+    // Apply school filtering if user is not Admin
+    let query = { roles: 'ICT_administrator' }
+    if (req.schoolFilter) {
+      query = { ...query, ...req.schoolFilter }
+    }
+
+    const ICT_administrators = await User.find(query)
       .select('-password -__v')
       .populate('profile', 'img')
+      .populate('school', 'name')
     res.status(200).json(ICT_administrators)
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -82,9 +140,16 @@ exports.getBursars = async (req, res) => {
 
 exports.getStudents = async (req, res) => {
   try {
-    const students = await User.find({ roles: 'Student' })
+    // Apply school filtering if user is not Admin
+    let query = { roles: 'Student' }
+    if (req.schoolFilter) {
+      query = { ...query, ...req.schoolFilter }
+    }
+
+    const students = await User.find(query)
       .select('-password -__v')
       .populate('profile', 'img')
+      .populate('school', 'name')
     res.status(200).json(students)
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -92,9 +157,15 @@ exports.getStudents = async (req, res) => {
 }
 exports.getParents = async (req, res) => {
   try {
-    const parents = await User.find({ roles: 'Parent' })
+    // Apply school filtering if user is not Admin
+    let query = { roles: 'Parent' }
+    if (req.schoolFilter) {
+      query = { ...query, ...req.schoolFilter }
+    }
+
+    const parents = await User.find(query)
       .select('-password -__v')
-      .populate('name')
+      .populate('school', 'name')
     res.status(200).json(parents)
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -447,10 +518,28 @@ exports.createProprietor = async (req, res) => {
     ) {
       return res.status(400).json({ message: 'All fields are required' })
     }
+
+    // Check if user already exists
     const existingUser = await User.findOne({ email: email, phone: phone })
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' })
     }
+
+    // Check if a Proprietor already exists for this GroupSchool
+    const proprietorCheck = await checkExistingProprietorInGroupSchool(
+      school_id
+    )
+    if (proprietorCheck.exists) {
+      return res.status(409).json({
+        message: `A Proprietor already exists for this Group School (${proprietorCheck.groupSchool.name}). Only one Proprietor is allowed per Group School.`,
+        existingProprietor: {
+          name: `${proprietorCheck.proprietor.firstname} ${proprietorCheck.proprietor.lastname}`,
+          email: proprietorCheck.proprietor.email,
+          school: proprietorCheck.school.name,
+        },
+      })
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10)
     const profile = new Profile({})
     const profile_id = await profile.save()
@@ -663,6 +752,8 @@ exports.createStudent = async (req, res) => {
       roles,
       password,
     } = req.body
+
+    // Validate required fields
     if (
       school_id === '' ||
       firstname === '' ||
@@ -680,6 +771,27 @@ exports.createStudent = async (req, res) => {
       password === ''
     ) {
       return res.status(400).json({ message: 'All fields are required' })
+    }
+
+    // School access validation
+    const userSchool = req.user.school?._id || req.user.school
+    const userRoles = req.user.roles || []
+
+    // Only Admin can create students for any school
+    if (!userRoles.includes('Admin')) {
+      // Proprietor and ICT_administrator can only create students for their own school
+      if (!userSchool) {
+        return res.status(403).json({
+          message: 'User must belong to a school to create students',
+        })
+      }
+
+      if (userSchool.toString() !== school_id) {
+        return res.status(403).json({
+          message:
+            'Access denied - can only create students for your own school',
+        })
+      }
     }
     const existingUser = await User.findOne({ regNo: regNo })
     if (existingUser) {
@@ -920,16 +1032,41 @@ exports.updateProprietor = async (req, res) => {
     ) {
       return res.status(400).json({ message: 'All fields are required' })
     }
+
+    // Get current proprietor to check if school is changing
+    const currentProprietor = await User.findById(id)
+    if (!currentProprietor) {
+      return res.status(404).json({ message: 'Proprietor not found' })
+    }
+
+    // If school is changing, check if new school's GroupSchool already has a proprietor
+    if (school_id !== currentProprietor.school.toString()) {
+      const proprietorCheck = await checkExistingProprietorInGroupSchool(
+        school_id,
+        id
+      )
+      if (proprietorCheck.exists) {
+        return res.status(409).json({
+          message: `A Proprietor already exists for this Group School (${proprietorCheck.groupSchool.name}). Only one Proprietor is allowed per Group School.`,
+          existingProprietor: {
+            name: `${proprietorCheck.proprietor.firstname} ${proprietorCheck.proprietor.lastname}`,
+            email: proprietorCheck.proprietor.email,
+            school: proprietorCheck.school.name,
+          },
+        })
+      }
+    }
+
     const proprietor = await User.findByIdAndUpdate(
       id,
       {
-        school_id,
+        school: school_id,
         firstname,
         middlename,
         lastname,
         email,
         phone,
-        address_id,
+        address: address_id,
         DOB,
         gender,
         roles,
@@ -1150,10 +1287,41 @@ exports.updateStudent = async (req, res) => {
       return res.status(404).json({ message: 'Student not found' })
     }
 
+    // School access validation
+    const userSchool = req.user.school?._id || req.user.school
+    const userRoles = req.user.roles || []
+
+    // Only Admin can update students for any school
+    if (!userRoles.includes('Admin')) {
+      // Proprietor and ICT_administrator can only update students for their own school
+      if (!userSchool) {
+        return res.status(403).json({
+          message: 'User must belong to a school to update students',
+        })
+      }
+
+      // Check if the student belongs to the user's school
+      const studentSchool = currentStudent.school?._id || currentStudent.school
+      if (userSchool.toString() !== studentSchool.toString()) {
+        return res.status(403).json({
+          message:
+            'Access denied - can only update students from your own school',
+        })
+      }
+
+      // Also check if the new school_id (if provided) matches user's school
+      if (school_id && userSchool.toString() !== school_id) {
+        return res.status(403).json({
+          message:
+            'Access denied - can only assign students to your own school',
+        })
+      }
+    }
+
     const oldClassArmId = currentStudent.classArm?.toString()
     const newClassArmId = classArm_id
 
-    const student = await User.findByIdAndUpdate(
+    await User.findByIdAndUpdate(
       id,
       {
         school: school_id,
@@ -1334,6 +1502,29 @@ exports.deleteStudent = async (req, res) => {
     const student = await User.findById(id)
     if (!student) {
       return res.status(404).json({ message: 'Student not found' })
+    }
+
+    // School access validation
+    const userSchool = req.user.school?._id || req.user.school
+    const userRoles = req.user.roles || []
+
+    // Only Admin can delete students from any school
+    if (!userRoles.includes('Admin')) {
+      // Proprietor and ICT_administrator can only delete students from their own school
+      if (!userSchool) {
+        return res.status(403).json({
+          message: 'User must belong to a school to delete students',
+        })
+      }
+
+      // Check if the student belongs to the user's school
+      const studentSchool = student.school?._id || student.school
+      if (userSchool.toString() !== studentSchool.toString()) {
+        return res.status(403).json({
+          message:
+            'Access denied - can only delete students from your own school',
+        })
+      }
     }
 
     const classArmId = student.classArm?.toString()

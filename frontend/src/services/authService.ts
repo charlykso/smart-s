@@ -6,16 +6,22 @@ import { API_ENDPOINTS } from '../constants';
 export class AuthService {
   // Login user
   static async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await ApiService.post<any>(
-      API_ENDPOINTS.AUTH.LOGIN,
-      credentials
-    );
+    try {
+      const response = await ApiService.post<any>(
+        API_ENDPOINTS.AUTH.LOGIN,
+        credentials
+      );
 
-    if (!response.success) {
-      throw new Error(response.message || 'Login failed');
+      if (!response.success) {
+        throw new Error(response.message || 'Login failed');
+      }
+
+      return response.data;
+    } catch (error) {
+      // Re-throw the error so the auth store can handle it
+      // The API interceptor will already show the toast error
+      throw error;
     }
-
-    return response.data;
   }
 
   // Logout user

@@ -71,8 +71,8 @@ export const useAuthStore = create<AuthStore>()(
           toast.success('Successfully logged in!');
         } catch (error) {
           set({ isLoading: false });
-          const errorMessage = error instanceof Error ? error.message : 'Login failed';
-          toast.error(errorMessage);
+          // Don't show toast error here - the API interceptor will handle it
+          // This prevents duplicate error messages
           throw error;
         }
       },
