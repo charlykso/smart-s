@@ -1,0 +1,399 @@
+const express = require('express')
+const userController = require('../controller/user_view')
+const router = express.Router()
+const authenticateToken = require('../middleware/authenticateToken')
+const roleList = require('../helpers/roleList')
+const verifyRoles = require('../middleware/verifyRoles')
+
+router
+  .route('/all')
+  .get(
+    authenticateToken,
+    verifyRoles(roleList.Admin),
+    userController.getAllUsers
+  )
+
+router
+  .route('/admin/create')
+  .post(
+    authenticateToken,
+    verifyRoles(roleList.Admin),
+    userController.createAdmin
+  )
+router
+  .route('/ict-admin/all')
+  .get(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Proprietor),
+    userController.getICT_administrators
+  )
+router
+  .route('/ict-admin/:id/get')
+  .get(
+    authenticateToken,
+    verifyRoles(
+      roleList.Admin,
+      roleList.Proprietor,
+      roleList.ICT_administrator
+    ),
+    userController.getICT_administrator
+  )
+router
+  .route('/ict-admin/create')
+  .post(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.ICT_administrator),
+    userController.createICT_administrator
+  )
+router
+  .route('/ict-admin/:id/update')
+  .put(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.ICT_administrator),
+    userController.updateICT_administrator
+  )
+router
+  .route('/ict-admin/:id/delete')
+  .delete(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.ICT_administrator),
+    userController.deleteICT_administrator
+  )
+router
+  .route('/auditors/all')
+  .get(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Proprietor),
+    userController.getAuditors
+  )
+router
+  .route('/auditor/:id/get')
+  .get(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Proprietor, roleList.Auditor),
+    userController.getAuditor
+  )
+router
+  .route('/auditor/create')
+  .post(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Proprietor, roleList.Auditor),
+    userController.createAuditor
+  )
+router
+  .route('/auditor/:id/update')
+  .put(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Proprietor, roleList.Auditor),
+    userController.updateAuditor
+  )
+router
+  .route('/auditor/:id/delete')
+  .delete(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Proprietor, roleList.Auditor),
+    userController.deleteAuditor
+  )
+router
+  .route('/proprietors/all')
+  .get(
+    authenticateToken,
+    verifyRoles(roleList.Admin),
+    userController.getProprietors
+  )
+router
+  .route('/proprietor/:id/get')
+  .get(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Proprietor),
+    userController.getProprietor
+  )
+router.route('/proprietor/create').post(userController.createProprietor)
+router
+  .route('/proprietor/:id/update')
+  .put(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Proprietor),
+    userController.updateProprietor
+  )
+router
+  .route('/proprietor/:id/delete')
+  .delete(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Proprietor),
+    userController.deleteProprietor
+  )
+router
+  .route('/principals/all')
+  .get(
+    authenticateToken,
+    verifyRoles(roleList.Admin),
+    userController.getPrincipals
+  )
+router
+  .route('/principal/:id/get')
+  .get(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Principal),
+    userController.getPrincipal
+  )
+router
+  .route('/principal/create')
+  .post(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Principal),
+    userController.createPrincipal
+  )
+router
+  .route('/principal/:id/update')
+  .put(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Principal),
+    userController.updatePrincipal
+  )
+router
+  .route('/principal/:id/delete')
+  .delete(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Principal),
+    userController.deletePrincipal
+  )
+router
+  .route('/headteachers/all')
+  .get(
+    authenticateToken,
+    verifyRoles(roleList.Admin),
+    userController.getHeadteachers
+  )
+router
+  .route('/headteacher/:id/get')
+  .get(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Headteacher),
+    userController.getHeadteacher
+  )
+router.route('/headteacher/create').post(userController.createHeadteacher)
+router
+  .route('/headteacher/:id/update')
+  .put(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Headteacher),
+    userController.updateHeadteacher
+  )
+router
+  .route('/headteacher/:id/delete')
+  .delete(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.Headteacher),
+    userController.deleteHeadteacher
+  )
+router
+  .route('/bursars/all')
+  .get(
+    authenticateToken,
+    verifyRoles(roleList.Admin),
+    userController.getBursars
+  )
+router
+  .route('/bursar/:id/get')
+  .get(
+    authenticateToken,
+    verifyRoles(
+      roleList.Admin,
+      roleList.Proprietor,
+      roleList.Principal,
+      roleList.Bursar
+    ),
+    userController.getBursar
+  )
+router.route('/bursar/create').post(userController.createBursar)
+router
+  .route('/bursar/:id/update')
+  .put(
+    authenticateToken,
+    verifyRoles(
+      roleList.Admin,
+      roleList.Proprietor,
+      roleList.Principal,
+      roleList.Bursar
+    ),
+    userController.updateBursar
+  )
+router
+  .route('/bursar/:id/delete')
+  .delete(
+    authenticateToken,
+    verifyRoles(
+      roleList.Admin,
+      roleList.Proprietor,
+      roleList.Principal,
+      roleList.Bursar
+    ),
+    userController.deleteBursar
+  )
+router
+  .route('/student/all')
+  .get(
+    authenticateToken,
+    verifyRoles(
+      roleList.Admin,
+      roleList.Proprietor,
+      roleList.Principal,
+      roleList.Headteacher,
+      roleList.ICT_administrator
+    ),
+    userController.getStudents
+  )
+router
+  .route('/student/:school_id/get')
+  .get(
+    authenticateToken,
+    verifyRoles(
+      roleList.Admin,
+      roleList.Proprietor,
+      roleList.Principal,
+      roleList.Headteacher,
+      roleList.ICT_administrator
+    ),
+    userController.getStudentsInParticularSchool
+  )
+router
+  .route('/student/:id/get')
+  .get(
+    authenticateToken,
+    verifyRoles(
+      roleList.Admin,
+      roleList.Proprietor,
+      roleList.Principal,
+      roleList.Headteacher,
+      roleList.ICT_administrator
+    ),
+    userController.getStudent
+  )
+router
+  .route('/student/create')
+  .post(
+    authenticateToken,
+    verifyRoles(
+      roleList.Admin,
+      roleList.Proprietor,
+      roleList.Principal,
+      roleList.Headteacher,
+      roleList.ICT_administrator
+    ),
+    userController.createStudent
+  )
+router
+  .route('/student/:id/update')
+  .put(
+    authenticateToken,
+    verifyRoles(
+      roleList.Admin,
+      roleList.Proprietor,
+      roleList.Principal,
+      roleList.Headteacher,
+      roleList.ICT_administrator
+    ),
+    userController.updateStudent
+  )
+router
+  .route('/student/:id/delete')
+  .delete(
+    authenticateToken,
+    verifyRoles(
+      roleList.Admin,
+      roleList.Proprietor,
+      roleList.Principal,
+      roleList.Headteacher,
+      roleList.ICT_administrator
+    ),
+    userController.deleteStudent
+  )
+router
+  .route('/parents/all')
+  .get(
+    authenticateToken,
+    verifyRoles(
+      roleList.Admin,
+      roleList.Proprietor,
+      roleList.Principal,
+      roleList.Headteacher,
+      roleList.ICT_administrator
+    ),
+    userController.getParents
+  )
+router
+  .route('/parent/:school_id/get')
+  .get(
+    authenticateToken,
+    verifyRoles(
+      roleList.Admin,
+      roleList.Proprietor,
+      roleList.Principal,
+      roleList.Headteacher,
+      roleList.ICT_administrator
+    ),
+    userController.getParentsInParticularSchool
+  )
+router
+  .route('/parent/:id/get')
+  .get(
+    authenticateToken,
+    verifyRoles(
+      roleList.Admin,
+      roleList.Proprietor,
+      roleList.Principal,
+      roleList.Headteacher,
+      roleList.ICT_administrator,
+      roleList.Parent
+    ),
+    userController.getParent
+  )
+router
+  .route('/parent/create')
+  .post(
+    authenticateToken,
+    verifyRoles(
+      roleList.Admin,
+      roleList.Proprietor,
+      roleList.Principal,
+      roleList.Headteacher,
+      roleList.ICT_administrator,
+      roleList.Parent
+    ),
+    userController.createParent
+  )
+router
+  .route('/parent/:id/update')
+  .put(
+    authenticateToken,
+    verifyRoles(
+      roleList.Admin,
+      roleList.Proprietor,
+      roleList.Principal,
+      roleList.Headteacher,
+      roleList.ICT_administrator,
+      roleList.Parent
+    ),
+    userController.updateParent
+  )
+router
+  .route('/parent/:id/delete')
+  .delete(
+    authenticateToken,
+    verifyRoles(
+      roleList.Admin,
+      roleList.Proprietor,
+      roleList.Principal,
+      roleList.Headteacher,
+      roleList.ICT_administrator,
+      roleList.Parent
+    ),
+    userController.deleteParent
+  )
+router.get('/staff/:school_id', userController.getStaffBySchool)
+
+// Get current user profile
+router.route('/profile').get(authenticateToken, userController.getCurrentUser)
+
+module.exports = router
