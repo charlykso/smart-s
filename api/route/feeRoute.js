@@ -1,7 +1,7 @@
 const express = require('express')
 const feeController = require('../controller/Fee_view')
-const authenticateToken = require('../middleware/authenticateToken')
 const {
+  authenticateToken,
   filterByUserSchool,
   enforceSchoolBoundary,
 } = require('../middleware/auth')
