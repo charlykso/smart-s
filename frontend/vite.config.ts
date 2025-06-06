@@ -2,9 +2,31 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'node:url'
 
+// Custom plugin to handle SPA routing
+const spaFallbackPlugin = () => {
+  return {
+    name: 'spa-fallback',
+    configureServer(server: any) {
+      server.middlewares.use((req: any, res: any, next: any) => {
+        // Skip API routes and static assets
+        if (req.url?.startsWith('/api') ||
+            req.url?.includes('.') ||
+            req.url?.startsWith('/@') ||
+            req.url?.startsWith('/node_modules')) {
+          return next();
+        }
+
+        // For all other routes, serve index.html
+        req.url = '/';
+        next();
+      });
+    },
+  };
+};
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
-  plugins: [react()],
+  plugins: [react(), spaFallbackPlugin()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
