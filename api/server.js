@@ -2,12 +2,12 @@ const express = require('express')
 const connectDB = require('./db/connection')
 const groupSchoolRoute = require('./route/groupSchoolRoute')
 const schoolRoute = require('./route/schoolRoute')
-const addressRoute = require('./route/addressRoute')
-const classArmRoute = require('./route/classArmRoute')
+const addressRoute = require('./route/AddressRoute')
+const classArmRoute = require('./route/ClassArmRoute')
 const userRoute = require('./route/userRoute')
 const profileRoute = require('./route/profileRoute')
-const sessionRoute = require('./route/sessionRoute')
-const termRoute = require('./route/termRoute')
+const sessionRoute = require('./route/SessionRoute')
+const termRoute = require('./route/TermRoute')
 const paymentProfileRoute = require('./route/paymentProfileRoute')
 const feeRoute = require('./route/feeRoute')
 const authRoute = require('./route/authRoute')
@@ -18,6 +18,7 @@ const adminRoute = require('./route/adminRoute')
 const principalRoute = require('./route/principalRoute')
 const bursarRoute = require('./route/bursarRoute')
 const parentRoute = require('./route/parentRoute')
+const bulkStudentRoute = require('./route/bulkStudentRoute')
 
 const app = express()
 
@@ -32,27 +33,40 @@ process.on('unhandledRejection', (reason, promise) => {
   // Don't exit the process, just log the error
 })
 
-// CORS middleware
+// CORS middleware - more explicit configuration
 app.use((req, res, next) => {
-  const allowedOrigins = ['http://localhost:3001', 'http://localhost:3002']
+  const allowedOrigins = [
+    'http://localhost:3001',
+    'http://localhost:3002',
+    'http://localhost:3003',
+  ]
   const origin = req.headers.origin
 
+  // Always set CORS headers
   if (allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin)
+  } else {
+    // For development, allow localhost:3001 even if origin header is missing
+    res.header('Access-Control-Allow-Origin', 'http://localhost:3001')
   }
 
   res.header('Access-Control-Allow-Credentials', 'true')
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  res.header(
+    'Access-Control-Allow-Methods',
+    'GET, POST, PUT, DELETE, OPTIONS, PATCH'
+  )
   res.header(
     'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma'
   )
 
+  // Handle preflight requests
   if (req.method === 'OPTIONS') {
-    res.sendStatus(200)
-  } else {
-    next()
+    res.status(200).end()
+    return
   }
+
+  next()
 })
 
 app.use(express.urlencoded({ extended: true }))
@@ -102,6 +116,7 @@ app.use('/api/v1/admin', adminRoute)
 app.use('/api/v1/principal', principalRoute)
 app.use('/api/v1/bursar', bursarRoute)
 app.use('/api/v1/parent', parentRoute)
+app.use('/api/v1/bulk-students', bulkStudentRoute)
 
 // Add missing routes to prevent 404 errors
 app.get('/api/v1/communities', (req, res) => {
