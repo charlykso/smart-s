@@ -281,7 +281,7 @@ const SchoolManagementPage: React.FC = () => {
         {activeTab === 'schools' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-gray-900">Schools ({schools.length})</h2>
+              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Schools ({schools.length})</h2>
               {canManageSchools && (
                 <button
                   type="button"
@@ -312,7 +312,7 @@ const SchoolManagementPage: React.FC = () => {
         {activeTab === 'sessions' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-gray-900">Academic Sessions ({sessions.length})</h2>
+              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Academic Sessions ({sessions.length})</h2>
               {canManageSessions && (
                 <button
                   type="button"
@@ -343,7 +343,7 @@ const SchoolManagementPage: React.FC = () => {
         {activeTab === 'terms' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-gray-900">Academic Terms ({terms.length})</h2>
+              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Academic Terms ({terms.length})</h2>
               <button
                 type="button"
                 onClick={handleCreateTerm}
@@ -372,7 +372,7 @@ const SchoolManagementPage: React.FC = () => {
         {activeTab === 'classes' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-gray-900">Class Arms ({classArms.length})</h2>
+              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Class Arms ({classArms.length})</h2>
               <button
                 type="button"
                 onClick={handleCreateClassArm}
