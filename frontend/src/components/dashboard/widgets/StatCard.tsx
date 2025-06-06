@@ -82,7 +82,7 @@ const StatCard: React.FC<StatCardProps> = ({
     >
       <div className="p-4 sm:p-5">
         {/* Header with Icon and Title */}
-        <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start justify-between mb-4">
           <div className="flex items-center min-w-0 flex-1">
             <div className="flex-shrink-0">
               <div className={`p-2 rounded-lg bg-secondary-50 dark:bg-gray-700`}>
@@ -90,45 +90,39 @@ const StatCard: React.FC<StatCardProps> = ({
               </div>
             </div>
             <div className="ml-3 min-w-0 flex-1">
-              <p className="text-sm font-medium text-secondary-600 dark:text-gray-400 truncate">
+              <p className="text-sm font-medium text-secondary-600 dark:text-gray-400 leading-tight">
                 {title}
               </p>
             </div>
           </div>
-          {change && (
-            <div className={`flex items-center flex-shrink-0 ml-2 ${getChangeColor()}`}>
-              {getChangeIcon()}
-              <span className="text-xs sm:text-sm font-medium ml-1 truncate">
-                {change}
-              </span>
-            </div>
-          )}
         </div>
 
-        {/* Value and Description */}
-        <div className="space-y-1">
-          <p className="text-xl sm:text-2xl font-bold text-secondary-900 dark:text-gray-100 truncate">
+        {/* Value */}
+        <div className="mb-3">
+          <p className="text-2xl sm:text-3xl font-bold text-secondary-900 dark:text-gray-100 leading-tight">
             {value}
           </p>
-          {description && (
-            <p className="text-xs text-secondary-500 dark:text-gray-500 truncate">
+        </div>
+
+        {/* Description */}
+        {description && (
+          <div className="mb-3">
+            <p className="text-xs text-secondary-500 dark:text-gray-500 leading-relaxed">
               {description}
             </p>
-          )}
-        </div>
-      </div>
+          </div>
+        )}
 
-      {/* Bottom section with change details */}
-      {change && (
-        <div className="bg-secondary-50 dark:bg-gray-700 px-4 sm:px-5 py-2 sm:py-3 border-t border-secondary-100 dark:border-gray-600">
-          <div className="text-xs sm:text-sm">
-            <span className={`font-medium ${getChangeColor()} truncate inline-block max-w-full`}>
+        {/* Change indicator */}
+        {change && (
+          <div className={`flex items-center ${getChangeColor()}`}>
+            {getChangeIcon()}
+            <span className="text-xs font-medium ml-1 leading-tight">
               {change}
             </span>
-            <span className="text-secondary-500 dark:text-gray-400 ml-1 truncate"> from last month</span>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

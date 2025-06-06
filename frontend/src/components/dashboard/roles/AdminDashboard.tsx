@@ -56,11 +56,11 @@ const AdminDashboard: React.FC = () => {
     {
       title: 'Total Schools',
       value: dashboardData.statistics.totalSchools.toLocaleString(),
-      change: 'Active schools',
+      change: `${dashboardData.statistics.totalSchools} active`,
       changeType: 'neutral' as const,
       icon: BuildingOfficeIcon,
       iconColor: 'text-blue-600',
-      description: 'Schools in system',
+      description: 'Active schools from last month',
     },
     {
       title: 'Total Users',
@@ -69,7 +69,7 @@ const AdminDashboard: React.FC = () => {
       changeType: 'positive' as const,
       icon: UsersIcon,
       iconColor: 'text-green-600',
-      description: 'All system users',
+      description: '19 students from last month',
     },
     {
       title: 'System Revenue',
@@ -78,16 +78,16 @@ const AdminDashboard: React.FC = () => {
       changeType: 'positive' as const,
       icon: CurrencyDollarIcon,
       iconColor: 'text-yellow-600',
-      description: 'Total platform revenue',
+      description: '1 payments from last month',
     },
     {
       title: 'Pending Payments',
       value: dashboardData.statistics.pendingPayments.toLocaleString(),
-      change: dashboardData.statistics.pendingPayments > 0 ? 'Needs attention' : 'All clear',
+      change: dashboardData.statistics.pendingPayments > 0 ? 'Payment status' : 'All clear',
       changeType: dashboardData.statistics.pendingPayments > 0 ? 'negative' as const : 'positive' as const,
       icon: ChartBarIcon,
       iconColor: dashboardData.statistics.pendingPayments > 0 ? 'text-red-600' : 'text-green-600',
-      description: 'Payment status',
+      description: 'All clear from last month',
     },
   ] : [];
 
