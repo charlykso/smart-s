@@ -104,21 +104,12 @@ const StatCard: React.FC<StatCardProps> = ({
           </p>
         </div>
 
-        {/* Description */}
-        {description && (
-          <div className="mb-3">
-            <p className="text-xs text-secondary-500 dark:text-gray-500 leading-relaxed">
-              {description}
-            </p>
-          </div>
-        )}
-
-        {/* Change indicator */}
-        {change && (
-          <div className={`flex items-center ${getChangeColor()}`}>
-            {getChangeIcon()}
-            <span className="text-xs font-medium ml-1 leading-tight">
-              {change}
+        {/* Change indicator or Description */}
+        {(change || description) && (
+          <div className={`flex items-center ${change ? getChangeColor() : 'text-secondary-500 dark:text-gray-500'}`}>
+            {change && getChangeIcon()}
+            <span className="text-xs font-medium leading-tight">
+              {change || description}
             </span>
           </div>
         )}
