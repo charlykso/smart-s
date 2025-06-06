@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store/authStore';
 import { ROUTES } from './constants';
+import ProtectedRoute from './components/common/ProtectedRoute';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -216,11 +217,9 @@ function App() {
           <Route
             path={ROUTES.STUDENT_MANAGEMENT}
             element={
-              isAuthenticated ? (
+              <ProtectedRoute requiredRoles={['Admin', 'Proprietor', 'ICT_administrator']}>
                 <StudentManagementPage />
-              ) : (
-                <Navigate to={ROUTES.LOGIN} replace />
-              )
+              </ProtectedRoute>
             }
           />
           <Route

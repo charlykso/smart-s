@@ -415,10 +415,10 @@ Common HTTP status codes:
 
 Different endpoints require different role permissions:
 
-- **Admin**: Full access to all endpoints
-- **ICT Administrator**: User management, system configuration
-- **Principal**: School management, fee approval, student oversight
-- **Bursar**: Payment processing, financial reports
-- **Auditor**: Read-only access to financial data
-- **Student**: Limited access to personal data and payments
-- **Parent**: Access to linked student information
+- **Admin**: Full access to all endpoints across all schools
+- **ICT Administrator**: School-scoped user management, system configuration for their school
+- **Principal**: School-scoped management, fee approval, student oversight for their school
+- **Bursar**: School-scoped payment processing, financial reports for their school
+- **Auditor**: School-scoped read-only access to financial data for their school
+- **Student**: Limited access to personal data and approved fees from their school
+- **Parent**: Access to linked student information from their school

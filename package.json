@@ -41,5 +41,9 @@
   "bugs": {
     "url": "https://github.com/charlykso/smart-s/issues"
   },
-  "homepage": "https://github.com/charlykso/smart-s#readme"
+  "homepage": "https://github.com/charlykso/smart-s#readme",
+  "dependencies": {
+    "form-data": "^4.0.2",
+    "xlsx": "^0.18.5"
+  }
 }

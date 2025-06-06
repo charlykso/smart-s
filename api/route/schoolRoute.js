@@ -1,6 +1,7 @@
 const express = require('express')
 const schoolController = require('../controller/School_view')
 const authenticateToken = require('../middleware/authenticateToken')
+const { checkSchoolAccess } = require('../middleware/auth')
 const roleList = require('../helpers/roleList')
 const verifyRoles = require('../middleware/verifyRoles')
 const router = express.Router()
@@ -18,6 +19,7 @@ router
       roleList.Proprietor,
       roleList.Admin
     ),
+    checkSchoolAccess,
     schoolController.getSchool
   ) //principal
 router

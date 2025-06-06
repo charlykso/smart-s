@@ -81,13 +81,35 @@ exports.createPaymentProfile = async (req, res) => {
 
 exports.updatePaymentProfile = async (req, res) => {
   try {
-    const profile = await PaymentProfile.findById(req.body.id)
+    const { id } = req.params
+    const profile = await PaymentProfile.findById(id)
     if (!profile) return res.status(404).json({ error: 'Profile not found' })
-    const { fw_secret_key, activate_fw, ps_secret_key, activate_ps } = req.body
+
+    const {
+      school_id,
+      fw_secret_key,
+      fw_public_key,
+      activate_fw,
+      ps_secret_key,
+      ps_public_key,
+      activate_ps,
+      account_no,
+      account_name,
+      bank_name,
+    } = req.body
+
+    // Update fields if provided
+    if (school_id !== undefined) profile.school = school_id
     if (fw_secret_key !== undefined) profile.fw_secret_key = fw_secret_key
+    if (fw_public_key !== undefined) profile.fw_public_key = fw_public_key
     if (activate_fw !== undefined) profile.activate_fw = activate_fw
     if (ps_secret_key !== undefined) profile.ps_secret_key = ps_secret_key
+    if (ps_public_key !== undefined) profile.ps_public_key = ps_public_key
     if (activate_ps !== undefined) profile.activate_ps = activate_ps
+    if (account_no !== undefined) profile.account_no = account_no
+    if (account_name !== undefined) profile.account_name = account_name
+    if (bank_name !== undefined) profile.bank_name = bank_name
+
     await profile.save()
     res.status(200).json({ message: 'Payment profile updated', profile })
   } catch (error) {

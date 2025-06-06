@@ -12,10 +12,13 @@ import {
   EyeIcon,
   EyeSlashIcon,
   ChartBarIcon,
+  BuildingOfficeIcon,
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '../../store/authStore';
 import { FeeService } from '../../services/feeService';
+import { SchoolService } from '../../services/schoolService';
 import type { PaymentProfile, PaymentMethod } from '../../types/fee';
+import type { School } from '../../types/school';
 import MainLayout from '../../components/layout/MainLayout';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import PaymentMethodTestCard from '../../components/admin/PaymentMethodTestCard';
@@ -23,21 +26,24 @@ import PaymentAnalyticsDashboard from '../../components/admin/PaymentAnalyticsDa
 import toast from 'react-hot-toast';
 
 const paymentConfigSchema = z.object({
+  // School Selection (for Admin users)
+  school_id: z.string().optional(),
+
   // Paystack Configuration
   ps_public_key: z.string().optional(),
   ps_secret_key: z.string().optional(),
   activate_ps: z.boolean(),
-  
+
   // Flutterwave Configuration
   fw_public_key: z.string().optional(),
   fw_secret_key: z.string().optional(),
   activate_fw: z.boolean(),
-  
+
   // Bank Transfer Configuration
   account_no: z.string().optional(),
   account_name: z.string().optional(),
   bank_name: z.string().optional(),
-  
+
   // General Settings
   default_payment_method: z.enum(['paystack', 'flutterwave', 'bank_transfer', 'cash']).optional(),
   enable_installments: z.boolean(),
@@ -52,12 +58,18 @@ const PaymentConfigurationPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [currentProfile, setCurrentProfile] = useState<PaymentProfile | null>(null);
   const [availableMethods, setAvailableMethods] = useState<PaymentMethod[]>([]);
+  const [schools, setSchools] = useState<School[]>([]);
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'paystack' | 'flutterwave' | 'bank' | 'settings' | 'analytics'>('paystack');
   const [showSecrets, setShowSecrets] = useState({
     ps_secret: false,
     fw_secret: false,
   });
   const [testResults, setTestResults] = useState<Record<string, { success: boolean; message: string }>>({});
+
+  // Check if user is Admin (can select any school) or school-scoped user
+  const isAdmin = user?.roles?.includes('Admin');
+  const userSchoolId = typeof user?.school === 'string' ? user.school : user?.school?._id;
 
   const {
     register,
@@ -69,6 +81,7 @@ const PaymentConfigurationPage: React.FC = () => {
   } = useForm<PaymentConfigFormData>({
     resolver: zodResolver(paymentConfigSchema),
     defaultValues: {
+      school_id: '',
       activate_ps: false,
       activate_fw: false,
       enable_installments: false,
@@ -79,21 +92,54 @@ const PaymentConfigurationPage: React.FC = () => {
   const watchedValues = watch();
 
   useEffect(() => {
-    if (user?.school) {
+    loadInitialData();
+  }, []);
+
+  useEffect(() => {
+    // Load payment profile when school selection changes
+    if (selectedSchoolId) {
       loadPaymentProfile();
       loadAvailableMethods();
     }
-  }, [user?.school]);
+  }, [selectedSchoolId]);
 
-  const loadPaymentProfile = async () => {
-    if (!user?.school) return;
-
+  const loadInitialData = async () => {
     try {
       setIsLoading(true);
-      const schoolId = typeof user.school === 'string' ? user.school : user.school._id;
+
+      if (isAdmin) {
+        // Admin users can select any school
+        const schoolsData = await SchoolService.getSchools();
+        setSchools(schoolsData);
+
+        // Set default school selection to first school if available
+        if (schoolsData.length > 0 && !selectedSchoolId) {
+          const defaultSchoolId = schoolsData[0]._id;
+          setSelectedSchoolId(defaultSchoolId);
+          setValue('school_id', defaultSchoolId);
+        }
+      } else {
+        // Non-admin users use their own school
+        if (userSchoolId) {
+          setSelectedSchoolId(userSchoolId);
+          setValue('school_id', userSchoolId);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load initial data:', error);
+      toast.error('Failed to load schools');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadPaymentProfile = async () => {
+    if (!selectedSchoolId) return;
+
+    try {
       const profiles = await FeeService.getPaymentProfiles();
-      const profile = profiles.find(p => 
-        (typeof p.school === 'string' ? p.school : p.school._id) === schoolId
+      const profile = profiles.find(p =>
+        (typeof p.school === 'string' ? p.school : p.school._id) === selectedSchoolId
       );
 
       if (profile) {
@@ -107,45 +153,63 @@ const PaymentConfigurationPage: React.FC = () => {
         setValue('account_name', profile.account_name || '');
         setValue('bank_name', profile.bank_name || '');
         // Don't populate secret keys for security
+      } else {
+        // Reset form if no profile found
+        setCurrentProfile(null);
+        setValue('ps_public_key', '');
+        setValue('activate_ps', false);
+        setValue('fw_public_key', '');
+        setValue('activate_fw', false);
+        setValue('account_no', '');
+        setValue('account_name', '');
+        setValue('bank_name', '');
       }
     } catch (error) {
       console.error('Failed to load payment profile:', error);
-    } finally {
-      setIsLoading(false);
+      toast.error('Failed to load payment profile');
     }
   };
 
   const loadAvailableMethods = async () => {
-    if (!user?.school) return;
+    if (!selectedSchoolId) return;
 
     try {
-      const schoolId = typeof user.school === 'string' ? user.school : user.school._id;
-      const methods = await FeeService.getAvailablePaymentMethods(schoolId);
+      const methods = await FeeService.getAvailablePaymentMethods(selectedSchoolId);
       setAvailableMethods(methods);
     } catch (error) {
       console.error('Failed to load available methods:', error);
     }
   };
 
+  const handleSchoolChange = (schoolId: string) => {
+    setSelectedSchoolId(schoolId);
+    setValue('school_id', schoolId);
+    // Reset current profile when school changes
+    setCurrentProfile(null);
+    setAvailableMethods([]);
+  };
+
   const handleFormSubmit = async (data: PaymentConfigFormData) => {
-    if (!user?.school) return;
+    if (!selectedSchoolId) {
+      toast.error('Please select a school');
+      return;
+    }
 
     try {
       setIsSaving(true);
-      const schoolId = typeof user.school === 'string' ? user.school : user.school._id;
 
       if (currentProfile) {
         // Update existing profile
         await FeeService.updatePaymentProfile(currentProfile._id, {
           ...data,
-          school: schoolId,
+          school_id: selectedSchoolId,
         });
         toast.success('Payment configuration updated successfully!');
       } else {
         // Create new profile
         await FeeService.createPaymentProfile({
           ...data,
-          school: schoolId,
+          school_id: selectedSchoolId,
         });
         toast.success('Payment configuration created successfully!');
       }
@@ -213,17 +277,62 @@ const PaymentConfigurationPage: React.FC = () => {
       <div className="space-y-6">
         {/* Page Header */}
         <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
-          <div className="flex items-center">
-            <CogIcon className="h-8 w-8 text-primary-600 mr-3" />
-            <div>
-              <h1 className="text-2xl font-bold text-secondary-900">
-                Payment Configuration
-              </h1>
-              <p className="text-secondary-600 mt-1">
-                Configure payment methods for your school
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <CogIcon className="h-8 w-8 text-primary-600 mr-3" />
+              <div>
+                <h1 className="text-2xl font-bold text-secondary-900">
+                  Payment Configuration
+                </h1>
+                <p className="text-secondary-600 mt-1">
+                  Configure payment methods for {isAdmin ? 'schools' : 'your school'}
+                </p>
+              </div>
             </div>
+
+            {/* School Selection - Only for Admin users */}
+            {isAdmin && (
+              <div className="flex items-center space-x-4">
+                <div className="min-w-0 flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Select School *
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <BuildingOfficeIcon className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                    <select
+                      value={selectedSchoolId}
+                      onChange={(e) => handleSchoolChange(e.target.value)}
+                      aria-label="Select school for payment configuration"
+                      className="block w-full min-w-[200px] border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm"
+                    >
+                      <option value="">Select a school</option>
+                      {schools.map((school) => (
+                        <option key={school._id} value={school._id}>
+                          {school.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Selected School Info */}
+          {selectedSchoolId && (
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center">
+                <BuildingOfficeIcon className="h-5 w-5 text-blue-600 mr-2" />
+                <span className="text-sm font-medium text-blue-800">
+                  Configuring payment methods for: {
+                    isAdmin
+                      ? schools.find(s => s._id === selectedSchoolId)?.name || 'Selected School'
+                      : user?.school?.name || 'Your School'
+                  }
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Tab Navigation */}
@@ -262,7 +371,21 @@ const PaymentConfigurationPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Configuration Form */}
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+            {!selectedSchoolId ? (
+              <div className="bg-white shadow rounded-lg p-8 text-center">
+                <BuildingOfficeIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  {isAdmin ? 'Select a School' : 'No School Associated'}
+                </h3>
+                <p className="text-gray-600">
+                  {isAdmin
+                    ? 'Please select a school from the dropdown above to configure payment methods.'
+                    : 'You need to be associated with a school to configure payment methods.'
+                  }
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
               {/* Paystack Configuration */}
               {activeTab === 'paystack' && (
                 <div className="bg-white shadow rounded-lg p-6">
@@ -606,6 +729,7 @@ const PaymentConfigurationPage: React.FC = () => {
                 </div>
               )}
             </form>
+            )}
           </div>
 
           {/* Sidebar - Current Status */}

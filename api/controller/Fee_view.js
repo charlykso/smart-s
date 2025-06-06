@@ -1,10 +1,18 @@
-const Fee = require('../model/Fee');
-const Term = require('../model/Term');
-const School = require('../model/School');
+const Fee = require('../model/Fee')
+const Term = require('../model/Term')
+const School = require('../model/School')
 
 exports.getFees = async (req, res) => {
   try {
-    const fees = await Fee.find().populate('term', 'name').populate('school', 'name')
+    // Apply school filtering if user is not Admin
+    let query = {}
+    if (req.schoolFilter) {
+      query = req.schoolFilter
+    }
+
+    const fees = await Fee.find(query)
+      .populate('term', 'name')
+      .populate('school', 'name')
     res.status(200).json(fees)
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -22,30 +30,33 @@ exports.getFee = async (req, res) => {
 }
 
 exports.createFee = async (req, res) => {
-    const fee = new Fee({
-        term: req.body.term_id,
-        school: req.body.school_id,
-        name: req.body.name,
-        decription: req.body.decription,
-        type: req.body.type,
-        isActive: req.body.isActive,
-        isInstallmentAllowed: req.body.isInstallmentAllowed,
-        no_ofInstallments: req.body.no_ofInstallments,
-        amount: req.body.amount,
-        isApproved: req.body.isApproved,
-    });
-    try {
-        const existing = await Fee.findOne({ $or: [{ name: req.body.name, term: req.body.term_id }] })
-        if (existing) return res.status(409).json({ message: 'This Fee already exist' });
-        const school = await School.findById(req.body.school_id)
-        if (!school) return res.status(409).json({ message: "School not found" })
-        const term = await Term.findById(req.body.term_id)
-        if (!term) return res.status(409).json({message: "Term not found"})
-        const newFee = await fee.save();
-        res.status(201).json(newFee);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    }
+  const fee = new Fee({
+    term: req.body.term_id,
+    school: req.body.school_id,
+    name: req.body.name,
+    decription: req.body.decription,
+    type: req.body.type,
+    isActive: req.body.isActive,
+    isInstallmentAllowed: req.body.isInstallmentAllowed,
+    no_ofInstallments: req.body.no_ofInstallments,
+    amount: req.body.amount,
+    isApproved: req.body.isApproved,
+  })
+  try {
+    const existing = await Fee.findOne({
+      $or: [{ name: req.body.name, term: req.body.term_id }],
+    })
+    if (existing)
+      return res.status(409).json({ message: 'This Fee already exist' })
+    const school = await School.findById(req.body.school_id)
+    if (!school) return res.status(409).json({ message: 'School not found' })
+    const term = await Term.findById(req.body.term_id)
+    if (!term) return res.status(409).json({ message: 'Term not found' })
+    const newFee = await fee.save()
+    res.status(201).json(newFee)
+  } catch (error) {
+    res.status(400).json({ message: error.message })
+  }
 }
 
 exports.updateFee = async (req, res) => {
@@ -93,7 +104,15 @@ exports.getFeesByTerm = async (req, res) => {
 
 exports.getApprovedFees = async (req, res) => {
   try {
-    const fees = await Fee.find({ isApproved: true }).populate('term', 'name')
+    // Build query with school filtering
+    let query = { isApproved: true }
+    if (req.schoolFilter) {
+      query = { ...query, ...req.schoolFilter }
+    }
+
+    const fees = await Fee.find(query)
+      .populate('term', 'name')
+      .populate('school', 'name')
     res.status(200).json(fees)
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -102,7 +121,15 @@ exports.getApprovedFees = async (req, res) => {
 
 exports.getUnapprovedFees = async (req, res) => {
   try {
-    const fees = await Fee.find({ isApproved: false }).populate('term', 'name')
+    // Build query with school filtering
+    let query = { isApproved: false }
+    if (req.schoolFilter) {
+      query = { ...query, ...req.schoolFilter }
+    }
+
+    const fees = await Fee.find(query)
+      .populate('term', 'name')
+      .populate('school', 'name')
     res.status(200).json(fees)
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -141,17 +168,19 @@ exports.approvedFeesForASchool = async (req, res) => {
     const fees = await Fee.find({
       school: school_id,
       isApproved: true,
-    }).populate({
-      path: 'school', 
-      select: 'name'
-    }).populate({
-      path: 'term',
-      select: 'name',
-      populate: {
-        path: 'session',
-        select: 'school name',
-      },
     })
+      .populate({
+        path: 'school',
+        select: 'name',
+      })
+      .populate({
+        path: 'term',
+        select: 'name',
+        populate: {
+          path: 'session',
+          select: 'school name',
+        },
+      })
     res.status(200).json(fees)
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -164,20 +193,21 @@ exports.unapprovedFeesForASchool = async (req, res) => {
     const fees = await Fee.find({
       school: school_id,
       isApproved: false,
-    }).populate({
-      path: 'school',
-      select: 'name'
-    }).populate({
-      path: 'term',
-      select: 'name',
-      populate: {
-        path: 'session',
-        select: 'school name',
-      },
     })
+      .populate({
+        path: 'school',
+        select: 'name',
+      })
+      .populate({
+        path: 'term',
+        select: 'name',
+        populate: {
+          path: 'session',
+          select: 'school name',
+        },
+      })
     res.status(200).json(fees)
-  }
-  catch (error) {
+  } catch (error) {
     res.status(500).json({ message: error.message })
   }
 }
@@ -185,9 +215,42 @@ exports.unapprovedFeesForASchool = async (req, res) => {
 exports.getFeesBySchool = async (req, res) => {
   try {
     const { school_id } = req.params
-    const fees = await Fee.find({ school: school_id }).populate('term', 'name').populate('school', 'name')
+    const fees = await Fee.find({ school: school_id })
+      .populate('term', 'name')
+      .populate('school', 'name')
     res.status(200).json(fees)
   } catch (error) {
     res.status(500).json({ message: error.message })
+  }
+}
+
+// Get approved fees for students from their school only
+exports.getApprovedFeesForStudent = async (req, res) => {
+  try {
+    // Use the studentSchoolFilter set by enforceSchoolBoundary middleware
+    let query = req.studentSchoolFilter || { isApproved: true }
+
+    const fees = await Fee.find(query)
+      .populate({
+        path: 'term',
+        select: 'name',
+        populate: {
+          path: 'session',
+          select: 'name',
+        },
+      })
+      .populate('school', 'name')
+      .sort({ createdAt: -1 })
+
+    res.status(200).json({
+      success: true,
+      data: fees,
+      message: 'Approved fees retrieved successfully',
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    })
   }
 }

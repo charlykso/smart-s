@@ -2,6 +2,7 @@ const express = require('express')
 const userController = require('../controller/user_view')
 const router = express.Router()
 const authenticateToken = require('../middleware/authenticateToken')
+const { filterByUserSchool, checkSchoolAccess } = require('../middleware/auth')
 const roleList = require('../helpers/roleList')
 const verifyRoles = require('../middleware/verifyRoles')
 
@@ -25,6 +26,7 @@ router
   .get(
     authenticateToken,
     verifyRoles(roleList.Admin, roleList.Proprietor),
+    filterByUserSchool,
     userController.getICT_administrators
   )
 router
@@ -242,6 +244,7 @@ router
       roleList.Headteacher,
       roleList.ICT_administrator
     ),
+    filterByUserSchool,
     userController.getStudents
   )
 router
@@ -251,10 +254,9 @@ router
     verifyRoles(
       roleList.Admin,
       roleList.Proprietor,
-      roleList.Principal,
-      roleList.Headteacher,
       roleList.ICT_administrator
     ),
+    checkSchoolAccess,
     userController.getStudentsInParticularSchool
   )
 router
@@ -264,8 +266,6 @@ router
     verifyRoles(
       roleList.Admin,
       roleList.Proprietor,
-      roleList.Principal,
-      roleList.Headteacher,
       roleList.ICT_administrator
     ),
     userController.getStudent
@@ -277,8 +277,6 @@ router
     verifyRoles(
       roleList.Admin,
       roleList.Proprietor,
-      roleList.Principal,
-      roleList.Headteacher,
       roleList.ICT_administrator
     ),
     userController.createStudent
@@ -290,8 +288,6 @@ router
     verifyRoles(
       roleList.Admin,
       roleList.Proprietor,
-      roleList.Principal,
-      roleList.Headteacher,
       roleList.ICT_administrator
     ),
     userController.updateStudent
@@ -303,8 +299,6 @@ router
     verifyRoles(
       roleList.Admin,
       roleList.Proprietor,
-      roleList.Principal,
-      roleList.Headteacher,
       roleList.ICT_administrator
     ),
     userController.deleteStudent
@@ -320,6 +314,7 @@ router
       roleList.Headteacher,
       roleList.ICT_administrator
     ),
+    filterByUserSchool,
     userController.getParents
   )
 router
@@ -333,6 +328,7 @@ router
       roleList.Headteacher,
       roleList.ICT_administrator
     ),
+    checkSchoolAccess,
     userController.getParentsInParticularSchool
   )
 router

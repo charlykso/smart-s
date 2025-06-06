@@ -18,7 +18,26 @@ const {
 
 exports.getAllPayments = async (req, res) => {
   try {
-    const payments = await Payment.find()
+    // Apply school filtering if user is not Admin
+    let query = {}
+    if (req.schoolFilter) {
+      // Need to populate user to filter by school
+      const payments = await Payment.find()
+        .populate({
+          path: 'user',
+          select: 'email regNo school',
+          match: req.schoolFilter,
+        })
+        .populate('fee', 'name amount')
+
+      // Filter out payments where user is null (doesn't match school filter)
+      const filteredPayments = payments.filter(
+        (payment) => payment.user !== null
+      )
+      return res.status(200).json(filteredPayments)
+    }
+
+    const payments = await Payment.find(query)
       .populate('user', 'email regNo')
       .populate('fee', 'name amount')
     res.status(200).json(payments)
@@ -349,6 +368,41 @@ exports.getAvailablePaymentMethods = async (req, res) => {
     })
   } catch (error) {
     res.status(500).json({
+      error: 'Internal server error',
+      details: error.message,
+    })
+  }
+}
+
+// Get student's own payments
+exports.getStudentPayments = async (req, res) => {
+  try {
+    const studentId = req.user._id || req.user.id
+
+    const payments = await Payment.find({ user: studentId })
+      .populate({
+        path: 'fee',
+        select: 'name amount type',
+        populate: {
+          path: 'term',
+          select: 'name',
+          populate: {
+            path: 'session',
+            select: 'name',
+          },
+        },
+      })
+      .sort({ createdAt: -1 })
+
+    res.status(200).json({
+      success: true,
+      data: payments,
+      total: payments.length,
+      message: 'Student payments retrieved successfully',
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
       error: 'Internal server error',
       details: error.message,
     })

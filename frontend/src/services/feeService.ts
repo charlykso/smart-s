@@ -191,16 +191,16 @@ export class FeeService {
     return response.data!;
   }
 
-  static async updatePaymentProfile(data: UpdatePaymentProfileData): Promise<PaymentProfile> {
+  static async updatePaymentProfile(id: string, data: Partial<CreatePaymentProfileData>): Promise<PaymentProfile> {
     const response = await ApiService.put<ApiResponse<PaymentProfile>>(
-      `${API_ENDPOINTS.PAYMENT_PROFILES.UPDATE}/${data._id}`,
+      `${API_ENDPOINTS.PAYMENT_PROFILES.UPDATE}/${id}`,
       data
     );
-    
+
     if (!response.success) {
       throw new Error(response.message || 'Failed to update payment profile');
     }
-    
+
     return response.data!;
   }
 

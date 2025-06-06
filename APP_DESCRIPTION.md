@@ -188,14 +188,14 @@ This system provides a robust foundation for school financial management with co
 The user system supports a hierarchical role structure where:
 
 - **Admin**: Full system access, can create other admins and manage all schools
-- **ICT Administrator**: Technical management, user creation, system configuration
-- **Proprietor**: School ownership level access, can manage principals and view all data
-- **Principal**: School-level management, fee approval, student oversight
-- **Headteacher**: Academic management within schools
-- **Bursar**: Financial management, payment processing, fee collection
-- **Auditor**: Read-only access for financial auditing and reporting
-- **Student**: Limited access to personal information and payment history
-- **Parent**: Access to linked student information and payment capabilities
+- **ICT Administrator**: School-scoped technical management, user creation, system configuration for their school
+- **Proprietor**: School ownership level access, can manage principals and view all data for their school
+- **Principal**: School-level management, fee approval, student oversight for their school
+- **Headteacher**: Academic management within their school
+- **Bursar**: Financial management, payment processing, fee collection for their school
+- **Auditor**: Read-only access for financial auditing and reporting for their school
+- **Student**: Limited access to personal information and payment history from their school
+- **Parent**: Access to linked student information from their school
 
 ### Database Schema Details
 

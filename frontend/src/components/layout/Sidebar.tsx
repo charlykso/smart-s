@@ -150,7 +150,7 @@ const navigation: MenuItem[] = [
         id: 'student-management',
         label: 'Student Management',
         path: ROUTES.STUDENT_MANAGEMENT,
-        roles: ['Admin', 'ICT_administrator', 'Principal'] as UserRole[],
+        roles: ['Admin', 'ICT_administrator', 'Proprietor'] as UserRole[],
       },
     ],
   },

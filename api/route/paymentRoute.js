@@ -2,10 +2,13 @@ const paymentController = require('../controller/payment_view')
 const express = require('express')
 const router = express.Router()
 const authenticateToken = require('../middleware/authenticateToken')
+const { filterByUserSchool } = require('../middleware/auth')
 const roleList = require('../helpers/roleList')
 const verifyRoles = require('../middleware/verifyRoles')
 
-router.route('/all').get(paymentController.getAllPayments)
+router
+  .route('/all')
+  .get(authenticateToken, filterByUserSchool, paymentController.getAllPayments)
 router.route('/initiate').post(paymentController.initiatePayment)
 router.get('/get-paystack', paymentController.getAllPaymentsByPaystack)
 router.get('/get-Bank_transfer', paymentController.getAllPaymentsByBankTransfer)
@@ -41,6 +44,15 @@ router
     authenticateToken,
     verifyRoles(roleList.Admin, roleList.Bursar),
     paymentController.getPaymentsByFlutterwave
+  )
+
+// Student-specific endpoint to get their own payments
+router
+  .route('/student/my-payments')
+  .get(
+    authenticateToken,
+    verifyRoles(roleList.Student),
+    paymentController.getStudentPayments
   )
 
 module.exports = router
