@@ -73,7 +73,8 @@ exports.initiatePayment = async (req, res) => {
             .status(400)
             .json({ error: 'Paystack payment not available for this school' })
         }
-        const paystackCallbackUrl = `http://localhost:3000/api/v1/payment/paystack_callback`
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3000'
+        const paystackCallbackUrl = `${baseUrl}/api/v1/payment/paystack_callback`
         const paystackPaymentUrl = await initiatePaymentWithPaystack(
           paymentProfile,
           fee,
@@ -93,7 +94,8 @@ exports.initiatePayment = async (req, res) => {
             error: 'Flutterwave payment not available for this school',
           })
         }
-        const flutterwaveCallbackUrl = `http://localhost:3000/api/v1/payment/flutterwave_callback`
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3000'
+        const flutterwaveCallbackUrl = `${baseUrl}/api/v1/payment/flutterwave_callback`
         const flutterwavePaymentUrl = await initiatePaymentWithFlutterwave(
           paymentProfile,
           fee,
@@ -128,7 +130,8 @@ exports.initiatePayment = async (req, res) => {
       default:
         // Fallback to automatic selection (existing behavior)
         if (paymentProfile.activate_ps) {
-          const callbackUrl = `http://localhost:3000/api/v1/payment/paystack_callback`
+          const baseUrl = process.env.BASE_URL || 'http://localhost:3000'
+          const callbackUrl = `${baseUrl}/api/v1/payment/paystack_callback`
           const paymentUrl = await initiatePaymentWithPaystack(
             paymentProfile,
             fee,
@@ -140,7 +143,8 @@ exports.initiatePayment = async (req, res) => {
             .json({ message: 'Payment initiated', paymentUrl })
         }
         if (paymentProfile.activate_fw) {
-          const callbackUrl = `http://localhost:3000/api/v1/payment/flutterwave_callback`
+          const baseUrl = process.env.BASE_URL || 'http://localhost:3000'
+          const callbackUrl = `${baseUrl}/api/v1/payment/flutterwave_callback`
           const paymentUrl = await initiatePaymentWithFlutterwave(
             paymentProfile,
             fee,

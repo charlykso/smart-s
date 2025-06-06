@@ -39,15 +39,20 @@ app.use((req, res, next) => {
     'http://localhost:3001',
     'http://localhost:3002',
     'http://localhost:3003',
-  ]
+    process.env.FRONTEND_URL, // Add frontend URL from environment
+  ].filter(Boolean) // Remove undefined values
+
   const origin = req.headers.origin
 
   // Always set CORS headers
   if (allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin)
-  } else {
+  } else if (process.env.NODE_ENV === 'development') {
     // For development, allow localhost:3001 even if origin header is missing
     res.header('Access-Control-Allow-Origin', 'http://localhost:3001')
+  } else {
+    // For production, allow the configured frontend URL or wildcard
+    res.header('Access-Control-Allow-Origin', process.env.FRONTEND_URL || '*')
   }
 
   res.header('Access-Control-Allow-Credentials', 'true')
@@ -167,6 +172,9 @@ app.use((req, res) => {
   })
 })
 
-app.listen(3000, () => {
-  console.log('Server is running on http://localhost:3000')
+const PORT = process.env.PORT || 3000
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`)
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`)
 })
