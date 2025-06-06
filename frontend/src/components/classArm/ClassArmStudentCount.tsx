@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Users, RefreshCw, AlertTriangle, CheckCircle, Eye } from 'lucide-react';
-import classArmService, { ClassArmStudentCount } from '../../services/classArmService';
+import classArmService, { type ClassArmStudentCount } from '../../services/classArmService';
 import CenteredLoader from '../common/CenteredLoader';
 
 interface ClassArmStudentCountProps {
@@ -136,7 +136,7 @@ const ClassArmStudentCountComponent: React.FC<ClassArmStudentCountProps> = ({
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">
-            {classArmData.classArm.name} - Student Count
+            {classArmData.name} - Student Count
           </h3>
           <button
             onClick={() => handleUpdateStudentCount(classArmData._id)}

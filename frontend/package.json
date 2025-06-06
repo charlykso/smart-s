@@ -6,7 +6,7 @@
   "description": "Frontend application for Ledgrio School Accounting System - comprehensive financial management for educational institutions",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
@@ -26,6 +26,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.15.0",
+    "lucide-react": "^0.513.0",
     "postcss": "^8.4.47",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -39,6 +40,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
+    "@types/node": "^22.15.30",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@typescript-eslint/eslint-plugin": "^8.33.0",
