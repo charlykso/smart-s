@@ -1,0 +1,64 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Production build (will be built on Vercel)
+dist
+
+# Environment variables (use Vercel dashboard instead)
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Documentation (optional - remove if you want docs deployed)
+*.md
+COMPONENT_ARCHITECTURE.md
+DARK_MODE_IMPLEMENTATION.md
+DESIGN_SYSTEM.md
+FRONTEND_TODO.md
+PACKAGE_REQUIREMENTS.md
+ROUTING_STRUCTURE.md
+SETUP_GUIDE.md
+STATE_MANAGEMENT.md
+STUDENT_PAYMENT_REPORTS_FRONTEND.md
+AUDITING_FOCUSED_ROADMAP.md
+AUDITING_FRONTEND_IMPLEMENTATION.md
+
+# Test files
+**/*.test.js
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.js
+**/*.spec.ts
+**/*.spec.tsx
+
+# Coverage directory used by tools like istanbul
+coverage
+
+# ESLint cache
+.eslintcache
+
+# Prettier cache
+.prettiercache

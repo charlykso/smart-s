@@ -1,10 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { resolve } from 'path'
 import { fileURLToPath, URL } from 'node:url'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
   resolve: {
     alias: {
@@ -27,6 +26,23 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: mode === 'development',
+    minify: 'terser',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          ui: ['@heroicons/react', 'react-hot-toast'],
+          forms: ['react-hook-form', 'zod'],
+          state: ['zustand'],
+          utils: ['axios', 'date-fns'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
   },
-})
+  preview: {
+    port: 3001,
+  },
+}))
