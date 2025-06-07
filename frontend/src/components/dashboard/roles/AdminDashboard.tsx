@@ -77,7 +77,7 @@ const AdminDashboard: React.FC = () => {
     {
       title: 'Pending Payments',
       value: dashboardData.statistics.pendingPayments.toLocaleString(),
-      description: dashboardData.statistics.pendingPayments > 0 ? 'Payment status' : 'All clear from last month',
+      description: dashboardData.statistics.pendingPayments > 0 ? 'Payments requiring attention' : 'All payments up to date',
       icon: ChartBarIcon,
       iconColor: dashboardData.statistics.pendingPayments > 0 ? 'text-red-600' : 'text-green-600',
     },
@@ -191,8 +191,6 @@ const AdminDashboard: React.FC = () => {
               key={stat.title}
               title={stat.title}
               value={stat.value}
-              change={stat.change}
-              changeType={stat.changeType}
               icon={stat.icon}
               iconColor={stat.iconColor}
               description={stat.description}
