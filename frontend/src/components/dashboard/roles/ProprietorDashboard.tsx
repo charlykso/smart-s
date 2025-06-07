@@ -25,29 +25,23 @@ const ProprietorDashboard: React.FC = () => {
     {
       title: 'Total Schools',
       value: '12',
-      change: '+2',
-      changeType: 'increase' as const,
+      description: '+2 schools under management',
       icon: BuildingOfficeIcon,
       iconColor: 'text-blue-600',
-      description: 'Schools under management',
     },
     {
       title: 'Total Revenue',
       value: '₦125.8M',
-      change: '+18%',
-      changeType: 'increase' as const,
+      description: '+18% across all schools',
       icon: CurrencyDollarIcon,
       iconColor: 'text-green-600',
-      description: 'Across all schools',
     },
     {
       title: 'Total Students',
       value: '15,847',
-      change: '+1,234',
-      changeType: 'increase' as const,
+      description: '+1,234 enrolled students',
       icon: UsersIcon,
       iconColor: 'text-purple-600',
-      description: 'Enrolled students',
     },
     {
       title: 'Performance Score',
@@ -174,7 +168,7 @@ const ProprietorDashboard: React.FC = () => {
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-orange-600">12</div>
-            <div className="text-sm text-secondary-600">Active Schools</div>
+            <div className="text-sm text-secondary-600 dark:text-gray-400">Active Schools</div>
           </div>
         </div>
       </div>
@@ -186,8 +180,6 @@ const ProprietorDashboard: React.FC = () => {
             key={index}
             title={stat.title}
             value={stat.value}
-            change={stat.change}
-            changeType={stat.changeType}
             icon={stat.icon}
             iconColor={stat.iconColor}
             description={stat.description}

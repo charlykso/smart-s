@@ -47,20 +47,16 @@ const PrincipalDashboard: React.FC = () => {
     {
       title: 'Total Students',
       value: dashboardData.statistics.totalStudents.toLocaleString(),
-      change: 'Enrolled students',
-      changeType: 'neutral' as const,
+      description: 'Currently enrolled students',
       icon: UsersIcon,
       iconColor: 'text-blue-600',
-      description: 'Current enrollment',
     },
     {
       title: 'Fee Collection',
       value: `${Math.round(dashboardData.financial.collectionRate)}%`,
-      change: dashboardData.financial.collectionRate >= 80 ? 'Good rate' : 'Needs improvement',
-      changeType: dashboardData.financial.collectionRate >= 80 ? 'positive' as const : 'negative' as const,
+      description: dashboardData.financial.collectionRate >= 80 ? 'Good collection rate' : 'Needs improvement',
       icon: CurrencyDollarIcon,
       iconColor: principalService.getCollectionRateColor(dashboardData.financial.collectionRate),
-      description: 'Collection rate',
     },
     {
       title: 'Total Revenue',
@@ -194,8 +190,6 @@ const PrincipalDashboard: React.FC = () => {
               key={index}
               title={stat.title}
               value={stat.value}
-              change={stat.change}
-              changeType={stat.changeType}
               icon={stat.icon}
               iconColor={stat.iconColor}
               description={stat.description}

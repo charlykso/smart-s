@@ -90,7 +90,7 @@ const StatCard: React.FC<StatCardProps> = ({
               </div>
             </div>
             <div className="ml-3 min-w-0 flex-1">
-              <p className="text-sm font-medium text-secondary-600 dark:text-gray-400 leading-tight">
+              <p className="text-sm font-medium text-secondary-600 dark:text-gray-400 leading-tight truncate">
                 {title}
               </p>
             </div>
@@ -98,8 +98,8 @@ const StatCard: React.FC<StatCardProps> = ({
         </div>
 
         {/* Value */}
-        <div className="mb-3">
-          <p className="text-2xl sm:text-3xl font-bold text-secondary-900 dark:text-gray-100 leading-tight">
+        <div className="mb-4">
+          <p className="text-2xl sm:text-3xl font-bold text-secondary-900 dark:text-gray-100 leading-tight break-words">
             {value}
           </p>
         </div>
@@ -108,7 +108,7 @@ const StatCard: React.FC<StatCardProps> = ({
         {(change || description) && (
           <div className={`flex items-center ${change ? getChangeColor() : 'text-secondary-500 dark:text-gray-500'}`}>
             {change && getChangeIcon()}
-            <span className="text-xs font-medium leading-tight">
+            <span className="text-xs font-medium leading-tight truncate">
               {change || description}
             </span>
           </div>

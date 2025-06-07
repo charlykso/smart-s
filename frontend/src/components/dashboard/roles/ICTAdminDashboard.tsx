@@ -41,11 +41,9 @@ const ICTAdminDashboard: React.FC = () => {
     {
       title: 'Server Uptime',
       value: ictAdminService.formatUptime(dashboardData.systemMetrics.serverUptime),
-      change: dashboardData.systemHealth.status === 'healthy' ? 'Excellent' : 'Needs attention',
-      changeType: dashboardData.systemHealth.status === 'healthy' ? 'positive' as const : 'negative' as const,
+      description: dashboardData.systemHealth.status === 'healthy' ? 'Excellent system availability' : 'Needs attention',
       icon: ServerIcon,
       iconColor: ictAdminService.getSystemHealthColor(dashboardData.systemHealth.status),
-      description: 'System availability',
     },
     {
       title: 'Active Users',
@@ -212,8 +210,6 @@ const ICTAdminDashboard: React.FC = () => {
               key={index}
               title={stat.title}
               value={stat.value}
-              change={stat.change}
-              changeType={stat.changeType}
               icon={stat.icon}
               iconColor={stat.iconColor}
               description={stat.description}

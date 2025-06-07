@@ -49,20 +49,16 @@ const ParentDashboard: React.FC = () => {
     {
       title: 'Children Enrolled',
       value: dashboardData.overallSummary.totalChildren.toString(),
-      change: 'Active students',
-      changeType: 'neutral' as const,
+      description: 'Active students enrolled',
       icon: UsersIcon,
       iconColor: 'text-blue-600',
-      description: 'Enrolled children',
     },
     {
       title: 'Outstanding Fees',
       value: formatCurrency(dashboardData.overallSummary.totalOutstanding),
-      change: dashboardData.overallSummary.totalOutstanding > 0 ? 'Payment due' : 'All paid',
-      changeType: dashboardData.overallSummary.totalOutstanding > 0 ? 'negative' as const : 'positive' as const,
+      description: dashboardData.overallSummary.totalOutstanding > 0 ? 'Payment due this term' : 'All fees paid',
       icon: CurrencyDollarIcon,
       iconColor: dashboardData.overallSummary.totalOutstanding > 0 ? 'text-red-600' : 'text-green-600',
-      description: 'Total pending',
     },
     {
       title: 'Average Performance',
@@ -212,8 +208,6 @@ const ParentDashboard: React.FC = () => {
               key={`parent-stat-${index}`}
               title={stat.title}
               value={stat.value}
-              change={stat.change}
-              changeType={stat.changeType}
               icon={stat.icon}
               iconColor={stat.iconColor}
               description={stat.description}
