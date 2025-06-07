@@ -170,29 +170,66 @@ export const useAuthStore = create<AuthStore>()(
         const rememberMe = localStorage.getItem(STORAGE_KEYS.REMEMBER_ME) === 'true';
         const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
         const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+        const userData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
 
+        // If we have stored auth data and remember me is enabled, try to restore session
         if (rememberMe && token && refreshToken) {
           try {
-            // Validate token by trying to refresh it
-            const tokenResponse = await AuthService.refreshToken(refreshToken);
+            // First try to parse stored user data
+            let user = null;
+            if (userData) {
+              try {
+                const parsedData = JSON.parse(userData);
+                user = parsedData.user;
+              } catch (e) {
+                console.warn('Failed to parse stored user data');
+              }
+            }
 
-            // Get current user data
-            const userData = await AuthService.getCurrentUser();
+            // If we have user data, restore session immediately for better UX
+            if (user) {
+              set({
+                user,
+                token,
+                refreshToken,
+                isAuthenticated: true,
+                rememberMe: true,
+              });
+            }
 
-            set({
-              user: userData,
-              token: tokenResponse.token,
-              refreshToken: tokenResponse.refreshToken,
-              isAuthenticated: true,
-              rememberMe: true,
-            });
+            // Try to validate/refresh token in background
+            try {
+              const tokenResponse = await AuthService.refreshToken(refreshToken);
 
-            // Update localStorage with new tokens
-            localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, tokenResponse.token);
-            localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokenResponse.refreshToken);
+              // Try to get fresh user data
+              const freshUserData = await AuthService.getCurrentUser();
+
+              set({
+                user: freshUserData,
+                token: tokenResponse.token,
+                refreshToken: tokenResponse.refreshToken,
+                isAuthenticated: true,
+                rememberMe: true,
+              });
+
+              // Update localStorage with new tokens
+              localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, tokenResponse.token);
+              localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokenResponse.refreshToken);
+            } catch (apiError) {
+              console.warn('API validation failed, but keeping cached session:', apiError);
+              // If API is unavailable but we have cached data, keep the session
+              // This allows the app to work offline or when backend is down
+              if (user) {
+                // Keep the cached session active
+                console.log('Using cached authentication data');
+              } else {
+                // No cached data and API failed, clear everything
+                throw apiError;
+              }
+            }
           } catch (error) {
-            console.error('Token validation failed:', error);
-            // Clear invalid tokens
+            console.error('Authentication initialization failed:', error);
+            // Clear invalid tokens only if we couldn't restore from cache
             localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
             localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
             localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
