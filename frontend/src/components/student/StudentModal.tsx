@@ -190,23 +190,23 @@ const StudentModal: React.FC<StudentModalProps> = ({
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="fixed inset-0 bg-black bg-opacity-25" onClick={handleClose} />
         
-        <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden transition-colors duration-200">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">
+          <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
               {student ? 'Edit Student' : 'Add New Student'}
             </h3>
             <button
               onClick={handleClose}
               disabled={isLoading}
-              className="text-gray-400 hover:text-gray-500 disabled:opacity-50"
+              className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 disabled:opacity-50 transition-colors duration-200"
             >
               <XMarkIcon className="h-6 w-6" />
             </button>
           </div>
 
           {/* Tab Navigation */}
-          <div className="border-b border-gray-200">
+          <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="flex flex-wrap gap-2 sm:gap-4 lg:gap-6 xl:gap-8 px-4 sm:px-6">
               {[
                 { id: 'personal', name: 'Personal Info', icon: UserIcon },
@@ -220,10 +220,10 @@ const StudentModal: React.FC<StudentModalProps> = ({
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                    className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors duration-200 ${
                       activeTab === tab.id
-                        ? 'border-primary-500 text-primary-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        ? 'border-primary-500 text-primary-600 dark:text-primary-400'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                     }`}
                   >
                     <Icon className="h-4 w-4 mr-2 flex-shrink-0" />
@@ -359,8 +359,8 @@ const StudentModal: React.FC<StudentModalProps> = ({
                   </div>
 
                   {/* Address Section */}
-                  <div className="border-t pt-6">
-                    <h4 className="text-lg font-medium text-gray-900 mb-4">Address Information</h4>
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Address Information</h4>
                     
                     <div className="space-y-4">
                       <div>

@@ -276,15 +276,15 @@ const PaymentConfigurationPage: React.FC = () => {
     <MainLayout>
       <div className="space-y-6">
         {/* Page Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-secondary-200 dark:border-gray-700 p-6 transition-colors duration-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <CogIcon className="h-8 w-8 text-primary-600 mr-3" />
+              <CogIcon className="h-8 w-8 text-primary-600 dark:text-primary-400 mr-3" />
               <div>
-                <h1 className="text-2xl font-bold text-secondary-900">
+                <h1 className="text-2xl font-bold text-secondary-900 dark:text-gray-100">
                   Payment Configuration
                 </h1>
-                <p className="text-secondary-600 mt-1">
+                <p className="text-secondary-600 dark:text-gray-400 mt-1">
                   Configure payment methods for {isAdmin ? 'schools' : 'your school'}
                 </p>
               </div>
@@ -294,16 +294,16 @@ const PaymentConfigurationPage: React.FC = () => {
             {isAdmin && (
               <div className="flex items-center space-x-4">
                 <div className="min-w-0 flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Select School *
                   </label>
                   <div className="flex items-center space-x-2">
-                    <BuildingOfficeIcon className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                    <BuildingOfficeIcon className="h-5 w-5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                     <select
                       value={selectedSchoolId}
                       onChange={(e) => handleSchoolChange(e.target.value)}
                       aria-label="Select school for payment configuration"
-                      className="block w-full min-w-[200px] border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm"
+                      className="block w-full min-w-[200px] border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-sm"
                     >
                       <option value="">Select a school</option>
                       {schools.map((school) => (
@@ -320,10 +320,10 @@ const PaymentConfigurationPage: React.FC = () => {
 
           {/* Selected School Info */}
           {selectedSchoolId && (
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg">
               <div className="flex items-center">
-                <BuildingOfficeIcon className="h-5 w-5 text-blue-600 mr-2" />
-                <span className="text-sm font-medium text-blue-800">
+                <BuildingOfficeIcon className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" />
+                <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
                   Configuring payment methods for: {
                     isAdmin
                       ? schools.find(s => s._id === selectedSchoolId)?.name || 'Selected School'
@@ -336,7 +336,7 @@ const PaymentConfigurationPage: React.FC = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-4 lg:p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-secondary-200 dark:border-gray-700 p-4 lg:p-6 transition-colors duration-200">
           <nav className="flex flex-wrap gap-2 sm:gap-4 lg:gap-6 xl:gap-8">
             {[
               { id: 'paystack', name: 'Paystack', icon: CreditCardIcon },
@@ -351,10 +351,10 @@ const PaymentConfigurationPage: React.FC = () => {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md whitespace-nowrap ${
+                  className={`flex items-center px-3 py-2 text-sm font-medium rounded-md whitespace-nowrap transition-colors duration-200 ${
                     activeTab === tab.id
-                      ? 'text-primary-600 bg-primary-50'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   <Icon className="h-4 w-4 mr-2 flex-shrink-0" />
@@ -372,12 +372,12 @@ const PaymentConfigurationPage: React.FC = () => {
           {/* Configuration Form */}
           <div className="lg:col-span-2">
             {!selectedSchoolId ? (
-              <div className="bg-white shadow rounded-lg p-8 text-center">
-                <BuildingOfficeIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-8 text-center transition-colors duration-200">
+                <BuildingOfficeIcon className="h-16 w-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                   {isAdmin ? 'Select a School' : 'No School Associated'}
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-400">
                   {isAdmin
                     ? 'Please select a school from the dropdown above to configure payment methods.'
                     : 'You need to be associated with a school to configure payment methods.'
@@ -388,19 +388,19 @@ const PaymentConfigurationPage: React.FC = () => {
               <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
               {/* Paystack Configuration */}
               {activeTab === 'paystack' && (
-                <div className="bg-white shadow rounded-lg p-6">
+                <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 transition-colors duration-200">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center">
-                      <CreditCardIcon className="h-6 w-6 text-blue-600 mr-3" />
-                      <h3 className="text-lg font-medium text-gray-900">Paystack Configuration</h3>
+                      <CreditCardIcon className="h-6 w-6 text-blue-600 dark:text-blue-400 mr-3" />
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Paystack Configuration</h3>
                     </div>
                     <div className="flex items-center">
                       <input
                         type="checkbox"
                         {...register('activate_ps')}
-                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700"
                       />
-                      <label className="ml-2 block text-sm text-gray-900">
+                      <label className="ml-2 block text-sm text-gray-900 dark:text-gray-100">
                         Enable Paystack
                       </label>
                     </div>
@@ -408,22 +408,22 @@ const PaymentConfigurationPage: React.FC = () => {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Public Key *
                       </label>
                       <input
                         type="text"
                         {...register('ps_public_key')}
                         placeholder="pk_test_..."
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       />
                       {errors.ps_public_key && (
-                        <p className="mt-1 text-sm text-red-600">{errors.ps_public_key.message}</p>
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.ps_public_key.message}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Secret Key *
                       </label>
                       <div className="relative">
@@ -431,7 +431,7 @@ const PaymentConfigurationPage: React.FC = () => {
                           type={showSecrets.ps_secret ? 'text' : 'password'}
                           {...register('ps_secret_key')}
                           placeholder="sk_test_..."
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 pr-10 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                          className="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 pr-10 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         />
                         <button
                           type="button"
@@ -439,26 +439,26 @@ const PaymentConfigurationPage: React.FC = () => {
                           className="absolute inset-y-0 right-0 pr-3 flex items-center"
                         >
                           {showSecrets.ps_secret ? (
-                            <EyeSlashIcon className="h-4 w-4 text-gray-400" />
+                            <EyeSlashIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                           ) : (
-                            <EyeIcon className="h-4 w-4 text-gray-400" />
+                            <EyeIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                           )}
                         </button>
                       </div>
                       {errors.ps_secret_key && (
-                        <p className="mt-1 text-sm text-red-600">{errors.ps_secret_key.message}</p>
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.ps_secret_key.message}</p>
                       )}
                     </div>
 
                     <div className="flex justify-between items-center pt-4">
-                      <div className="text-sm text-gray-600">
-                        <p>Get your API keys from your <a href="https://dashboard.paystack.com/#/settings/developer" target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">Paystack Dashboard</a></p>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        <p>Get your API keys from your <a href="https://dashboard.paystack.com/#/settings/developer" target="_blank" rel="noopener noreferrer" className="text-primary-600 dark:text-primary-400 hover:underline">Paystack Dashboard</a></p>
                       </div>
                       <button
                         type="button"
                         onClick={() => testPaymentMethod('paystack')}
                         disabled={!watchedValues.ps_public_key || !watchedValues.ps_secret_key}
-                        className="px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 border border-primary-200 rounded-md hover:bg-primary-100 disabled:opacity-50"
+                        className="px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900 border border-primary-200 dark:border-primary-700 rounded-md hover:bg-primary-100 dark:hover:bg-primary-800 disabled:opacity-50 transition-colors duration-200"
                       >
                         Test Connection
                       </button>
@@ -466,18 +466,18 @@ const PaymentConfigurationPage: React.FC = () => {
 
                     {testResults.paystack && (
                       <div className={`rounded-lg p-4 ${
-                        testResults.paystack.success 
-                          ? 'bg-green-50 border border-green-200' 
-                          : 'bg-red-50 border border-red-200'
+                        testResults.paystack.success
+                          ? 'bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700'
+                          : 'bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700'
                       }`}>
                         <div className="flex items-center">
                           {testResults.paystack.success ? (
-                            <CheckCircleIcon className="h-5 w-5 text-green-600 mr-2" />
+                            <CheckCircleIcon className="h-5 w-5 text-green-600 dark:text-green-400 mr-2" />
                           ) : (
-                            <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mr-2" />
+                            <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-400 mr-2" />
                           )}
                           <p className={`text-sm font-medium ${
-                            testResults.paystack.success ? 'text-green-800' : 'text-red-800'
+                            testResults.paystack.success ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'
                           }`}>
                             {testResults.paystack.message}
                           </p>
@@ -490,7 +490,7 @@ const PaymentConfigurationPage: React.FC = () => {
 
               {/* Flutterwave Configuration */}
               {activeTab === 'flutterwave' && (
-                <div className="bg-white shadow rounded-lg p-6">
+                <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 transition-colors duration-200">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center">
                       <CreditCardIcon className="h-6 w-6 text-orange-600 mr-3" />
