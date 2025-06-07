@@ -24,8 +24,8 @@ The updated configuration files include:
 In your Vercel dashboard, add these environment variables:
 
 ```bash
-# Required - Replace with your actual backend URL
-VITE_API_BASE_URL=https://your-backend-api.vercel.app/api/v1
+# Required - Your actual backend URL
+VITE_API_BASE_URL=https://ledgrio.onrender.com/api/v1
 
 # App Configuration
 VITE_APP_NAME=Ledgrio School Management
