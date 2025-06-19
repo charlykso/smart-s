@@ -56,21 +56,42 @@ const checkExistingProprietorInGroupSchool = async (
 
 exports.getAllUsers = async (req, res) => {
   try {
+    // This endpoint should only be accessible to general Admins
+    const userRoles = req.user.roles || []
+    const userSchool = req.user.school?._id || req.user.school
+
+    if (!userRoles.includes('Admin') || userSchool) {
+      return res.status(403).json({
+        success: false,
+        message:
+          'Access denied - only general administrators can access all users',
+      })
+    }
+
     const users = await User.find()
       .select('-password -__v')
       .populate('school', 'name')
       .populate('classArm', 'name')
       .populate('profile', 'img')
-    res.status(200).json(users)
+
+    res.status(200).json({
+      success: true,
+      data: users,
+      message: 'All users retrieved successfully',
+    })
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    })
   }
 }
 
 exports.getICT_administrators = async (req, res) => {
   try {
-    // Apply school filtering if user is not Admin
+    // Apply school filtering - all users except general Admin must have school filter
     let query = { roles: 'ICT_administrator' }
+
     if (req.schoolFilter) {
       query = { ...query, ...req.schoolFilter }
     }
@@ -79,9 +100,17 @@ exports.getICT_administrators = async (req, res) => {
       .select('-password -__v')
       .populate('profile', 'img')
       .populate('school', 'name')
-    res.status(200).json(ICT_administrators)
+
+    res.status(200).json({
+      success: true,
+      data: ICT_administrators,
+      message: 'ICT administrators retrieved successfully',
+    })
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    })
   }
 }
 
@@ -140,8 +169,9 @@ exports.getBursars = async (req, res) => {
 
 exports.getStudents = async (req, res) => {
   try {
-    // Apply school filtering if user is not Admin
+    // Apply school filtering - all users except general Admin must have school filter
     let query = { roles: 'Student' }
+
     if (req.schoolFilter) {
       query = { ...query, ...req.schoolFilter }
     }
@@ -150,15 +180,25 @@ exports.getStudents = async (req, res) => {
       .select('-password -__v')
       .populate('profile', 'img')
       .populate('school', 'name')
-    res.status(200).json(students)
+      .populate('classArm', 'name')
+
+    res.status(200).json({
+      success: true,
+      data: students,
+      message: 'Students retrieved successfully',
+    })
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    })
   }
 }
 exports.getParents = async (req, res) => {
   try {
-    // Apply school filtering if user is not Admin
+    // Apply school filtering - all users except general Admin must have school filter
     let query = { roles: 'Parent' }
+
     if (req.schoolFilter) {
       query = { ...query, ...req.schoolFilter }
     }
@@ -166,9 +206,18 @@ exports.getParents = async (req, res) => {
     const parents = await User.find(query)
       .select('-password -__v')
       .populate('school', 'name')
-    res.status(200).json(parents)
+      .populate('student', 'firstname lastname regNo')
+
+    res.status(200).json({
+      success: true,
+      data: parents,
+      message: 'Parents retrieved successfully',
+    })
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    })
   }
 }
 

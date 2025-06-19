@@ -8,6 +8,7 @@ import {
 } from '@heroicons/react/24/outline';
 import MainLayout from '../../components/layout/MainLayout';
 import { useAuthStore } from '../../store/authStore';
+import { canManageUsers, isGeneralAdmin, shouldShowSchoolFilter, getSchoolAccessDeniedMessage } from '../../utils/schoolAccess';
 import CreateUserModal from '../../components/users/CreateUserModal';
 import BulkUserActions from '../../components/users/BulkUserActions';
 import UserService from '../../services/userService';
@@ -25,7 +26,7 @@ interface User {
 }
 
 const UserManagementPage: React.FC = () => {
-  const { hasAnyRole } = useAuthStore();
+  const { user, hasAnyRole } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
@@ -35,8 +36,29 @@ const UserManagementPage: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
 
-  // Check if user has permission to access this page
-  const hasPermission = hasAnyRole(['Admin', 'ICT_administrator']);
+  // Check permissions using new school access controls
+  const hasManagePermission = canManageUsers(user);
+  const userIsGeneralAdmin = isGeneralAdmin(user);
+  const showSchoolFilter = shouldShowSchoolFilter(user);
+
+  // If user doesn't have permission, show access denied
+  if (!hasManagePermission) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-secondary-50 dark:bg-gray-900 py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center py-12">
+              <UsersIcon className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">Access Denied</h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {getSchoolAccessDeniedMessage(user)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   // Load users from API
   const loadUsers = async () => {
@@ -98,10 +120,10 @@ const UserManagementPage: React.FC = () => {
 
   // Load users on component mount and when filters change
   useEffect(() => {
-    if (hasPermission) {
+    if (hasManagePermission) {
       loadUsers();
     }
-  }, [hasPermission, searchTerm, selectedRole, selectedStatus]);
+  }, [hasManagePermission, searchTerm, selectedRole, selectedStatus]);
 
   const handleUserCreated = async (newUser: User) => {
     // Reload users to get the latest data
@@ -221,7 +243,7 @@ const UserManagementPage: React.FC = () => {
       : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
   };
 
-  if (!hasPermission) {
+  if (!hasManagePermission) {
     return (
       <MainLayout>
         <div className="bg-red-50 dark:bg-red-900 border border-red-200 dark:border-red-700 rounded-lg p-6 transition-colors duration-200">

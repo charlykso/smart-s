@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStudentManagementStore } from '../../store/studentManagementStore';
 import { useSchoolStore } from '../../store/schoolStore';
 import { useAuthStore } from '../../store/authStore';
+import { canManageStudents, canAccessSchool, getUserSchoolId, shouldShowSchoolFilter, getSchoolAccessDeniedMessage } from '../../utils/schoolAccess';
 import type { Student, StudentFilters } from '../../types/student';
 import MainLayout from '../../components/layout/MainLayout';
 import CenteredLoader from '../../components/common/CenteredLoader';
@@ -153,19 +154,19 @@ const StudentManagementPage: React.FC = () => {
   };
 
   // Check user permissions for student management
-  const canManageStudents = user?.roles?.some(role =>
-    ['Admin', 'Proprietor', 'ICT_administrator'].includes(role)
-  );
+  const hasManagePermission = canManageStudents(user);
+  const userSchoolId = getUserSchoolId(user);
+  const showSchoolFilter = shouldShowSchoolFilter(user);
 
   // If user doesn't have permission, show access denied
-  if (!canManageStudents) {
+  if (!hasManagePermission) {
     return (
       <MainLayout>
         <div className="text-center py-12">
           <UserGroupIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Access Denied</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            You don't have permission to manage students. Only Admin, Proprietor, and ICT Administrator can access this page.
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">Access Denied</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {getSchoolAccessDeniedMessage(user)}
           </p>
         </div>
       </MainLayout>

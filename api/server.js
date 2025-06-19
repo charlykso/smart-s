@@ -18,7 +18,6 @@ const adminRoute = require('./route/adminRoute')
 const principalRoute = require('./route/principalRoute')
 const bursarRoute = require('./route/bursarRoute')
 const parentRoute = require('./route/parentRoute')
-// const bulkStudentRoute = require('./route/bulkStudentRoute') // TODO: Create this route file
 
 const app = express()
 
@@ -93,6 +92,7 @@ app.use('/api/v1/fee', feeRoute)
 app.use('/api/v1/approve', approveRoute)
 app.use('/api/v1/auth', authRoute)
 app.use('/api/v1/payment', require('./route/paymentRoute'))
+app.use('/api/v1/school-access', require('./route/schoolAccessRoute'))
 // Simple notification endpoints directly in server.js
 app.get('/api/v1/notification/unread-count', (req, res) => {
   res.json({ count: 0 })
@@ -121,7 +121,7 @@ app.use('/api/v1/admin', adminRoute)
 app.use('/api/v1/principal', principalRoute)
 app.use('/api/v1/bursar', bursarRoute)
 app.use('/api/v1/parent', parentRoute)
-// app.use('/api/v1/bulk-students', bulkStudentRoute) // TODO: Create this route file
+app.use('/api/v1/bulk-students', require('./route/bulkStudentRoute'))
 
 // Add missing routes to prevent 404 errors
 app.get('/api/v1/communities', (req, res) => {

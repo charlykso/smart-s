@@ -2,7 +2,12 @@ const express = require('express')
 const userController = require('../controller/user_view')
 const router = express.Router()
 const authenticateToken = require('../middleware/authenticateToken')
-const { filterByUserSchool, checkSchoolAccess } = require('../middleware/auth')
+const {
+  filterByUserSchool,
+  checkSchoolAccess,
+  validateSchoolAssignment,
+  restrictGeneralAdminAccess,
+} = require('../middleware/auth')
 const roleList = require('../helpers/roleList')
 const verifyRoles = require('../middleware/verifyRoles')
 
@@ -11,6 +16,7 @@ router
   .get(
     authenticateToken,
     verifyRoles(roleList.Admin),
+    restrictGeneralAdminAccess,
     userController.getAllUsers
   )
 
@@ -19,6 +25,7 @@ router
   .post(
     authenticateToken,
     verifyRoles(roleList.Admin),
+    restrictGeneralAdminAccess,
     userController.createAdmin
   )
 router
@@ -45,6 +52,7 @@ router
   .post(
     authenticateToken,
     verifyRoles(roleList.Admin, roleList.ICT_administrator),
+    validateSchoolAssignment,
     userController.createICT_administrator
   )
 router
@@ -80,6 +88,7 @@ router
   .post(
     authenticateToken,
     verifyRoles(roleList.Admin, roleList.Proprietor, roleList.Auditor),
+    validateSchoolAssignment,
     userController.createAuditor
   )
 router
@@ -279,6 +288,7 @@ router
       roleList.Proprietor,
       roleList.ICT_administrator
     ),
+    validateSchoolAssignment,
     userController.createStudent
   )
 router
@@ -357,6 +367,7 @@ router
       roleList.ICT_administrator,
       roleList.Parent
     ),
+    validateSchoolAssignment,
     userController.createParent
   )
 router

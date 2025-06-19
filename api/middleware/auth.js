@@ -103,10 +103,19 @@ const checkSchoolAccess = (req, res, next) => {
   try {
     const { school_id } = req.params
     const userSchool = req.user.school?._id || req.user.school
+    const userRoles = req.user.roles || []
 
-    // Only Admin can access all schools
-    if (hasAnyRole(req.user, ['Admin'])) {
+    // Only general Admin (not assigned to a school) can access all schools
+    if (userRoles.includes('Admin') && !userSchool) {
       return next()
+    }
+
+    // All other users must have school access validation
+    if (!userSchool) {
+      return res.status(403).json({
+        success: false,
+        message: 'User must belong to a school to access this resource',
+      })
     }
 
     // Check if user belongs to the requested school
@@ -131,21 +140,24 @@ const checkSchoolAccess = (req, res, next) => {
 const filterByUserSchool = (req, res, next) => {
   try {
     const userSchool = req.user.school?._id || req.user.school
+    const userRoles = req.user.roles || []
 
-    // Only Admin can access all schools - no filtering needed
-    if (hasAnyRole(req.user, ['Admin'])) {
+    // Only general Admin can access all schools - no filtering needed
+    if (userRoles.includes('Admin') && !userSchool) {
       return next()
     }
 
-    // For all other users (including ICT_administrator), add school filter to query
-    if (userSchool) {
-      req.schoolFilter = { school: userSchool }
-    } else {
+    // All users (including Admin assigned to a school) must have school filtering
+    if (!userSchool) {
       return res.status(403).json({
         success: false,
         message: 'User must belong to a school to access this resource',
       })
     }
+
+    // Add school filter to query for all users
+    req.schoolFilter = { school: userSchool }
+    req.userSchool = userSchool // Store for additional checks
 
     next()
   } catch (error) {
@@ -161,13 +173,14 @@ const filterByUserSchool = (req, res, next) => {
 const enforceSchoolBoundary = (req, res, next) => {
   try {
     const userSchool = req.user.school?._id || req.user.school
+    const userRoles = req.user.roles || []
 
-    // Only Admin can access all schools
-    if (hasAnyRole(req.user, ['Admin'])) {
+    // Only general Admin (not assigned to a school) can access all schools
+    if (userRoles.includes('Admin') && !userSchool) {
       return next()
     }
 
-    // Ensure user has a school
+    // All other users (including Admin assigned to a school) must have school
     if (!userSchool) {
       return res.status(403).json({
         success: false,
@@ -177,15 +190,16 @@ const enforceSchoolBoundary = (req, res, next) => {
 
     // For students, they can only access their own data or their school's approved fees
     if (hasRole(req.user, 'Student')) {
-      // Students can only see approved fees from their school
       req.studentSchoolFilter = {
         school: userSchool.toString(),
         isApproved: true,
       }
     } else {
-      // Other roles (ICT_administrator, Proprietor, Principal, etc.) can access their school's data
+      // Other roles can access their school's data
       req.schoolFilter = { school: userSchool.toString() }
     }
+
+    req.userSchool = userSchool // Store for additional checks
 
     next()
   } catch (error) {
@@ -234,6 +248,84 @@ const logUserAction = (action) => {
   }
 }
 
+// Middleware to validate school assignment for user creation/updates
+const validateSchoolAssignment = (req, res, next) => {
+  try {
+    const userRoles = req.user.roles || []
+    const userSchool = req.user.school?._id || req.user.school
+    const { school_id, roles } = req.body
+    const targetRoles = Array.isArray(roles) ? roles : [roles]
+
+    // Only general Admin (not assigned to a school) can create users for any school
+    if (userRoles.includes('Admin') && !userSchool) {
+      // General Admin must specify a school for non-Admin users
+      if (!targetRoles.includes('Admin') && !school_id) {
+        return res.status(400).json({
+          success: false,
+          message: 'School assignment is required for non-Admin users',
+        })
+      }
+      return next()
+    }
+
+    // All other users (including school-assigned Admins) can only create users for their school
+    if (!userSchool) {
+      return res.status(403).json({
+        success: false,
+        message: 'User must belong to a school to create other users',
+      })
+    }
+
+    // Validate school assignment
+    if (!school_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'School assignment is required',
+      })
+    }
+
+    if (userSchool.toString() !== school_id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied - can only create users for your own school',
+      })
+    }
+
+    next()
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'School assignment validation failed',
+      error: error.message,
+    })
+  }
+}
+
+// Middleware to ensure only general Admins can access all users endpoint
+const restrictGeneralAdminAccess = (req, res, next) => {
+  try {
+    const userRoles = req.user.roles || []
+    const userSchool = req.user.school?._id || req.user.school
+
+    // Only general Admin (not assigned to a school) can access this endpoint
+    if (!userRoles.includes('Admin') || userSchool) {
+      return res.status(403).json({
+        success: false,
+        message:
+          'Access denied - only general administrators can access all users',
+      })
+    }
+
+    next()
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'General admin access check failed',
+      error: error.message,
+    })
+  }
+}
+
 module.exports = {
   authenticateToken,
   authorizeRoles,
@@ -245,4 +337,6 @@ module.exports = {
   enforceSchoolBoundary,
   validateUserStatus,
   logUserAction,
+  validateSchoolAssignment,
+  restrictGeneralAdminAccess,
 }

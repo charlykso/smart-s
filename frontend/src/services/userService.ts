@@ -2,6 +2,12 @@ import { ApiService } from './api';
 import { API_ENDPOINTS } from '../constants';
 import type { User } from '../types/auth';
 
+// Add school access service for school-filtered endpoints
+const SCHOOL_ACCESS_ENDPOINTS = {
+  USERS_BY_SCHOOL: '/school-access/users',
+  VALIDATE_ASSIGNMENTS: '/school-access/validate-assignments',
+} as const;
+
 export interface CreateUserRequest {
   firstname: string;
   lastname: string;
@@ -36,18 +42,18 @@ export interface UserFilters {
 }
 
 export class UserService {
-  // Get all users with filters
+  // Get users with proper school filtering
   static async getUsers(filters?: UserFilters): Promise<UserListResponse> {
     const params = new URLSearchParams();
 
     if (filters?.search) params.append('search', filters.search);
     if (filters?.role && filters.role !== 'all') params.append('role', filters.role);
     if (filters?.status && filters.status !== 'all') params.append('status', filters.status);
-    if (filters?.page) params.append('page', filters.page.toString());
-    if (filters?.limit) params.append('limit', filters.limit.toString());
 
     const queryString = params.toString();
-    const url = queryString ? `${API_ENDPOINTS.USERS.ALL}?${queryString}` : API_ENDPOINTS.USERS.ALL;
+    const url = queryString 
+      ? `${SCHOOL_ACCESS_ENDPOINTS.USERS_BY_SCHOOL}?${queryString}` 
+      : SCHOOL_ACCESS_ENDPOINTS.USERS_BY_SCHOOL;
 
     try {
       const response = await ApiService.get<any>(url);
@@ -63,34 +69,56 @@ export class UserService {
         updatedAt: user.updatedAt ? new Date(user.updatedAt) : new Date(),
       });
 
-      // Handle different response formats from backend
-      if (Array.isArray(response)) {
-        // Direct array response from /user/all endpoint
+      if (response.success && response.data) {
+        // School-filtered response format
         return {
-          users: response.map(normalizeUser),
-          total: response.length,
+          users: (response.data.users || []).map(normalizeUser),
+          total: response.data.total || 0,
           page: filters?.page || 1,
           limit: filters?.limit || 50,
         };
-      } else if (response.success && response.data) {
-        // Admin endpoint response format
-        return {
-          users: (response.data.users || []).map(normalizeUser),
-          total: response.data.pagination?.total || 0,
-          page: response.data.pagination?.page || 1,
-          limit: response.data.pagination?.limit || 10,
-        };
       } else {
-        // Fallback
+        // Fallback for error handling
         return {
-          users: (response.users || []).map(normalizeUser),
-          total: response.total || 0,
-          page: response.page || 1,
-          limit: response.limit || 10,
+          users: [],
+          total: 0,
+          page: 1,
+          limit: 50,
         };
       }
     } catch (error) {
       console.error('Error fetching users:', error);
+      
+      // Try fallback to direct endpoint for general admins
+      try {
+        const fallbackUrl = queryString 
+          ? `${API_ENDPOINTS.USERS.ALL}?${queryString}` 
+          : API_ENDPOINTS.USERS.ALL;
+        
+        const fallbackResponse = await ApiService.get<any>(fallbackUrl);
+        
+        const normalizeUser = (user: any): User => ({
+          ...user,
+          id: user._id || user.id,
+          status: user.status || 'active',
+          isActive: user.isActive !== undefined ? user.isActive : true,
+          lastLogin: user.lastLogin ? new Date(user.lastLogin) : undefined,
+          createdAt: user.createdAt ? new Date(user.createdAt) : new Date(),
+          updatedAt: user.updatedAt ? new Date(user.updatedAt) : new Date(),
+        });
+
+        if (Array.isArray(fallbackResponse)) {
+          return {
+            users: fallbackResponse.map(normalizeUser),
+            total: fallbackResponse.length,
+            page: filters?.page || 1,
+            limit: filters?.limit || 50,
+          };
+        }
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError);
+      }
+      
       throw error;
     }
   }
