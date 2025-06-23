@@ -4,7 +4,6 @@ import {
   UserGroupIcon,
   CurrencyDollarIcon,
   BookOpenIcon,
-  AcademicCapIcon,
   ShieldCheckIcon,
   ChartBarIcon,
   BuildingOffice2Icon
@@ -20,11 +19,9 @@ const LandingPage: React.FC = () => {
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 shadow-sm dark:shadow-gray-900 border-b border-secondary-200 dark:border-gray-700 transition-colors duration-200">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary-500 dark:bg-primary-600 rounded-lg flex items-center justify-center">
-                <AcademicCapIcon className="w-5 h-5 text-white" />
+          <div className="flex items-center justify-between">            {/* Logo */}            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 flex items-center justify-center">
+                <img src="/ledgrio1.svg" alt="Ledgrio" className="w-8 h-8 rounded" />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-secondary-900 dark:text-gray-100">Ledgrio</h1>
@@ -200,12 +197,10 @@ const LandingPage: React.FC = () => {
       {/* Footer */}
       <footer className="bg-secondary-900 dark:bg-gray-900 text-white py-10 px-4 transition-colors duration-200">
         <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Logo & Description */}
-            <div className="md:col-span-2">
-              <div className="flex items-center space-x-3 mb-3">
-                <div className="w-8 h-8 bg-primary-500 dark:bg-primary-600 rounded-lg flex items-center justify-center">
-                  <AcademicCapIcon className="w-5 h-5 text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">            {/* Logo & Description */}
+            <div className="md:col-span-2">              <div className="flex items-center space-x-3 mb-3">
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <img src="/ledgrio1.svg" alt="Ledgrio" className="w-8 h-8 rounded" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold">Ledgrio</h3>

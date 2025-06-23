@@ -7,36 +7,56 @@ const authenticateToken = async (req, res, next) => {
     const authHeader = req.headers['authorization']
     const token = authHeader && authHeader.split(' ')[1]
 
+    console.log('Auth debug - Header:', authHeader ? 'Bearer ***' : 'No header')
+    console.log('Auth debug - Token exists:', !!token)
+
     if (!token) {
+      console.log('Auth debug - No token provided')
       return res.status(401).json({
         success: false,
         message: 'Access token is required',
       })
     }
 
+    console.log('Auth debug - JWT_SECRET exists:', !!process.env.JWT_SECRET)
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
-    const user = await User.findById(decoded.id).populate('school')
+    console.log('Auth debug - Token decoded successfully:', {
+      id: decoded.id,
+      roles: decoded.roles,
+    })
+
+    const userId = decoded.id || decoded._id
+    const user = await User.findById(userId).populate('school')
 
     if (!user) {
+      console.log('Auth debug - User not found for ID:', userId)
       return res.status(401).json({
         success: false,
         message: 'Invalid token - user not found',
       })
     }
 
+    console.log('Auth debug - User found:', {
+      id: user._id,
+      email: user.email,
+      roles: user.roles,
+    })
     req.user = user
     next()
   } catch (error) {
+    console.log('Auth debug - Error:', error.message)
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({
         success: false,
         message: 'Invalid token',
+        debug: error.message,
       })
     }
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({
         success: false,
         message: 'Token expired',
+        debug: error.message,
       })
     }
     return res.status(500).json({
@@ -329,6 +349,8 @@ const restrictGeneralAdminAccess = (req, res, next) => {
 module.exports = {
   authenticateToken,
   authorizeRoles,
+  authenticate: authenticateToken, // Alias for compatibility
+  authorize: authorizeRoles, // Alias for compatibility
   hasRole,
   hasAnyRole,
   hasAllRoles,

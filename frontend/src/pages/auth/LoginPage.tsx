@@ -63,21 +63,8 @@ const LoginPage: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
-        <div>
-          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900">
-            <svg
-              className="h-8 w-8 text-primary-600 dark:text-primary-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-              />
-            </svg>
+        <div>          <div className="mx-auto h-12 w-12 flex items-center justify-center">
+            <img src="/ledgrio1.svg" alt="Ledgrio" className="h-12 w-12 rounded-lg" />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100">
             Sign in to {ENV.APP_NAME}
@@ -166,9 +153,8 @@ const LoginPage: React.FC = () => {
             <div className="text-sm">
               <button
                 type="button"
-                className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 transition-colors"
-                onClick={() => {
-                  toast.info('Password reset feature coming soon!');
+                className="font-medium text-primary-600 dark:text-primary-400 hover:text-primary-500 dark:hover:text-primary-300 transition-colors"                onClick={() => {
+                  toast('Password reset feature coming soon!');
                 }}
               >
                 Forgot your password?

@@ -4,7 +4,7 @@ import type { UserRole } from '../../types/roles';
 
 // Import role-specific dashboard components
 import AdminDashboard from './roles/AdminDashboard';
-import ICTAdminDashboard from './roles/ICTAdminDashboard';
+import ICTAdminSchoolManagement from './roles/ICTAdminSchoolManagement';
 import ProprietorDashboard from './roles/ProprietorDashboard';
 import PrincipalDashboard from './roles/PrincipalDashboard';
 import HeadteacherDashboard from './roles/HeadteacherDashboard';
@@ -30,9 +30,8 @@ const DashboardRouter: React.FC<DashboardRouterProps> = ({ className }) => {
   const renderDashboard = () => {
     switch (primaryRole) {
       case 'Admin':
-        return <AdminDashboard />;
-      case 'ICT_administrator':
-        return <ICTAdminDashboard />;
+        return <AdminDashboard />;      case 'ICT_administrator':
+        return <ICTAdminSchoolManagement />;
       case 'Proprietor':
         return <ProprietorDashboard />;
       case 'Principal':

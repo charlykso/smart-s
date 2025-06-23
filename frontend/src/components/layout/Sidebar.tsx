@@ -1,12 +1,10 @@
 import React, { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
 import {
+  XMarkIcon,
   HomeIcon,
   UsersIcon,
-  AcademicCapIcon,
   CurrencyDollarIcon,
-  CreditCardIcon,
   DocumentChartBarIcon,
   Cog6ToothIcon,
   ShieldCheckIcon,
@@ -56,11 +54,10 @@ const navigation: MenuItem[] = [
     icon: BuildingOfficeIcon,
     path: ROUTES.SCHOOLS,
     roles: ['Admin', 'ICT_administrator', 'Proprietor'] as UserRole[],
-  },
-  {
+  },  {
     id: 'academic',
     label: 'Academic',
-    icon: AcademicCapIcon,
+    icon: BuildingOfficeIcon,
     children: [
       {
         id: 'sessions',
@@ -180,24 +177,10 @@ const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
   };
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full">
-      {/* Logo */}
+    <div className="flex flex-col h-full">      {/* Logo */}
       <div className="flex items-center h-16 flex-shrink-0 px-4 bg-primary-600 dark:bg-primary-700">
-        <div className="flex items-center">
-          <div className="flex-shrink-0">
-            <svg
-              className="h-8 w-8 text-white"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-              />
-            </svg>
+        <div className="flex items-center">          <div className="flex-shrink-0">
+            <img src="/ledgrio1.svg" alt="Ledgrio" className="h-8 w-8 rounded" />
           </div>
           <div className="ml-3">
             <h1 className="text-white text-lg font-semibold">Ledgrio</h1>

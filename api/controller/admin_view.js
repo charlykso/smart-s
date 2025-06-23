@@ -4,6 +4,8 @@ const Fee = require('../model/Fee')
 const School = require('../model/School')
 const Term = require('../model/Term')
 const Session = require('../model/Session')
+const GroupSchool = require('../model/GroupSchool')
+const bcrypt = require('bcryptjs')
 
 // Get admin dashboard data
 exports.getAdminDashboard = async (req, res) => {
@@ -416,6 +418,209 @@ exports.getFinancialOverview = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
+    })
+  }
+}
+
+// Create school under a group school
+exports.createSchool = async (req, res) => {
+  try {
+    const { name, email, phoneNumber, address, groupSchoolId } = req.body
+
+    // Validate required fields
+    if (!name || !email || !phoneNumber || !groupSchoolId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, email, phone number, and group school are required',
+      })
+    }
+
+    // Check if group school exists
+    const groupSchool = await GroupSchool.findById(groupSchoolId)
+    if (!groupSchool) {
+      return res.status(404).json({
+        success: false,
+        message: 'Group school not found',
+      })
+    }
+
+    // Check if school with same email already exists
+    const existingSchool = await School.findOne({ email })
+    if (existingSchool) {
+      return res.status(400).json({
+        success: false,
+        message: 'School with this email already exists',
+      })
+    }
+
+    // Create new school
+    const newSchool = new School({
+      groupSchool: groupSchoolId,
+      name,
+      email,
+      phoneNumber,
+      address,
+      isActive: true,
+    })
+
+    await newSchool.save()
+
+    // Populate group school details
+    await newSchool.populate('groupSchool')
+
+    res.status(201).json({
+      success: true,
+      message: 'School created successfully',
+      school: newSchool,
+    })
+  } catch (error) {
+    console.error('Create school error:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    })
+  }
+}
+
+// Create ICT Administrator for a school
+exports.createICTAdministrator = async (req, res) => {
+  try {
+    const {
+      firstname,
+      lastname,
+      email,
+      phone,
+      schoolId,
+      regNo,
+      gender = 'Male',
+      type = 'day',
+    } = req.body
+
+    // Validate required fields
+    if (!firstname || !lastname || !email || !phone || !schoolId) {
+      return res.status(400).json({
+        success: false,
+        message: 'First name, last name, email, phone, and school are required',
+      })
+    }
+
+    // Check if school exists
+    const school = await School.findById(schoolId)
+    if (!school) {
+      return res.status(404).json({
+        success: false,
+        message: 'School not found',
+      })
+    }
+
+    // Check if user with same email already exists
+    const existingUser = await User.findOne({ email })
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User with this email already exists',
+      })
+    }
+
+    // Generate default password
+    const defaultPassword = 'password123'
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10)
+
+    // Generate registration number if not provided
+    const finalRegNo = regNo || `ICT${Date.now().toString().slice(-4)}`
+
+    // Create new ICT Administrator
+    const newICTAdmin = new User({
+      firstname,
+      lastname,
+      email,
+      phone,
+      password: hashedPassword,
+      roles: ['ICT_administrator'],
+      school: schoolId,
+      regNo: finalRegNo,
+      gender,
+      type,
+      status: 'active',
+      isActive: true,
+    })
+
+    await newICTAdmin.save()
+
+    // Populate school details
+    await newICTAdmin.populate('school')
+
+    // Return without password
+    const userResponse = newICTAdmin.toObject()
+    delete userResponse.password
+
+    res.status(201).json({
+      success: true,
+      message: 'ICT Administrator created successfully',
+      user: userResponse,
+      defaultPassword: defaultPassword,
+    })
+  } catch (error) {
+    console.error('Create ICT Administrator error:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    })
+  }
+}
+
+// Get all schools
+exports.getAllSchools = async (req, res) => {
+  try {
+    const schools = await School.find()
+      .populate('groupSchool', 'name')
+      .sort({ createdAt: -1 })
+
+    // Get user count for each school
+    const schoolsWithUserCount = await Promise.all(
+      schools.map(async (school) => {
+        const userCount = await User.countDocuments({ school: school._id })
+        return {
+          ...school.toObject(),
+          userCount,
+        }
+      })
+    )
+
+    res.status(200).json({
+      success: true,
+      schools: schoolsWithUserCount,
+    })
+  } catch (error) {
+    console.error('Get all schools error:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    })
+  }
+}
+
+// Get all ICT administrators
+exports.getAllICTAdministrators = async (req, res) => {
+  try {
+    const ictAdmins = await User.find({ roles: 'ICT_administrator' })
+      .populate('school', 'name email')
+      .select('-password')
+      .sort({ createdAt: -1 })
+
+    res.status(200).json({
+      success: true,
+      ictAdministrators: ictAdmins,
+    })
+  } catch (error) {
+    console.error('Get all ICT administrators error:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
     })
   }
 }

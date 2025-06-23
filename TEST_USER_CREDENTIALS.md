@@ -10,6 +10,15 @@ All test users use the same password for easy testing.
 
 ## 👥 **User Accounts by Role**
 
+### **0. General System Administrator**
+
+- **Email**: `admin@ledgrio.com`
+- **Password**: `password123`
+- **Name**: System Administrator
+- **RegNo**: ADM001
+- **Role**: Admin
+- **Dashboard**: System-wide administration, can create Group Schools and ICT Administrators
+
 ### **1. System Administrator**
 
 - **Email**: `admin@ledgrio.com`
