@@ -275,12 +275,16 @@ const ClassArmsManagementPage: React.FC = () => {
                     <button
                       onClick={() => handleEditClassArm(classArm)}
                       className="inline-flex items-center p-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
+                      aria-label="Edit class arm"
+                      title="Edit class arm"
                     >
                       <PencilIcon className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDeleteClassArm(classArm._id)}
                       className="inline-flex items-center p-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-gray-700 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900"
+                      aria-label="Delete class arm"
+                      title="Delete class arm"
                     >
                       <TrashIcon className="h-4 w-4" />
                     </button>
