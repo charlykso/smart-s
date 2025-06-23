@@ -5,6 +5,7 @@ This directory contains deployment guides and production setup instructions.
 ## Files
 
 ### 🚀 Platform-Specific Deployment
+
 - **VERCEL_DEPLOYMENT_GUIDE.md** - Complete Vercel deployment setup for frontend
 
 ## Quick Links
@@ -18,17 +19,20 @@ This directory contains deployment guides and production setup instructions.
 The Smart School Management System can be deployed on various platforms:
 
 ### Frontend Deployment
+
 - **Vercel** (Recommended) - Optimized for React/Vite applications
 - **Netlify** - Alternative static hosting
 - **AWS S3 + CloudFront** - Enterprise-grade hosting
 
 ### Backend Deployment
+
 - **Railway** - Simple Node.js deployment
 - **Heroku** - Traditional PaaS hosting
 - **AWS EC2** - Full server control
 - **Digital Ocean** - VPS hosting
 
 ### Database Hosting
+
 - **MongoDB Atlas** (Recommended) - Managed MongoDB service
 - **AWS DocumentDB** - MongoDB-compatible service
 - **Self-hosted MongoDB** - Custom server setup
@@ -36,6 +40,7 @@ The Smart School Management System can be deployed on various platforms:
 ## Deployment Checklist
 
 ### Pre-Deployment
+
 - [ ] Environment variables configured
 - [ ] Database connection tested
 - [ ] API endpoints verified
@@ -43,6 +48,7 @@ The Smart School Management System can be deployed on various platforms:
 - [ ] Tests passing
 
 ### Production Setup
+
 - [ ] SSL certificates installed
 - [ ] Domain configuration complete
 - [ ] Database backups configured
@@ -50,6 +56,7 @@ The Smart School Management System can be deployed on various platforms:
 - [ ] Error logging enabled
 
 ### Post-Deployment
+
 - [ ] Health checks passing
 - [ ] User acceptance testing
 - [ ] Performance monitoring
@@ -58,6 +65,7 @@ The Smart School Management System can be deployed on various platforms:
 ## Environment Configuration
 
 ### Frontend Environment Variables
+
 ```
 VITE_API_BASE_URL=https://your-api-domain.com/api/v1
 VITE_APP_NAME=Ledgrio School Management
@@ -65,6 +73,7 @@ VITE_PAYSTACK_PUBLIC_KEY=your_paystack_key
 ```
 
 ### Backend Environment Variables
+
 ```
 MONGO_URI=mongodb://your-database-url
 JWT_SECRET=your-jwt-secret

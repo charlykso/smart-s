@@ -5,11 +5,13 @@ Welcome to the comprehensive documentation for the Smart School Management Syste
 ## 📁 Documentation Structure
 
 ### 🔌 [API Documentation](./api/)
+
 - **API_DOCUMENTATION.md** - Complete API reference and endpoints
 - **AUDITING_BACKEND_ENHANCEMENTS.md** - Backend auditing system enhancements
 - **STUDENT_PAYMENT_REPORTS.md** - Student payment reports API documentation
 
 ### 🎨 [Frontend Documentation](./frontend/)
+
 - **AUDITING_FRONTEND_IMPLEMENTATION.md** - Frontend auditing system implementation
 - **AUDITING_FOCUSED_ROADMAP.md** - Auditing feature development roadmap
 - **COMPONENT_ARCHITECTURE.md** - Frontend component architecture guide
@@ -22,46 +24,55 @@ Welcome to the comprehensive documentation for the Smart School Management Syste
 - **STATE_MANAGEMENT.md** - State management architecture
 
 ### 🛠️ [Implementation Guides](./implementation/)
+
 - **GENERAL_ADMIN_IMPLEMENTATION.md** - General Admin role implementation
 - **ICT_ADMIN_IMPLEMENTATION.md** - ICT Admin role implementation
 - **SCHOOL_ACCESS_CONTROL_IMPLEMENTATION.md** - School access control system
 - **IMPLEMENTATION_COMPLETE.md** - Implementation completion checklist
 
 ### ✨ [Features Documentation](./features/)
+
 - **BULK_STUDENT_UPLOAD_DOCUMENTATION.md** - Bulk student upload feature
 - **AUDITING_SYSTEM_SPECIFICATION.md** - Auditing system specifications
 - **STUDENT_PAYMENT_REPORTS_FRONTEND.md** - Frontend payment reports
 - **STUDENT_PAYMENT_REPORTS_INTEGRATION.md** - Payment reports integration
 
 ### 🧪 [Testing Documentation](./testing/)
+
 - **TEST_USER_CREDENTIALS.md** - Test user credentials and accounts
 - **README_TESTING.md** - Testing procedures and guidelines
 
 ### 🚀 [Deployment Documentation](./deployment/)
+
 - **VERCEL_DEPLOYMENT_GUIDE.md** - Vercel deployment instructions
 
 ### 🎨 [Design Documentation](./design/)
+
 - **design-system-guide.md** - Complete design system guide
 - **color-palette.md** - Color palette specifications
 
 ## 📋 Quick Navigation
 
 ### For Developers
+
 - Start with [Setup Guide](./frontend/SETUP_GUIDE.md) for environment setup
 - Review [API Documentation](./api/API_DOCUMENTATION.md) for backend integration
 - Check [Component Architecture](./frontend/COMPONENT_ARCHITECTURE.md) for frontend structure
 
 ### For System Administrators
+
 - Review [Implementation Guides](./implementation/) for role-based access
 - Check [Features Documentation](./features/) for system capabilities
 - Use [Testing Documentation](./testing/) for system validation
 
 ### For Designers
+
 - Reference [Design System](./frontend/DESIGN_SYSTEM.md) for UI consistency
 - Use [Design Documentation](./design/) for visual guidelines
 - Check [Dark Mode Implementation](./frontend/DARK_MODE_IMPLEMENTATION.md) for theme support
 
 ### For DevOps
+
 - Follow [Deployment Documentation](./deployment/) for production setup
 - Review setup guides for environment configuration
 
@@ -90,6 +101,7 @@ docs/
 ## 🤝 Contributing to Documentation
 
 When adding new documentation:
+
 1. Place files in the appropriate category folder
 2. Update this index file with new entries
 3. Follow existing naming conventions

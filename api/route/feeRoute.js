@@ -40,22 +40,30 @@ router
 
 router.get('/:id', feeController.getFee)
 
-router.post('/create', feeController.createFee) //Bursar
+router.post(
+  '/create',
+  authenticateToken,
+  verifyRoles(roleList.Bursar, roleList.Admin),
+  filterByUserSchool,
+  feeController.createFee
+) //Bursar can create fees for their school only
 
 router
   .route('/:id/update')
   .put(
     authenticateToken,
     verifyRoles(roleList.Bursar, roleList.Admin),
+    filterByUserSchool,
     feeController.updateFee
-  ) //Bursar
+  ) //Bursar can update fees for their school only
 router
   .route('/:id/delete')
   .delete(
     authenticateToken,
     verifyRoles(roleList.Bursar, roleList.Admin),
+    filterByUserSchool,
     feeController.deleteFee
-  ) //Bursar
+  ) //Bursar can delete fees for their school only
 
 router.get('/term/:term_id', feeController.getFeesByTerm)
 

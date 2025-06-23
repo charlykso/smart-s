@@ -5,9 +5,11 @@ This directory contains all backend API-related documentation.
 ## Files
 
 ### 📚 API Reference
+
 - **API_DOCUMENTATION.md** - Complete API reference, endpoints, request/response formats, authentication, and usage examples
 
 ### 🔍 Backend Features
+
 - **AUDITING_BACKEND_ENHANCEMENTS.md** - Backend auditing system implementation, database changes, and audit trail functionality
 - **STUDENT_PAYMENT_REPORTS.md** - Payment reports API endpoints, data structures, and integration guidelines
 
@@ -20,6 +22,7 @@ This directory contains all backend API-related documentation.
 ## API Overview
 
 The Smart School Management System API provides:
+
 - RESTful endpoints for all system operations
 - JWT-based authentication
 - Role-based access control

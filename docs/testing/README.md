@@ -5,6 +5,7 @@ This directory contains testing procedures, test data, and validation guidelines
 ## Files
 
 ### 🔑 Test Data & Credentials
+
 - **TEST_USER_CREDENTIALS.md** - Test user accounts, passwords, and access levels for different roles
 - **README_TESTING.md** - Testing procedures, guidelines, and best practices
 
@@ -18,6 +19,7 @@ This directory contains testing procedures, test data, and validation guidelines
 ## Testing Overview
 
 The testing documentation provides:
+
 - Pre-configured test user accounts for all roles
 - Testing procedures for different features
 - Validation checklists
@@ -25,14 +27,14 @@ The testing documentation provides:
 
 ## Test User Roles
 
-| Role | Purpose | Documentation |
-|------|---------|---------------|
+| Role          | Purpose                       | Documentation                             |
+| ------------- | ----------------------------- | ----------------------------------------- |
 | General Admin | System administration testing | [Credentials](./TEST_USER_CREDENTIALS.md) |
-| ICT Admin | School IT management testing | [Credentials](./TEST_USER_CREDENTIALS.md) |
-| Principal | School leadership testing | [Credentials](./TEST_USER_CREDENTIALS.md) |
-| Teacher | Classroom management testing | [Credentials](./TEST_USER_CREDENTIALS.md) |
-| Student | Student portal testing | [Credentials](./TEST_USER_CREDENTIALS.md) |
-| Parent | Parent portal testing | [Credentials](./TEST_USER_CREDENTIALS.md) |
+| ICT Admin     | School IT management testing  | [Credentials](./TEST_USER_CREDENTIALS.md) |
+| Principal     | School leadership testing     | [Credentials](./TEST_USER_CREDENTIALS.md) |
+| Teacher       | Classroom management testing  | [Credentials](./TEST_USER_CREDENTIALS.md) |
+| Student       | Student portal testing        | [Credentials](./TEST_USER_CREDENTIALS.md) |
+| Parent        | Parent portal testing         | [Credentials](./TEST_USER_CREDENTIALS.md) |
 
 ## Testing Resources
 
