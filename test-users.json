@@ -1,157 +1,157 @@
 {
-  "testUsers": [
+  "system_status": {
+    "last_updated": "2025-01-16",
+    "database_status": "Active",
+    "access_control_status": "Implemented and Enforced",
+    "school_boundary_enforcement": "Active"
+  },
+  "verified_active_users": [
     {
-      "role": "Admin",
+      "role": "Admin/Proprietor",
       "email": "admin@smart-s.com",
       "password": "password123",
-      "name": "Admin User",
-      "regNo": "ADM001",
-      "dashboardEndpoint": "/api/v1/admin/dashboard",
-      "permissions": ["system_overview", "user_management", "financial_overview"],
-      "description": "System administrator with full access to all features"
-    },
-    {
-      "role": "Student",
-      "email": "student@smart-s.com",
-      "password": "password123",
-      "name": "John Student",
-      "regNo": "STU001",
-      "dashboardEndpoint": "/api/v1/student/dashboard",
-      "permissions": ["view_own_data", "make_payments", "view_academic_progress"],
-      "description": "Student account with access to personal academic and financial data"
-    },
-    {
-      "role": "Principal",
-      "email": "principal@smart-s.com",
-      "password": "password123",
-      "name": "Dr. Sarah Principal",
-      "regNo": "PRI001",
-      "dashboardEndpoint": "/api/v1/principal/dashboard",
-      "permissions": ["school_management", "staff_oversight", "academic_management"],
-      "description": "School principal with management access to school operations"
+      "name": "System Admin",
+      "school": "N/A (System-wide access)",
+      "school_id": null,
+      "status": "ACTIVE",
+      "permissions": {
+        "create_fee": "All schools",
+        "update_fee": "All schools",
+        "delete_fee": "All schools",
+        "approve_fee": "All schools",
+        "view_fees": "All schools",
+        "cross_school_access": true
+      },
+      "notes": "Full system administration access"
     },
     {
       "role": "Bursar",
       "email": "bursar@smart-s.com",
       "password": "password123",
-      "name": "Michael Bursar",
-      "regNo": "BUR001",
-      "dashboardEndpoint": "/api/v1/bursar/dashboard",
-      "permissions": ["financial_management", "payment_processing", "fee_management"],
-      "description": "Financial officer responsible for school finances and payments"
+      "name": "Test Bursar",
+      "school": "Smart School Academy",
+      "school_id": "6856ca374de0e2d916dc329c",
+      "status": "ACTIVE",
+      "permissions": {
+        "create_fee": "Own school only",
+        "update_fee": "Own school only",
+        "delete_fee": "Own school only",
+        "approve_fee": false,
+        "view_fees": "Own school only",
+        "cross_school_access": false
+      },
+      "notes": "Can create fees but cannot approve them. School boundary enforced."
     },
     {
-      "role": "Parent",
-      "email": "parent@smart-s.com",
+      "role": "Principal",
+      "email": "principal@smart-s.com",
       "password": "password123",
-      "name": "Mary Parent",
-      "regNo": "PAR001",
-      "dashboardEndpoint": "/api/v1/parent/dashboard",
-      "permissions": ["view_children_data", "make_payments", "view_academic_progress"],
-      "description": "Parent account with access to children's academic and financial information"
-    },
-    {
-      "role": "Auditor",
-      "email": "auditor@smart-s.com",
-      "password": "password123",
-      "name": "James Auditor",
-      "regNo": "AUD001",
-      "dashboardEndpoint": "/api/v1/auditor/dashboard",
-      "permissions": ["financial_auditing", "system_reports", "compliance_tracking"],
-      "description": "Financial auditor with access to audit reports and compliance data"
+      "name": "Test Principal",
+      "school": "Smart School Academy",
+      "school_id": "6856ca374de0e2d916dc329c",
+      "status": "ACTIVE",
+      "permissions": {
+        "create_fee": false,
+        "update_fee": false,
+        "delete_fee": false,
+        "approve_fee": "Own school only",
+        "view_fees": "Own school only",
+        "cross_school_access": false
+      },
+      "notes": "Can approve/reject fees only for their assigned school"
     },
     {
       "role": "ICT_administrator",
       "email": "ictadmin@smart-s.com",
       "password": "password123",
       "name": "David ICTAdmin",
-      "regNo": "ICT001",
-      "dashboardEndpoint": "/api/v1/ict/dashboard",
-      "permissions": ["system_administration", "technical_management", "user_support"],
-      "description": "ICT administrator responsible for technical systems and support"
-    },
-    {
-      "role": "Proprietor",
-      "email": "proprietor@smart-s.com",
-      "password": "password123",
-      "name": "Robert Proprietor",
-      "regNo": "PRO001",
-      "dashboardEndpoint": "/api/v1/proprietor/dashboard",
-      "permissions": ["multi_school_oversight", "business_management", "strategic_planning"],
-      "description": "School proprietor with oversight of multiple schools and business operations"
-    },
-    {
-      "role": "Headteacher",
-      "email": "headteacher@smart-s.com",
-      "password": "password123",
-      "name": "Mrs. Jane Headteacher",
-      "regNo": "HEAD001",
-      "dashboardEndpoint": "/api/v1/headteacher/dashboard",
-      "permissions": ["school_operations", "academic_management", "staff_coordination"],
-      "description": "Headteacher responsible for day-to-day school operations and academic oversight"
+      "school": "Smart School Academy",
+      "school_id": "6856ca374de0e2d916dc329c",
+      "status": "ACTIVE",
+      "permissions": {
+        "create_fee": false,
+        "update_fee": false,
+        "delete_fee": false,
+        "approve_fee": false,
+        "view_fees": "Own school only (approved and unapproved)",
+        "cross_school_access": false
+      },
+      "notes": "Technical administration role. Can view fees but cannot create or approve them."
     }
   ],
-  "applicationUrls": {
-    "frontend": "http://localhost:3001",
-    "backend": "http://localhost:3000",
-    "login": "http://localhost:3001/login",
-    "apiBase": "http://localhost:3000/api/v1"
-  },
-  "commonPassword": "password123",
-  "testingInstructions": {
-    "startBackend": "cd api && node server.js",
-    "startFrontend": "cd frontend && npm run dev",
-    "recreateUsers": "cd api && node createAllTestUsers.js",
-    "testLogin": "Navigate to http://localhost:3001/login and use any email above with password123"
-  },
-  "apiEndpoints": {
-    "admin": [
-      "GET /api/v1/admin/dashboard",
-      "GET /api/v1/admin/system-overview",
-      "GET /api/v1/admin/user-management",
-      "GET /api/v1/admin/financial-overview"
-    ],
-    "principal": [
-      "GET /api/v1/principal/dashboard",
-      "GET /api/v1/principal/academic-overview",
-      "GET /api/v1/principal/staff-management"
-    ],
-    "bursar": [
-      "GET /api/v1/bursar/dashboard",
-      "GET /api/v1/bursar/payment-reports",
-      "GET /api/v1/bursar/outstanding-fees-report"
-    ],
-    "parent": [
-      "GET /api/v1/parent/dashboard",
-      "GET /api/v1/parent/child/:childId",
-      "GET /api/v1/parent/payment-history"
-    ],
-    "student": [
-      "GET /api/v1/student/dashboard",
-      "GET /api/v1/student/payments",
-      "GET /api/v1/student/outstanding-fees",
-      "GET /api/v1/student/academic-summary"
+  "legacy_users": {
+    "note": "These users may not exist in the current database. Use verified_active_users above.",
+    "users": [
+      {
+        "role": "Admin",
+        "email": "admin@ledgrio.com",
+        "password": "password123",
+        "name": "Admin User",
+        "status": "UNKNOWN"
+      },
+      {
+        "role": "Student",
+        "email": "student@ledgrio.com",
+        "password": "password123",
+        "name": "John Student",
+        "status": "UNKNOWN"
+      },
+      {
+        "role": "Principal",
+        "email": "principal@ledgrio.com",
+        "password": "password123",
+        "name": "Dr. Sarah Principal",
+        "status": "UNKNOWN"
+      },
+      {
+        "role": "Bursar",
+        "email": "bursar@ledgrio.com",
+        "password": "password123",
+        "name": "Michael Bursar",
+        "status": "UNKNOWN"
+      },
+      {
+        "role": "Parent",
+        "email": "parent@ledgrio.com",
+        "password": "password123",
+        "name": "Mary Parent",
+        "status": "UNKNOWN"
+      }
     ]
   },
-  "sampleApiCall": {
-    "description": "Sample login API call",
-    "method": "POST",
-    "url": "http://localhost:3000/api/v1/auth/login",
-    "headers": {
-      "Content-Type": "application/json"
+  "access_control_matrix": {
+    "bursar": {
+      "school_boundary": "ENFORCED - Can only access assigned school",
+      "fee_creation": "ALLOWED - Can create fees for own school",
+      "fee_approval": "BLOCKED - Cannot approve fees",
+      "cross_school_access": "BLOCKED - Cannot access other schools"
     },
-    "body": {
-      "email": "admin@smart-s.com",
-      "password": "password123"
+    "principal": {
+      "school_boundary": "ENFORCED - Can only access assigned school",
+      "fee_creation": "BLOCKED - Cannot create fees",
+      "fee_approval": "ALLOWED - Can approve fees for own school only",
+      "cross_school_access": "BLOCKED - Cannot access other schools"
     },
-    "curl": "curl -X POST http://localhost:3000/api/v1/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@smart-s.com\",\"password\":\"password123\"}'"
+    "admin": {
+      "school_boundary": "BYPASSED - Full system access",
+      "fee_creation": "ALLOWED - All schools",
+      "fee_approval": "ALLOWED - All schools",
+      "cross_school_access": "ALLOWED - Full system access"
+    }
   },
-  "notes": [
-    "All users use the same password: password123",
-    "Users are created with basic information and may not have all relationships populated",
-    "Some dashboards will show mock data when real data is not available",
-    "All passwords are hashed using bcrypt with 10 salt rounds",
-    "JWT tokens are required for accessing protected endpoints",
-    "Role-based access control is enforced on all dashboard endpoints"
-  ]
+  "testing_info": {
+    "login_endpoint": "POST http://localhost:3000/api/v1/auth/login",
+    "test_command": "curl -X POST http://localhost:3000/api/v1/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"bursar@smart-s.com\",\"password\":\"password123\"}'",
+    "frontend_url": "http://localhost:3001",
+    "backend_url": "http://localhost:3000",
+    "database_seed_script": "api/tests/seed-database.js"
+  },
+  "implementation_status": {
+    "documentation_organized": true,
+    "security_audit_complete": true,
+    "access_control_implemented": true,
+    "test_users_created": true,
+    "verification_complete": true,
+    "ready_for_testing": true
+  }
 }

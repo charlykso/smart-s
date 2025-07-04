@@ -15,9 +15,13 @@ export interface Fee {
   no_ofInstallments: number;
   amount: number;
   isApproved: boolean;
+  dueDate?: string; // Optional due date for fee payment
   createdAt: string;
   updatedAt: string;
 }
+
+// Payment Mode Types
+export type PaymentMode = 'paystack' | 'flutterwave' | 'bank_transfer' | 'cash';
 
 // Payment Types
 export interface Payment {
@@ -28,7 +32,7 @@ export interface Payment {
   trx_ref?: string;
   amount: number;
   trans_date: string;
-  mode_of_payment: 'paystack' | 'flutterwave' | 'bank_transfer' | 'cash';
+  mode_of_payment: PaymentMode;
   status: 'pending' | 'success' | 'failed';
   isInstallment: boolean;
   channel?: 'web' | 'mobile' | 'pos' | 'card' | 'cash';
@@ -54,9 +58,9 @@ export interface PaymentProfile {
   updatedAt: string;
 }
 
-// Available Payment Method Types
-export interface PaymentMethod {
-  method: 'paystack' | 'flutterwave' | 'bank_transfer' | 'cash';
+// Available Payment Method Configuration
+export interface PaymentMethodConfig {
+  method: PaymentMode;
   name: string;
   description: string;
   icon: string;
@@ -90,14 +94,14 @@ export interface CreatePaymentData {
   user_id: string;
   fee_id: string;
   amount?: number;
-  mode_of_payment: 'paystack' | 'flutterwave' | 'bank_transfer' | 'cash';
+  mode_of_payment: PaymentMode;
 }
 
 export interface InitiatePaymentData {
   user_id: string;
   fee_id: string;
   school_id?: string;
-  payment_method?: 'paystack' | 'flutterwave' | 'bank_transfer' | 'cash';
+  payment_method?: PaymentMode;
 }
 
 export interface CashPaymentData {
@@ -136,7 +140,7 @@ export interface PaymentFilters {
   user?: string;
   fee?: string;
   status?: 'pending' | 'success' | 'failed';
-  mode_of_payment?: 'paystack' | 'flutterwave' | 'bank_transfer' | 'cash';
+  mode_of_payment?: PaymentMode;
   dateFrom?: string;
   dateTo?: string;
   search?: string;
@@ -176,7 +180,7 @@ export interface FeeAuditLog {
   action: 'create' | 'update' | 'delete' | 'approve' | 'reject';
   fee: Fee;
   user: User;
-  changes?: Record<string, any>;
+  changes?: Record<string, string | number | boolean>;
   timestamp: string;
   ipAddress?: string;
   userAgent?: string;
@@ -187,7 +191,7 @@ export interface PaymentAuditLog {
   action: 'initiate' | 'success' | 'failed' | 'refund';
   payment: Payment;
   user: User;
-  details?: Record<string, any>;
+  details?: Record<string, string | number | boolean>;
   timestamp: string;
   ipAddress?: string;
   userAgent?: string;
@@ -204,7 +208,7 @@ export interface FeeReport {
     from: string;
     to: string;
   };
-  data: any;
+  data: Record<string, unknown>;
   generatedBy: User;
   createdAt: string;
 }
@@ -359,4 +363,4 @@ export const PAYMENT_METHODS = {
   CASH: 'cash',
 } as const;
 
-export type PaymentMethod = typeof PAYMENT_METHODS[keyof typeof PAYMENT_METHODS];
+export type PaymentMethodType = typeof PAYMENT_METHODS[keyof typeof PAYMENT_METHODS];

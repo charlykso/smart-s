@@ -242,10 +242,43 @@ exports.getAllPaymentsByBankTransfer = async (req, res) => {
 exports.PayWithCash = async (req, res) => {
   try {
     const { user_id, fee_id } = req.body
+
+    // Validate required fields
+    if (!user_id || !fee_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID and Fee ID are required',
+      })
+    }
+
+    // Validate ObjectId format
+    const mongoose = require('mongoose')
+    if (!mongoose.Types.ObjectId.isValid(user_id)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid user ID format',
+      })
+    }
+    if (!mongoose.Types.ObjectId.isValid(fee_id)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid fee ID format',
+      })
+    }
+
     const fee = await Fee.findById(fee_id)
-    if (!fee) return res.status(404).json({ error: 'Fee not found' })
+    if (!fee)
+      return res.status(404).json({
+        success: false,
+        error: 'Fee not found',
+      })
+
     const user = await User.findById(user_id)
-    if (!user) return res.status(404).json({ error: 'User not found' })
+    if (!user)
+      return res.status(404).json({
+        success: false,
+        error: 'User not found',
+      })
 
     const tRef = genTrxnRef()
 
@@ -254,7 +287,10 @@ exports.PayWithCash = async (req, res) => {
       fee: fee_id,
     })
     if (initialPayment)
-      return res.status(400).json({ error: 'Payment already exists' })
+      return res.status(400).json({
+        success: false,
+        error: 'Payment already exists for this fee',
+      })
 
     const payment = new Payment({
       user: user_id,
@@ -266,11 +302,19 @@ exports.PayWithCash = async (req, res) => {
       trans_date: new Date(),
     })
     await payment.save()
-    res.status(201).json({ message: 'Payment successful', payment })
+
+    res.status(201).json({
+      success: true,
+      message: 'Payment successful',
+      data: payment,
+    })
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: 'Internal server error', details: error.message })
+    console.error('Cash payment error:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      details: error.message,
+    })
   }
 }
 

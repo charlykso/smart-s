@@ -11,7 +11,14 @@ exports.getFees = async (req, res) => {
     }
 
     const fees = await Fee.find(query)
-      .populate('term', 'name')
+      .populate({
+        path: 'term',
+        select: 'name',
+        populate: {
+          path: 'session',
+          select: 'name',
+        },
+      })
       .populate('school', 'name')
     res.status(200).json(fees)
   } catch (error) {
@@ -21,7 +28,14 @@ exports.getFees = async (req, res) => {
 
 exports.getFee = async (req, res) => {
   try {
-    const fee = await Fee.findById(req.params.id).populate('term', 'name')
+    const fee = await Fee.findById(req.params.id).populate({
+      path: 'term',
+      select: 'name',
+      populate: {
+        path: 'session',
+        select: 'name',
+      },
+    })
     if (!fee) return res.status(404).json({ message: 'Fee not found' })
     res.status(200).json(fee)
   } catch (error) {
@@ -30,226 +44,74 @@ exports.getFee = async (req, res) => {
 }
 
 exports.createFee = async (req, res) => {
+  const fee = new Fee({
+    term: req.body.term_id,
+    school: req.body.school_id,
+    name: req.body.name,
+    decription: req.body.decription,
+    type: req.body.type,
+    isActive: req.body.isActive,
+    isInstallmentAllowed: req.body.isInstallmentAllowed,
+    no_ofInstallments: req.body.no_ofInstallments,
+    amount: req.body.amount,
+    isApproved: req.body.isApproved,
+  })
   try {
-    // Ensure bursar can only create fees for their school
-    let schoolId = req.body.school_id
-    const userRoles = req.user.roles || []
-
-    // If user is Bursar, enforce their school
-    if (userRoles.includes('Bursar') && !userRoles.includes('Admin')) {
-      if (!req.user.school) {
-        return res.status(403).json({
-          success: false,
-          message: 'Bursar must be assigned to a school to create fees',
-        })
-      }
-      schoolId = req.user.school._id || req.user.school
-    }
-
-    // Validate school exists
-    const school = await School.findById(schoolId)
-    if (!school) {
-      return res.status(404).json({
-        success: false,
-        message: 'School not found',
-      })
-    }
-
-    // Validate term exists
-    const term = await Term.findById(req.body.term_id)
-    if (!term) {
-      return res.status(404).json({
-        success: false,
-        message: 'Term not found',
-      })
-    }
-
-    // Check for existing fee with same name and term
+    // Check for duplicate: same name AND same term (not OR)
     const existing = await Fee.findOne({
       name: req.body.name,
       term: req.body.term_id,
-      school: schoolId,
+      school: req.body.school_id,
     })
-
-    if (existing) {
+    if (existing)
       return res.status(409).json({
-        success: false,
         message: 'A fee with this name already exists for this term and school',
       })
-    }
-
-    // Create fee - bursars cannot set approval status
-    const fee = new Fee({
-      term: req.body.term_id,
-      school: schoolId,
-      name: req.body.name,
-      decription: req.body.decription,
-      type: req.body.type,
-      isActive: req.body.isActive || true,
-      isInstallmentAllowed: req.body.isInstallmentAllowed || false,
-      no_ofInstallments: req.body.no_ofInstallments || 1,
-      amount: req.body.amount,
-      isApproved: false, // Always false for new fees - principal must approve
-    })
-
+    const school = await School.findById(req.body.school_id)
+    if (!school) return res.status(409).json({ message: 'School not found' })
+    const term = await Term.findById(req.body.term_id)
+    if (!term) return res.status(409).json({ message: 'Term not found' })
     const newFee = await fee.save()
-
     res.status(201).json({
       success: true,
-      message: 'Fee created successfully. Awaiting principal approval.',
       data: newFee,
+      message: 'Fee created successfully',
     })
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    })
+    res.status(400).json({ message: error.message })
   }
 }
 
 exports.updateFee = async (req, res) => {
   try {
-    // Find the existing fee first
-    const existingFee = await Fee.findById(req.params.id).populate('school')
-    if (!existingFee) {
-      return res.status(404).json({
-        success: false,
-        message: 'Fee not found',
-      })
-    }
-
-    // Ensure bursar can only update fees for their school
-    const userRoles = req.user.roles || []
-    if (userRoles.includes('Bursar') && !userRoles.includes('Admin')) {
-      const userSchool = req.user.school?._id || req.user.school
-      const feeSchool = existingFee.school._id || existingFee.school
-
-      if (!userSchool) {
-        return res.status(403).json({
-          success: false,
-          message: 'Bursar must be assigned to a school to update fees',
-        })
-      }
-
-      if (userSchool.toString() !== feeSchool.toString()) {
-        return res.status(403).json({
-          success: false,
-          message: 'Bursar can only update fees for their own school',
-        })
-      }
-    }
-
-    // Validate term if provided
-    if (req.body.term_id) {
-      const term = await Term.findById(req.body.term_id)
-      if (!term) {
-        return res.status(404).json({
-          success: false,
-          message: 'Term not found',
-        })
-      }
-    }
-
-    // Update fee properties - bursars cannot change approval status or school
-    const updateData = {
-      term: req.body.term_id || existingFee.term,
-      name: req.body.name || existingFee.name,
-      decription: req.body.decription || existingFee.decription,
-      type: req.body.type || existingFee.type,
-      isActive:
-        req.body.isActive !== undefined
-          ? req.body.isActive
-          : existingFee.isActive,
-      isInstallmentAllowed:
-        req.body.isInstallmentAllowed !== undefined
-          ? req.body.isInstallmentAllowed
-          : existingFee.isInstallmentAllowed,
-      no_ofInstallments:
-        req.body.no_ofInstallments || existingFee.no_ofInstallments,
-      amount: req.body.amount || existingFee.amount,
-    }
-
-    // Only Admin can change school and approval status
-    if (userRoles.includes('Admin')) {
-      if (req.body.school_id) updateData.school = req.body.school_id
-      if (req.body.isApproved !== undefined)
-        updateData.isApproved = req.body.isApproved
-    }
-
-    const updatedFee = await Fee.findByIdAndUpdate(req.params.id, updateData, {
+    const fee = await Fee.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
-    })
-      .populate('term')
-      .populate('school')
-
-    res.status(200).json({
-      success: true,
-      message: 'Fee updated successfully',
-      data: updatedFee,
-    })
+    }).populate('term')
+    if (!fee) return res.status(404).json({ message: 'Fee not found' })
+    fee.term = req.body.term_id
+    fee.school = req.body.school_id
+    fee.name = req.body.name
+    fee.decription = req.body.decription
+    fee.type = req.body.type
+    fee.isActive = req.body.isActive
+    fee.isInstallmentAllowed = req.body.isInstallmentAllowed
+    fee.no_ofInstallments = req.body.no_ofInstallments
+    fee.amount = req.body.amount
+    fee.isApproved = req.body.isApproved
+    const updatedFee = await fee.save()
+    res.status(200).json(updatedFee)
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    })
+    res.status(400).json({ message: error.message })
   }
 }
 
 exports.deleteFee = async (req, res) => {
   try {
-    // Find the fee first to check school ownership
-    const existingFee = await Fee.findById(req.params.id).populate('school')
-    if (!existingFee) {
-      return res.status(404).json({
-        success: false,
-        message: 'Fee not found',
-      })
-    }
-
-    // Ensure bursar can only delete fees for their school
-    const userRoles = req.user.roles || []
-    if (userRoles.includes('Bursar') && !userRoles.includes('Admin')) {
-      const userSchool = req.user.school?._id || req.user.school
-      const feeSchool = existingFee.school._id || existingFee.school
-
-      if (!userSchool) {
-        return res.status(403).json({
-          success: false,
-          message: 'Bursar must be assigned to a school to delete fees',
-        })
-      }
-
-      if (userSchool.toString() !== feeSchool.toString()) {
-        return res.status(403).json({
-          success: false,
-          message: 'Bursar can only delete fees for their own school',
-        })
-      }
-    }
-
-    // Check if fee has associated payments before deletion
-    const Payment = require('../model/Payment')
-    const hasPayments = await Payment.findOne({ fee: req.params.id })
-
-    if (hasPayments) {
-      return res.status(400).json({
-        success: false,
-        message:
-          'Cannot delete fee with existing payments. Consider deactivating instead.',
-      })
-    }
-
-    await Fee.findByIdAndDelete(req.params.id)
-
-    res.status(200).json({
-      success: true,
-      message: 'Fee deleted successfully',
-    })
+    const fee = await Fee.findByIdAndDelete(req.params.id)
+    if (!fee) return res.status(404).json({ message: 'Fee not found' })
+    res.json({ message: 'Fee Deleted' })
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    })
+    res.status(500).json({ message: error.message })
   }
 }
 
@@ -272,7 +134,14 @@ exports.getApprovedFees = async (req, res) => {
     }
 
     const fees = await Fee.find(query)
-      .populate('term', 'name')
+      .populate({
+        path: 'term',
+        select: 'name',
+        populate: {
+          path: 'session',
+          select: 'name',
+        },
+      })
       .populate('school', 'name')
     res.status(200).json(fees)
   } catch (error) {
@@ -289,7 +158,14 @@ exports.getUnapprovedFees = async (req, res) => {
     }
 
     const fees = await Fee.find(query)
-      .populate('term', 'name')
+      .populate({
+        path: 'term',
+        select: 'name',
+        populate: {
+          path: 'session',
+          select: 'name',
+        },
+      })
       .populate('school', 'name')
     res.status(200).json(fees)
   } catch (error) {
@@ -300,10 +176,14 @@ exports.getUnapprovedFees = async (req, res) => {
 exports.getApprovedFeesByTerm = async (req, res) => {
   try {
     const { term_id } = req.params
-    const fees = await Fee.find({ term: term_id, isApproved: true }).populate(
-      'term',
-      'name'
-    )
+    const fees = await Fee.find({ term: term_id, isApproved: true }).populate({
+      path: 'term',
+      select: 'name',
+      populate: {
+        path: 'session',
+        select: 'name',
+      },
+    })
     res.status(200).json(fees)
   } catch (error) {
     res.status(500).json({ message: error.message })
@@ -313,10 +193,14 @@ exports.getApprovedFeesByTerm = async (req, res) => {
 exports.getUnapprovedFeesByTerm = async (req, res) => {
   try {
     const { term_id } = req.params
-    const fees = await Fee.find({ term: term_id, isApproved: false }).populate(
-      'term',
-      'name'
-    )
+    const fees = await Fee.find({ term: term_id, isApproved: false }).populate({
+      path: 'term',
+      select: 'name',
+      populate: {
+        path: 'session',
+        select: 'name',
+      },
+    })
     res.status(200).json(fees)
   } catch (error) {
     res.status(500).json({ message: error.message })

@@ -21,9 +21,11 @@ import {
   PaymentSummaryCard,
 } from '../widgets';
 
-import type { QuickAction, Activity } from '../widgets/QuickActionCard';
+import type { QuickAction } from '../widgets/QuickActionCard';
+import type { Activity } from '../widgets/RecentActivityCard';
 import { useParentStore } from '../../../store/parentStore';
 import { parentService } from '../../../services/parentService';
+import { createSafeDate, isValidDate } from '../../../utils/dateUtils';
 
 const ParentDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -125,16 +127,19 @@ const ParentDashboard: React.FC = () => {
 
   // Generate recent activities from dashboard data
   const recentActivities: Activity[] = dashboardData ?
-    dashboardData.recentActivities.slice(0, 5).map((activity) => ({
-      id: activity._id,
-      title: activity.type === 'payment' ? 'Payment Processed' :
-             activity.type === 'academic' ? 'Academic Update' :
-             activity.type === 'fee' ? 'Fee Notification' : 'School Update',
-      description: `${activity.description} for ${activity.childName}`,
-      timestamp: new Date(activity.date),
-      type: activity.type as 'payment' | 'academic' | 'fee' | 'system',
-      user: activity.type === 'payment' ? 'Payment System' : 'School Admin',
-    })) : [];
+    dashboardData.recentActivities.slice(0, 5).map((activity) => {
+      const timestamp = createSafeDate(activity.date);
+      return {
+        id: activity._id,
+        title: activity.type === 'payment' ? 'Payment Processed' :
+               activity.type === 'academic' ? 'Academic Update' :
+               activity.type === 'fee' ? 'Fee Notification' : 'School Update',
+        description: `${activity.description} for ${activity.childName}`,
+        timestamp,
+        type: activity.type as 'payment' | 'academic' | 'fee' | 'system',
+        user: activity.type === 'payment' ? 'Payment System' : 'School Admin',
+      };
+    }).filter(activity => isValidDate(activity.timestamp)) : [];
 
   // Generate children data from dashboard data
   const children = dashboardData ?
@@ -219,7 +224,7 @@ const ParentDashboard: React.FC = () => {
       {/* Children Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {children.map((child) => (
-          <div key={child.id} className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+          <div key={child.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900 border border-secondary-200 dark:border-gray-700 p-6 transition-colors duration-200">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-secondary-900">
                 {child.name}
@@ -270,8 +275,8 @@ const ParentDashboard: React.FC = () => {
             pendingAmount={dashboardData.overallSummary.totalOutstanding}
           />
 
-          <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
-            <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900 border border-secondary-200 dark:border-gray-700 p-6 transition-colors duration-200">
+            <h3 className="text-lg font-semibold text-secondary-900 dark:text-white mb-4">
               Recent Payments
             </h3>
             <div className="space-y-3">
@@ -329,8 +334,8 @@ const ParentDashboard: React.FC = () => {
       </div>
 
       {/* Upcoming Events */}
-      <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
-        <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900 border border-secondary-200 dark:border-gray-700 p-6 transition-colors duration-200">
+        <h3 className="text-lg font-semibold text-secondary-900 dark:text-white mb-4">
           Upcoming School Events
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

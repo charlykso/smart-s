@@ -9,7 +9,12 @@ router
   .route('/all')
   .get(
     authenticateToken,
-    verifyRoles(roleList.Admin, roleList.Principal, roleList.Proprietor),
+    verifyRoles(
+      roleList.Admin,
+      roleList.Principal,
+      roleList.Proprietor,
+      roleList.Bursar
+    ),
     termController.getAllTerms
   )
 router

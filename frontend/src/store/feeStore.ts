@@ -1,19 +1,16 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { FeeService } from '../services/feeService';
 import toast from 'react-hot-toast';
+import { FeeService } from '../services/feeService';
 import type {
   Fee,
   Payment,
-  PaymentProfile,
   CreateFeeData,
   UpdateFeeData,
   InitiatePaymentData,
   CashPaymentData,
   CreatePaymentProfileData,
   UpdatePaymentProfileData,
-  FeeStats,
-  PaymentStats,
   FeeFilters,
   PaymentFilters,
   FeeManagementState,
@@ -241,12 +238,12 @@ export const useFeeStore = create<FeeStore>()(
             payments: [...payments, newPayment], 
             isLoading: false 
           });
-          toast.success('Cash payment processed successfully!');
+          // Don't show toast here - let the component handle it
           return newPayment;
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to process cash payment';
           set({ error: errorMessage, isLoading: false });
-          toast.error(errorMessage);
+          // Don't show toast here - let the component handle it
           throw error;
         }
       },
@@ -316,7 +313,7 @@ export const useFeeStore = create<FeeStore>()(
       updatePaymentProfile: async (data: UpdatePaymentProfileData) => {
         set({ isLoading: true, error: null });
         try {
-          const updatedProfile = await FeeService.updatePaymentProfile(data);
+          const updatedProfile = await FeeService.updatePaymentProfile(data._id, data);
           const { paymentProfiles } = get();
           set({ 
             paymentProfiles: paymentProfiles.map(profile => 
@@ -339,9 +336,23 @@ export const useFeeStore = create<FeeStore>()(
         try {
           const feeStats = await FeeService.getFeeStats(schoolId, termId);
           set({ feeStats });
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load fee statistics';
-          console.error(errorMessage);
+        } catch (error: unknown) {
+          // If stats endpoint doesn't exist, calculate from existing fees
+          const { fees } = get();
+          if (fees.length > 0) {
+            const calculatedStats = {
+              totalFees: fees.length,
+              approvedFees: fees.filter(fee => fee.isApproved).length,
+              pendingApproval: fees.filter(fee => !fee.isApproved).length,
+              activeFees: fees.filter(fee => fee.isActive).length,
+              totalAmount: fees.reduce((sum, fee) => sum + fee.amount, 0),
+              approvedAmount: fees.filter(fee => fee.isApproved).reduce((sum, fee) => sum + fee.amount, 0),
+              pendingAmount: fees.filter(fee => !fee.isApproved).reduce((sum, fee) => sum + fee.amount, 0),
+            };
+            set({ feeStats: calculatedStats });
+          }
+          // Don't show error toast for missing stats endpoint
+          console.warn('Fee stats endpoint not available, using calculated stats:', error);
         }
       },
 
@@ -349,9 +360,30 @@ export const useFeeStore = create<FeeStore>()(
         try {
           const paymentStats = await FeeService.getPaymentStats(schoolId, termId);
           set({ paymentStats });
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load payment statistics';
-          console.error(errorMessage);
+        } catch (error: unknown) {
+          // If stats endpoint doesn't exist, calculate from existing payments
+          const { payments } = get();
+          if (payments.length > 0) {
+            const calculatedStats = {
+              totalPayments: payments.length,
+              successfulPayments: payments.filter(payment => payment.status === 'success').length,
+              pendingPayments: payments.filter(payment => payment.status === 'pending').length,
+              failedPayments: payments.filter(payment => payment.status === 'failed').length,
+              totalAmount: payments.reduce((sum, payment) => sum + payment.amount, 0),
+              successfulAmount: payments.filter(payment => payment.status === 'success').reduce((sum, payment) => sum + payment.amount, 0),
+              pendingAmount: payments.filter(payment => payment.status === 'pending').reduce((sum, payment) => sum + payment.amount, 0),
+              paymentsByMethod: {
+                paystack: payments.filter(p => p.mode_of_payment === 'paystack').length,
+                flutterwave: payments.filter(p => p.mode_of_payment === 'flutterwave').length,
+                bank_transfer: payments.filter(p => p.mode_of_payment === 'bank_transfer').length,
+                cash: payments.filter(p => p.mode_of_payment === 'cash').length,
+              },
+              recentPayments: payments.slice(-5), // Add recent payments to match interface
+            };
+            set({ paymentStats: calculatedStats });
+          }
+          // Don't show error toast for missing stats endpoint
+          console.warn('Payment stats endpoint not available, using calculated stats:', error);
         }
       },
 

@@ -6,9 +6,9 @@ interface User {
   firstname: string;
   lastname: string;
   email: string;
-  role: string;
+  roles: string[];
   regNo: string;
-  school?: string;
+  school?: string | { _id: string; name: string };
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

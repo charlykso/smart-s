@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toast Styling Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f3f4f6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .success-btn {
+            background: #10b981;
+        }
+        .success-btn:hover {
+            background: #059669;
+        }
+        .error-btn {
+            background: #ef4444;
+        }
+        .error-btn:hover {
+            background: #dc2626;
+        }
+        .info {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            padding: 16px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .steps {
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            padding: 16px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .steps ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .steps li {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Toast Styling Verification</h1>
+        
+        <div class="info">
+            <strong>ℹ️ Instructions:</strong>
+            <p>This page tests the toast styling that should be applied in the main application. Click the buttons below to see if the styling is working correctly.</p>
+        </div>
+
+        <div class="steps">
+            <h3>📋 Test Steps:</h3>
+            <ol>
+                <li>Open the main app at <code>http://localhost:3000</code></li>
+                <li>Log in as a Bursar user</li>
+                <li>Navigate to Cash Payment page</li>
+                <li>Select a student and fee</li>
+                <li>Click "Process Cash Payment"</li>
+                <li>Verify the "Payment successful" toast appears <strong style="color: #10b981;">GREEN</strong> (not red)</li>
+            </ol>
+        </div>
+
+        <h3>🧪 Toast Configuration Applied:</h3>
+        <ul>
+            <li>✅ Custom CSS classes: <code>custom-toast-success</code>, <code>custom-toast-error</code></li>
+            <li>✅ Green gradient for success: <code>linear-gradient(135deg, #10b981 0%, #059669 100%)</code></li>
+            <li>✅ Red gradient for error: <code>linear-gradient(135deg, #ef4444 0%, #dc2626 100%)</code></li>
+            <li>✅ High CSS specificity with <code>!important</code> declarations</li>
+            <li>✅ Multiple fallback selectors for compatibility</li>
+        </ul>
+
+        <h3>🔧 What Was Fixed:</h3>
+        <div style="background: #f9fafb; padding: 16px; border-radius: 6px; margin: 16px 0;">
+            <h4>App.tsx Changes:</h4>
+            <ul>
+                <li>Added custom CSS classes to Toaster configuration</li>
+                <li>Enhanced inline styles for both success and error toasts</li>
+                <li>Increased specificity with className props</li>
+            </ul>
+            
+            <h4>index.css Changes:</h4>
+            <ul>
+                <li>Added class-based selectors for <code>.custom-toast-success</code> and <code>.custom-toast-error</code></li>
+                <li>Added multiple fallback selectors targeting style attributes</li>
+                <li>Used <code>!important</code> for maximum CSS specificity</li>
+                <li>Added comprehensive coverage for different DOM structures</li>
+            </ul>
+        </div>
+
+        <h3>🚀 Expected Result:</h3>
+        <div style="background: #f0f9ff; border: 1px solid #0ea5e9; padding: 16px; border-radius: 6px;">
+            <p><strong>Success Toast should now appear:</strong></p>
+            <ul>
+                <li>🟢 Green background with gradient</li>
+                <li>⚪ White text</li>
+                <li>🟢 Green border</li>
+                <li>✨ Green shadow glow</li>
+                <li>📏 Larger size (300px minimum width)</li>
+            </ul>
+        </div>
+
+        <div style="background: #fef2f2; border: 1px solid #f87171; padding: 16px; border-radius: 6px; margin-top: 16px;">
+            <p><strong>⚠️ If toast still appears red:</strong></p>
+            <ol>
+                <li>Clear browser cache (Ctrl+F5 or Cmd+Shift+R)</li>
+                <li>Check browser developer tools for CSS conflicts</li>
+                <li>Verify the build includes the latest changes</li>
+                <li>Try in an incognito/private browser window</li>
+            </ol>
+        </div>
+
+        <h3>📞 Need Help?</h3>
+        <p>If the toast still appears red after following these steps, please check:</p>
+        <ul>
+            <li>Browser developer tools (F12) → Console for any JavaScript errors</li>
+            <li>Developer tools → Elements to inspect the toast DOM structure</li>
+            <li>Developer tools → Network to ensure CSS files are loading</li>
+        </ul>
+    </div>
+</body>
+</html>

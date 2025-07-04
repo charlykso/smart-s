@@ -36,7 +36,11 @@ export class FeeService {
     return response || [];
   }
 
-  static async getApprovedFees(): Promise<Fee[]> {
+  static async getApprovedFees(schoolId?: string): Promise<Fee[]> {
+    if (schoolId) {
+      return this.getApprovedFeesBySchool(schoolId);
+    }
+    
     const response = await ApiService.get<Fee[]>(API_ENDPOINTS.FEES.APPROVED);
     return response || [];
   }
@@ -93,7 +97,7 @@ export class FeeService {
 
   static async approveFee(feeId: string): Promise<void> {
     const endpoint = API_ENDPOINTS.FEES.APPROVE.replace(':fee_id', feeId);
-    const response = await ApiService.post<ApiResponse>(endpoint, { isApproved: true });
+    const response = await ApiService.put<ApiResponse>(endpoint, { isApproved: true });
     
     if (!response.success) {
       throw new Error(response.message || 'Failed to approve fee');
@@ -317,4 +321,21 @@ export class FeeService {
     
     return Math.max(0, fee.amount - totalPaid);
   }
+
+  // Get payments for the current authenticated user (student)
+  static async getStudentPayments(): Promise<Payment[]> {
+    // The /payment/all endpoint already filters by user when authenticated
+    const response = await ApiService.get<ApiResponse<Payment[]>>(
+      API_ENDPOINTS.PAYMENTS.ALL
+    );
+
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to get student payments');
+    }
+
+    return response.data || [];
+  }
+
+  // Get approved fees by school (overloaded method) - remove duplicate
+  // ...existing code...
 }

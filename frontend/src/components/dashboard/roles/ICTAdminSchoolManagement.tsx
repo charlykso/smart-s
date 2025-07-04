@@ -232,10 +232,10 @@ const ICTAdminSchoolManagement: React.FC = () => {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
+        <div className="bg-white dark:bg-secondary-800 shadow-sm rounded-lg p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-secondary-100 mb-2">
                 ICT Administrator Dashboard
               </h1>
               <p className="text-gray-600">
@@ -259,7 +259,7 @@ const ICTAdminSchoolManagement: React.FC = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="bg-white shadow-sm rounded-lg mb-6">
+        <div className="bg-white dark:bg-secondary-800 shadow-sm rounded-lg mb-6">
           <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-8 px-6">
               <button
@@ -290,9 +290,9 @@ const ICTAdminSchoolManagement: React.FC = () => {
 
         {/* Schools Management Tab */}
         {activeTab === 'schools' && (
-          <div className="bg-white shadow-sm rounded-lg p-6">
+          <div className="bg-white dark:bg-secondary-800 shadow-sm rounded-lg p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-secondary-100">
                 Schools Under Your Management
               </h2>
               <button
@@ -389,9 +389,9 @@ const ICTAdminSchoolManagement: React.FC = () => {
 
         {/* Users Management Tab */}
         {activeTab === 'users' && (
-          <div className="bg-white shadow-sm rounded-lg p-6">
+          <div className="bg-white dark:bg-secondary-800 shadow-sm rounded-lg p-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-secondary-100">
                 Users in Managed Schools
               </h2>
               <div className="flex space-x-3">                <select
@@ -426,7 +426,7 @@ const ICTAdminSchoolManagement: React.FC = () => {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -449,7 +449,7 @@ const ICTAdminSchoolManagement: React.FC = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-secondary-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {users.map((user) => (
                     <tr key={user._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -591,9 +591,9 @@ const CreateSchoolModal: React.FC<CreateSchoolModalProps> = ({ onClose, onSubmit
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h3 className="text-lg font-semibold mb-4">Create New School</h3>
-        <p className="text-sm text-gray-600 mb-4">
+      <div className="bg-white dark:bg-secondary-800 rounded-lg p-6 w-full max-w-md">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-secondary-100">Create New School</h3>
+        <p className="text-sm text-gray-600 dark:text-secondary-400 mb-4">
           This school will be created under <span className="font-semibold">{groupSchoolName}</span>
         </p>
         <form onSubmit={handleSubmit}>          <div className="mb-4">
@@ -724,8 +724,8 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <h3 className="text-lg font-semibold mb-4">Create New User</h3>
+      <div className="bg-white dark:bg-secondary-800 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-secondary-100">Create New User</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">            <div>
               <label htmlFor="firstname" className="block text-sm font-medium text-gray-700 mb-2">
@@ -904,10 +904,10 @@ const BulkUploadModal: React.FC<BulkUploadModalProps> = ({
   selectedFile
 }) => {  return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-secondary-800 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Bulk Upload Students</h2>          <button
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-secondary-100">Bulk Upload Students</h2>          <button
             onClick={onClose}
             title="Close modal"
             className="text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600"

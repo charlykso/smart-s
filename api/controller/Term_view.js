@@ -60,7 +60,7 @@ exports.createTerm = async (req, res) => {
     const { session: session_id, name, startDate, endDate } = req.body
     const session = await Session.findById(session_id)
     if (!session) return res.status(409).json({ message: 'term not found' })
-    const existingTerm = await Term.findOne({ name })
+    const existingTerm = await Term.findOne({ name, session: session_id })
     if (existingTerm) {
       return res.status(400).json({ message: 'term already exists' })
     }

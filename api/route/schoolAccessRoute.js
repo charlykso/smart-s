@@ -28,7 +28,8 @@ router
       roleList.Admin,
       roleList.ICT_administrator,
       roleList.Proprietor,
-      roleList.Principal
+      roleList.Principal,
+      roleList.Bursar
     ),
     schoolAccessController.getUsersBySchool
   )

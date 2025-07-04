@@ -87,14 +87,16 @@ const FeeModal: React.FC<FeeModalProps> = ({
           ...data,
         };
         await updateFee(updateData);
+        onSubmit(updateData);
       } else {
-        const createData: CreateFeeData = data;
+        const createData: CreateFeeData = data as CreateFeeData;
         await createFee(createData);
+        onSubmit(createData);
       }
       
-      onSubmit(data);
       onClose();
-    } catch (error) {
+    } catch (err) {
+      console.error('Fee submission error:', err);
       // Error is handled in the store
     }
   };
@@ -107,17 +109,23 @@ const FeeModal: React.FC<FeeModalProps> = ({
         <div
           className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
           onClick={onClose}
+          onKeyDown={(e) => e.key === 'Escape' && onClose()}
+          role="button"
+          tabIndex={0}
+          aria-label="Close modal"
         />
 
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
-          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+          <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                 {fee ? 'Edit Fee' : 'Create New Fee'}
               </h3>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                title="Close modal"
+                aria-label="Close fee modal"
               >
                 <XMarkIcon className="h-6 w-6" />
               </button>
@@ -130,12 +138,13 @@ const FeeModal: React.FC<FeeModalProps> = ({
                 {/* School and Term Selection */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="school_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       School *
                     </label>
                     <select
+                      id="school_id"
                       {...register('school_id')}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                     >
                       <option value="">Select a school</option>
                       {schools.map((school) => (
@@ -150,12 +159,13 @@ const FeeModal: React.FC<FeeModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="term_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Term *
                     </label>
                     <select
+                      id="term_id"
                       {...register('term_id')}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                     >
                       <option value="">Select a term</option>
                       {terms.map((term) => (
@@ -173,13 +183,14 @@ const FeeModal: React.FC<FeeModalProps> = ({
                 {/* Fee Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="fee_name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Fee Name *
                     </label>
                     <input
+                      id="fee_name"
                       type="text"
                       {...register('name')}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       placeholder="e.g., Tuition Fee"
                     />
                     {errors.name && (
@@ -188,12 +199,13 @@ const FeeModal: React.FC<FeeModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="fee_type" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Fee Type *
                     </label>
                     <select
+                      id="fee_type"
                       {...register('type')}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                     >
                       <option value="">Select fee type</option>
                       {Object.entries(FEE_TYPES).map(([key, value]) => (
@@ -210,13 +222,14 @@ const FeeModal: React.FC<FeeModalProps> = ({
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="fee_description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Description *
                   </label>
                   <textarea
+                    id="fee_description"
                     {...register('decription')}
                     rows={3}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                     placeholder="Brief description of the fee"
                   />
                   {errors.decription && (
@@ -227,13 +240,14 @@ const FeeModal: React.FC<FeeModalProps> = ({
                 {/* Amount and Installments */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="fee_amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Amount (₦) *
                     </label>
                     <input
+                      id="fee_amount"
                       type="number"
                       {...register('amount', { valueAsNumber: true })}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       placeholder="0.00"
                       min="0"
                       step="0.01"
@@ -245,13 +259,14 @@ const FeeModal: React.FC<FeeModalProps> = ({
 
                   {isInstallmentAllowed && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="installments" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Number of Installments
                       </label>
                       <input
+                        id="installments"
                         type="number"
                         {...register('no_ofInstallments', { valueAsNumber: true })}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         placeholder="1"
                         min="1"
                         max="12"
@@ -267,33 +282,36 @@ const FeeModal: React.FC<FeeModalProps> = ({
                 <div className="space-y-4">
                   <div className="flex items-center">
                     <input
+                      id="isActive"
                       type="checkbox"
                       {...register('isActive')}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
                     />
-                    <label className="ml-2 block text-sm text-gray-900">
+                    <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900 dark:text-white">
                       Active Fee
                     </label>
                   </div>
 
                   <div className="flex items-center">
                     <input
+                      id="isInstallmentAllowed"
                       type="checkbox"
                       {...register('isInstallmentAllowed')}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
                     />
-                    <label className="ml-2 block text-sm text-gray-900">
+                    <label htmlFor="isInstallmentAllowed" className="ml-2 block text-sm text-gray-900 dark:text-white">
                       Allow Installment Payments
                     </label>
                   </div>
 
                   <div className="flex items-center">
                     <input
+                      id="isApproved"
                       type="checkbox"
                       {...register('isApproved')}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
                     />
-                    <label className="ml-2 block text-sm text-gray-900">
+                    <label htmlFor="isApproved" className="ml-2 block text-sm text-gray-900 dark:text-white">
                       Pre-approve Fee (Admin only)
                     </label>
                   </div>
@@ -301,18 +319,22 @@ const FeeModal: React.FC<FeeModalProps> = ({
               </div>
             </div>
 
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <div className="bg-gray-50 dark:bg-gray-750 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
               <button
                 type="submit"
                 disabled={isLoading}
                 className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? 'Saving...' : fee ? 'Update Fee' : 'Create Fee'}
+                {(() => {
+                  if (isLoading) return 'Saving...';
+                  if (fee) return 'Update Fee';
+                  return 'Create Fee';
+                })()}
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
               >
                 Cancel
               </button>

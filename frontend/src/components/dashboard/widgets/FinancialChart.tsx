@@ -14,7 +14,7 @@ const FinancialChart: React.FC<FinancialChartProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-secondary-200 p-6 ${className}`}>
+    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900 border border-secondary-200 dark:border-gray-700 p-6 transition-colors duration-200 ${className}`}>
       <h3 className="text-lg font-semibold text-secondary-900 mb-4">
         {title}
       </h3>
