@@ -42,11 +42,14 @@ export const useFeeStore = create<FeeStore>()(
         set({ isLoading: true, error: null });
         try {
           const fees = await FeeService.getFees();
+          // Ensure fees is always an array
+          const feeArray = Array.isArray(fees) ? fees : [];
+          
           // Apply client-side filtering if filters are provided
-          let filteredFees = fees;
+          let filteredFees = feeArray;
           
           if (filters) {
-            filteredFees = fees.filter(fee => {
+            filteredFees = feeArray.filter(fee => {
               if (filters.school && typeof fee.school === 'object' && fee.school._id !== filters.school) return false;
               if (filters.term && typeof fee.term === 'object' && fee.term._id !== filters.term) return false;
               if (filters.type && fee.type !== filters.type) return false;
@@ -65,7 +68,7 @@ export const useFeeStore = create<FeeStore>()(
           set({ fees: filteredFees, isLoading: false });
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to load fees';
-          set({ error: errorMessage, isLoading: false });
+          set({ error: errorMessage, isLoading: false, fees: [] });
           toast.error(errorMessage);
         }
       },
@@ -74,10 +77,11 @@ export const useFeeStore = create<FeeStore>()(
         set({ isLoading: true, error: null });
         try {
           const fees = await FeeService.getFeesByTerm(termId);
-          set({ fees, isLoading: false });
+          const feeArray = Array.isArray(fees) ? fees : [];
+          set({ fees: feeArray, isLoading: false });
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to load fees by term';
-          set({ error: errorMessage, isLoading: false });
+          set({ error: errorMessage, isLoading: false, fees: [] });
           toast.error(errorMessage);
         }
       },
@@ -86,10 +90,11 @@ export const useFeeStore = create<FeeStore>()(
         set({ isLoading: true, error: null });
         try {
           const fees = await FeeService.getApprovedFees();
-          set({ fees, isLoading: false });
+          const feeArray = Array.isArray(fees) ? fees : [];
+          set({ fees: feeArray, isLoading: false });
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to load approved fees';
-          set({ error: errorMessage, isLoading: false });
+          set({ error: errorMessage, isLoading: false, fees: [] });
           toast.error(errorMessage);
         }
       },
@@ -98,10 +103,11 @@ export const useFeeStore = create<FeeStore>()(
         set({ isLoading: true, error: null });
         try {
           const fees = await FeeService.getUnapprovedFees();
-          set({ fees, pendingApprovals: fees, isLoading: false });
+          const feeArray = Array.isArray(fees) ? fees : [];
+          set({ fees: feeArray, pendingApprovals: feeArray, isLoading: false });
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to load unapproved fees';
-          set({ error: errorMessage, isLoading: false });
+          set({ error: errorMessage, isLoading: false, fees: [], pendingApprovals: [] });
           toast.error(errorMessage);
         }
       },
@@ -111,8 +117,9 @@ export const useFeeStore = create<FeeStore>()(
         try {
           const newFee = await FeeService.createFee(data);
           const { fees } = get();
+          const feeArray = Array.isArray(fees) ? fees : [];
           set({ 
-            fees: [...fees, newFee], 
+            fees: [...feeArray, newFee], 
             isLoading: false 
           });
           toast.success('Fee created successfully!');

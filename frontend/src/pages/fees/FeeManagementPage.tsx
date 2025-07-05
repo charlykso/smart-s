@@ -85,7 +85,7 @@ const FeeManagementPage: React.FC = () => {
     ['Admin', 'ICT_administrator', 'Bursar', 'Student', 'Parent'].includes(role)
   );
 
-  if (isLoading && fees.length === 0) {
+  if (isLoading && (!fees || fees.length === 0)) {
     return (
       <MainLayout>
         <CenteredLoader message="Loading fee data..." />
@@ -119,7 +119,7 @@ const FeeManagementPage: React.FC = () => {
     setFeeFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  const filteredFees = fees.filter(fee => {
+  const filteredFees = (fees || []).filter(fee => {
     if (feeFilters.school && typeof fee.school === 'object' && fee.school._id !== feeFilters.school) return false;
     if (feeFilters.term && typeof fee.term === 'object' && fee.term._id !== feeFilters.term) return false;
     if (feeFilters.type && fee.type !== feeFilters.type) return false;

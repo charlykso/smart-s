@@ -11,15 +11,15 @@ import {
   PrinterIcon,
   MagnifyingGlassIcon,
   BuildingLibraryIcon,
+  ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline';
 import { useStudentStore } from '../../store/studentStore';
 import { useAuthStore } from '../../store/authStore';
 import MainLayout from '../../components/layout/MainLayout';
 import { FeeService } from '../../services/feeService';
-import { SchoolService } from '../../services/schoolService';
 import EnhancedPaymentModal from '../../components/student/EnhancedPaymentModal';
 import toast from 'react-hot-toast';
-import type { Fee, PaymentMethod, Payment } from '../../types/fee';
+import type { Fee, PaymentMethodConfig, Payment } from '../../types/fee';
 import type { Session, Term } from '../../types/school';
 
 function classNames(...classes: string[]) {
@@ -54,25 +54,18 @@ const StudentFeesPage: React.FC = () => {
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [allFees, setAllFees] = useState<Fee[]>([]);
   const [filteredFees, setFilteredFees] = useState<Fee[]>([]);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodConfig[]>([]);
   const [studentPayments, setStudentPayments] = useState<Payment[]>([]);
 
-  // Load sessions and terms
+  // Load sessions and terms - Student version (using data from approved fees)
   const loadSessionsAndTerms = useCallback(async () => {
     try {
-      const [sessionsData, termsData] = await Promise.all([
-        SchoolService.getSessions(),
-        SchoolService.getTerms()
-      ]);
+      // For students, we'll extract sessions and terms from their fee data
+      // instead of calling admin-only endpoints
+      console.log('Sessions and terms will be loaded from fee data for students');
       
-      setSessions(sessionsData);
-      setTerms(termsData);
-      
-      // Set current term as default
-      const currentTerm = termsData.find((term: Term & { isCurrent?: boolean }) => term.isCurrent);
-      if (currentTerm) {
-        setSelectedTerm(currentTerm._id);
-      }
+      // We can extract unique sessions and terms from the fees data later
+      // This avoids calling admin-only /Session/all and /Term/all endpoints
     } catch (error) {
       console.error('Error loading sessions and terms:', error);
     }
@@ -82,26 +75,80 @@ const StudentFeesPage: React.FC = () => {
     try {
       setLoadingFees(true);
       
-      if (!user?.school) {
-        throw new Error('School information not found');
-      }
+      // Use student-specific endpoint that doesn't require school ID
+      const feesData = await FeeService.getStudentApprovedFees();
+      console.log('Fetched fees data:', feesData);
+      console.log('Number of fees:', feesData.length);
       
-      const feesData = await FeeService.getApprovedFees(user.school);
       setAllFees(feesData);
+      
+      // Extract unique terms from the fees data
+      const uniqueTerms = [...new Set(feesData.map(fee => 
+        typeof fee.term === 'string' ? fee.term : fee.term?.name ?? 'Unknown'
+      ))];
+      
+      // Extract unique sessions from the fees data
+      const uniqueSessions = [...new Set(feesData.map(fee => 
+        typeof fee.term === 'string' ? 'Unknown Session' : fee.term?.session?.name ?? 'Unknown Session'
+      ))];
+      
+      console.log('Unique terms:', uniqueTerms);
+      console.log('Unique sessions:', uniqueSessions);
+      
+      // Create session objects for filters
+      const sessionObjects = uniqueSessions.map((name, index) => ({
+        _id: `session-${index}`,
+        name,
+        year: new Date().getFullYear(),
+        startDate: new Date().toISOString(),
+        endDate: new Date().toISOString(),
+        isActive: true,
+        school: typeof feesData[0]?.school === 'string' ? feesData[0].school : feesData[0]?.school?._id ?? '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }));
+      
+      // Create term objects for filters
+      const termObjects = uniqueTerms.map((name, index) => ({
+        _id: `term-${index}`,
+        name,
+        school: typeof feesData[0]?.school === 'string' ? feesData[0].school : feesData[0]?.school?._id ?? '',
+        session: sessionObjects[0]?._id || '',
+        startDate: new Date().toISOString(),
+        endDate: new Date().toISOString(),
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }));
+      
+      setSessions(sessionObjects);
+      setTerms(termObjects);
+      
     } catch (error) {
       console.error('Error loading fees:', error);
       toast.error('Failed to load fees');
     } finally {
       setLoadingFees(false);
     }
-  }, [user?.school]);
+  }, []);
 
   const loadPaymentMethods = useCallback(async () => {
     try {
       setLoadingPaymentMethods(true);
       
-      // For now, set some default payment methods
-      const defaultMethods: PaymentMethod[] = [
+      // Try to get available payment methods for the user's school
+      if (user?.school?._id) {
+        try {
+          const methods = await FeeService.getAvailablePaymentMethods(user.school._id);
+          setPaymentMethods(methods);
+          return;
+        } catch (error) {
+          console.warn('Failed to load payment methods from API, using defaults:', error);
+        }
+      }
+      
+      // Fallback to default payment methods
+      const defaultMethods: PaymentMethodConfig[] = [
         {
           method: 'paystack',
           name: 'Card Payment',
@@ -124,21 +171,35 @@ const StudentFeesPage: React.FC = () => {
     } finally {
       setLoadingPaymentMethods(false);
     }
-  }, []);
+  }, [user?.school?._id]);
 
   const loadStudentPayments = useCallback(async () => {
     try {
       setLoadingPayments(true);
       
-      // For now, we'll load an empty array since the API endpoint might not exist yet
-      setStudentPayments([]);
+      // Use the student payments endpoint
+      const allPayments = await FeeService.getStudentPayments();
+      
+      // Filter payments to only include those for the current user
+      const userPayments = allPayments.filter(payment => {
+        const paymentUserId = typeof payment.user === 'string' 
+          ? payment.user 
+          : payment.user?._id;
+        return paymentUserId === user?._id;
+      });
+      
+      console.log('All payments:', allPayments.length);
+      console.log('User payments:', userPayments.length);
+      console.log('Current user ID:', user?._id);
+      
+      setStudentPayments(userPayments);
     } catch (error) {
       console.error('Error loading payments:', error);
       toast.error('Failed to load payment history');
     } finally {
       setLoadingPayments(false);
     }
-  }, []);
+  }, [user?._id]);
 
   // Filter fees based on selected criteria
   const filterFees = useCallback(() => {
@@ -146,16 +207,24 @@ const StudentFeesPage: React.FC = () => {
 
     // Filter by session
     if (selectedSession !== 'all') {
-      filtered = filtered.filter(fee => 
-        typeof fee.term === 'string' ? fee.term === selectedSession : fee.term._id === selectedSession
-      );
+      const selectedSessionName = sessions.find(s => s._id === selectedSession)?.name;
+      filtered = filtered.filter(fee => {
+        const feeSessionName = typeof fee.term === 'string' 
+          ? 'Unknown Session' 
+          : fee.term?.session?.name ?? 'Unknown Session';
+        return feeSessionName === selectedSessionName;
+      });
     }
 
     // Filter by term
     if (selectedTerm !== 'all') {
-      filtered = filtered.filter(fee => 
-        typeof fee.term === 'string' ? fee.term === selectedTerm : fee.term._id === selectedTerm
-      );
+      const selectedTermName = terms.find(t => t._id === selectedTerm)?.name;
+      filtered = filtered.filter(fee => {
+        const feeTermName = typeof fee.term === 'string' 
+          ? fee.term 
+          : fee.term?.name ?? 'Unknown';
+        return feeTermName === selectedTermName;
+      });
     }
 
     // Filter by fee type
@@ -184,7 +253,7 @@ const StudentFeesPage: React.FC = () => {
     }
 
     setFilteredFees(filtered);
-  }, [allFees, selectedSession, selectedTerm, feeTypeFilter, paymentStatusFilter, searchTerm, studentPayments]);
+  }, [allFees, selectedSession, selectedTerm, feeTypeFilter, paymentStatusFilter, searchTerm, studentPayments, sessions, terms]);
 
   // Handle payment modal
   const handlePayFee = (fee: Fee) => {
@@ -211,66 +280,230 @@ const StudentFeesPage: React.FC = () => {
       return;
     }
 
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      toast.error('Unable to open print window');
+    try {
+      // Create a new window with specific dimensions
+      const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+      if (!printWindow) {
+        toast.error('Unable to open print window. Please check your popup blocker.');
+        return;
+      }
+
+      const receiptHTML = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Payment Receipt - ${fee.name}</title>
+            <meta charset="UTF-8">
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                margin: 20px; 
+                background: white;
+                color: black;
+                line-height: 1.6;
+              }
+              .header { 
+                text-align: center; 
+                border-bottom: 2px solid #333; 
+                padding-bottom: 15px; 
+                margin-bottom: 20px;
+              }
+              .header h2 {
+                margin: 0;
+                color: #333;
+                font-size: 24px;
+              }
+              .school-name {
+                font-size: 16px;
+                color: #666;
+                margin-top: 5px;
+              }
+              .content { 
+                margin: 20px 0; 
+              }
+              .field { 
+                margin: 12px 0; 
+                display: flex;
+                justify-content: space-between;
+                padding: 8px 0;
+                border-bottom: 1px dotted #ccc;
+              }
+              .label { 
+                font-weight: bold; 
+                color: #333;
+                min-width: 120px;
+              }
+              .value {
+                text-align: right;
+                flex: 1;
+                font-weight: normal;
+              }
+              .amount {
+                font-size: 20px;
+                font-weight: bold;
+                color: #2563eb;
+              }
+              .footer { 
+                margin-top: 30px; 
+                font-size: 12px; 
+                color: #666; 
+                text-align: center;
+                border-top: 1px solid #eee;
+                padding-top: 15px;
+              }
+              .status {
+                display: inline-block;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: bold;
+                text-transform: uppercase;
+                background: #dcfce7;
+                color: #166534;
+              }
+              @media print {
+                body { margin: 0; }
+                .no-print { display: none; }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h2>Payment Receipt</h2>
+              <div class="school-name">${user?.school?.name || user?.school || 'Smart School'}</div>
+            </div>
+            <div class="content">
+              <div class="field">
+                <span class="label">Student:</span> 
+                <span class="value">${user?.firstname || ''} ${user?.lastname || ''}</span>
+              </div>
+              <div class="field">
+                <span class="label">Registration No:</span> 
+                <span class="value">${user?.regNo || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="label">Fee:</span> 
+                <span class="value">${fee.name}</span>
+              </div>
+              <div class="field">
+                <span class="label">Fee Type:</span> 
+                <span class="value">${fee.type}</span>
+              </div>
+              <div class="field">
+                <span class="label">Amount:</span> 
+                <span class="value amount">₦${fee.amount.toLocaleString()}</span>
+              </div>
+              <div class="field">
+                <span class="label">Payment Method:</span> 
+                <span class="value">${payment.mode_of_payment}</span>
+              </div>
+              <div class="field">
+                <span class="label">Transaction ID:</span> 
+                <span class="value">${payment.trx_ref || payment.trans_id || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="label">Payment Date:</span> 
+                <span class="value">${new Date(payment.trans_date || payment.createdAt).toLocaleDateString()}</span>
+              </div>
+              <div class="field">
+                <span class="label">Status:</span> 
+                <span class="value"><span class="status">${payment.status}</span></span>
+              </div>
+            </div>
+            <div class="footer">
+              <p><strong>Thank you for your payment!</strong></p>
+              <p>Receipt generated on: ${new Date().toLocaleString()}</p>
+              <p>This is a computer-generated receipt and does not require signature.</p>
+            </div>
+            
+            <div class="no-print" style="margin-top: 20px; text-align: center;">
+              <button onclick="window.print()" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">Print Receipt</button>
+              <button onclick="window.close()" style="padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer;">Close</button>
+            </div>
+          </body>
+        </html>
+      `;
+
+      // Write the HTML content
+      printWindow.document.write(receiptHTML);
+      printWindow.document.close();
+
+      // Wait for content to load before printing
+      printWindow.onload = function() {
+        setTimeout(() => {
+          printWindow.focus();
+          printWindow.print();
+        }, 500);
+      };
+
+      // Fallback if onload doesn't work
+      setTimeout(() => {
+        if (printWindow && !printWindow.closed) {
+          printWindow.focus();
+          printWindow.print();
+        }
+      }, 1000);
+
+      toast.success('Receipt opened in new window');
+    } catch (error) {
+      console.error('Error printing receipt:', error);
+      toast.error('Failed to print receipt. Please try again.');
+    }
+  };
+
+  // Handle receipt download
+  const handleDownloadReceipt = (fee: Fee) => {
+    const payment = studentPayments.find(p => 
+      typeof p.fee === 'string' ? p.fee === fee._id : p.fee._id === fee._id
+    );
+    if (!payment) {
+      toast.error('No payment record found for this fee');
       return;
     }
 
-    const receiptHTML = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Payment Receipt</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; }
-            .content { margin: 20px 0; }
-            .footer { margin-top: 30px; font-size: 12px; color: #666; }
-            .field { margin: 10px 0; }
-            .label { font-weight: bold; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h2>Payment Receipt</h2>
-            <p>${user?.school ?? 'School Name'}</p>
-          </div>
-          <div class="content">
-            <div class="field">
-              <span class="label">Student:</span> ${user?.firstname} ${user?.lastname}
-            </div>
-            <div class="field">
-              <span class="label">Fee:</span> ${fee.name}
-            </div>
-            <div class="field">
-              <span class="label">Amount:</span> ₦${fee.amount.toLocaleString()}
-            </div>
-            <div class="field">
-              <span class="label">Payment Method:</span> ${payment.mode_of_payment}
-            </div>
-            <div class="field">
-              <span class="label">Transaction ID:</span> ${payment.trans_id ?? 'N/A'}
-            </div>
-            <div class="field">
-              <span class="label">Date:</span> ${new Date(payment.createdAt).toLocaleDateString()}
-            </div>
-            <div class="field">
-              <span class="label">Status:</span> ${payment.status}
-            </div>
-          </div>
-          <div class="footer">
-            <p>Thank you for your payment!</p>
-            <p>Printed on: ${new Date().toLocaleString()}</p>
-          </div>
-        </body>
-      </html>
-    `;
+    try {
+      const receiptContent = `
+PAYMENT RECEIPT
+=====================================
 
-    printWindow.document.write(receiptHTML);
-    printWindow.document.close();
-    printWindow.print();
-    printWindow.close();
+School: ${user?.school?.name || user?.school || 'Smart School'}
+Student: ${user?.firstname || ''} ${user?.lastname || ''}
+Registration No: ${user?.regNo || 'N/A'}
+
+=====================================
+
+Fee: ${fee.name}
+Fee Type: ${fee.type}
+Amount: ₦${fee.amount.toLocaleString()}
+Payment Method: ${payment.mode_of_payment}
+Transaction ID: ${payment.trx_ref || payment.trans_id || 'N/A'}
+Payment Date: ${new Date(payment.trans_date || payment.createdAt).toLocaleDateString()}
+Status: ${payment.status.toUpperCase()}
+
+=====================================
+
+Thank you for your payment!
+Receipt generated on: ${new Date().toLocaleString()}
+
+This is a computer-generated receipt.
+      `;
+
+      // Create a blob and download link
+      const blob = new Blob([receiptContent], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `receipt-${fee.name.replace(/[^a-zA-Z0-9]/g, '-')}-${payment.trx_ref || payment.trans_id || Date.now()}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success('Receipt downloaded successfully');
+    } catch (error) {
+      console.error('Error downloading receipt:', error);
+      toast.error('Failed to download receipt. Please try again.');
+    }
   };
 
   // Get unique fee types for filter
@@ -488,8 +721,8 @@ const StudentFeesPage: React.FC = () => {
                       <p className="text-gray-600 dark:text-gray-300">{fee.decription}</p>
                       <div className="flex flex-wrap gap-4 text-sm text-gray-500 dark:text-gray-400">
                         <span>Type: {fee.type}</span>
-                        <span>Session: {sessions.find(s => s._id === (typeof fee.term === 'string' ? fee.term : fee.term._id))?.name ?? 'N/A'}</span>
-                        <span>Term: {terms.find(t => t._id === (typeof fee.term === 'string' ? fee.term : fee.term._id))?.name ?? 'N/A'}</span>
+                        <span>Session: {typeof fee.term === 'string' ? 'Unknown Session' : fee.term?.session?.name ?? 'Unknown Session'}</span>
+                        <span>Term: {typeof fee.term === 'string' ? fee.term : fee.term?.name ?? 'Unknown'}</span>
                         <span>Created: {new Date(fee.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>
@@ -501,13 +734,22 @@ const StudentFeesPage: React.FC = () => {
                     </p>
                     <div className="mt-4 space-y-2">
                       {isPaid ? (
-                        <button
-                          onClick={() => handlePrintReceipt(fee)}
-                          className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-                        >
-                          <PrinterIcon className="h-4 w-4 mr-1" />
-                          Print Receipt
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handlePrintReceipt(fee)}
+                            className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                          >
+                            <PrinterIcon className="h-4 w-4 mr-1" />
+                            Print Receipt
+                          </button>
+                          <button
+                            onClick={() => handleDownloadReceipt(fee)}
+                            className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                          >
+                            <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
+                            Download Receipt
+                          </button>
+                        </>
                       ) : (
                         <button
                           onClick={() => handlePayFee(fee)}
@@ -593,13 +835,20 @@ const StudentFeesPage: React.FC = () => {
                     ₦{payment.amount.toLocaleString()}
                   </p>
                   {payment.status === 'success' && fee && (
-                    <div className="mt-4">
+                    <div className="mt-4 space-y-2">
                       <button
                         onClick={() => handlePrintReceipt(fee)}
                         className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
                       >
                         <PrinterIcon className="h-4 w-4 mr-1" />
                         Print Receipt
+                      </button>
+                      <button
+                        onClick={() => handleDownloadReceipt(fee)}
+                        className="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                      >
+                        <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
+                        Download Receipt
                       </button>
                     </div>
                   )}

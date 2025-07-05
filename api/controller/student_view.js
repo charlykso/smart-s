@@ -40,7 +40,7 @@ exports.getStudentDashboard = async (req, res) => {
 
     // Get current term fees (only if student has a school)
     let currentTerm = null
-    let termFees = []
+    let allApprovedFees = []
 
     if (student.school) {
       currentTerm = await Term.findOne({
@@ -48,24 +48,27 @@ exports.getStudentDashboard = async (req, res) => {
         isActive: true,
       }).populate('session')
 
-      // Get all fees for current term
-      if (currentTerm) {
-        termFees = await Fee.find({
-          term: currentTerm._id,
-          isApproved: true,
-          isActive: true,
-        })
-      }
+      // Get ALL approved fees for the student's school, not just current term
+      allApprovedFees = await Fee.find({
+        school: student.school,
+        isApproved: true,
+        isActive: true,
+      })
+
+      console.log(`Found ${allApprovedFees.length} approved fees for school`)
     }
 
     // Get student payments
     const payments = await Payment.find({
       user: studentId,
+      status: 'success', // Only count successful payments
     }).populate('fee', 'name amount type')
 
-    // Calculate outstanding fees
+    console.log(`Found ${payments.length} successful payments for student`)
+
+    // Calculate outstanding fees based on ALL approved fees vs successful payments
     const paidFeeIds = payments.map((p) => p.fee._id.toString())
-    const outstandingFees = termFees.filter(
+    const outstandingFees = allApprovedFees.filter(
       (fee) => !paidFeeIds.includes(fee._id.toString())
     )
 
@@ -74,6 +77,11 @@ exports.getStudentDashboard = async (req, res) => {
       0
     )
     const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0)
+
+    console.log(`Total approved fees: ${allApprovedFees.length}`)
+    console.log(`Total outstanding fees: ${outstandingFees.length}`)
+    console.log(`Total outstanding amount: ${totalOutstanding}`)
+    console.log(`Total paid amount: ${totalPaid}`)
 
     // Mock academic data (would come from academic system)
     const academicProgress = {
