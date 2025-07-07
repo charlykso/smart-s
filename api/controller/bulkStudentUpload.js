@@ -6,6 +6,7 @@ const Profile = require('../model/Profile')
 const Address = require('../model/Address')
 const ClassArm = require('../model/ClassArm')
 const School = require('../model/School')
+const { generateStudentCredentialsPDF } = require('../utils/pdfGenerator')
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
@@ -98,9 +99,36 @@ const validateStudentData = (student, rowIndex) => {
   return errors
 }
 
-// Generate default password
-const generateDefaultPassword = (firstname, regNo) => {
-  return `${firstname.toLowerCase()}${regNo.slice(-3)}2024`
+// Configuration for bulk upload
+const BULK_UPLOAD_CONFIG = {
+  // Password generation method: 'regNo', 'phone', or 'legacy'
+  // 'regNo' - Uses student registration number as password (recommended)
+  // 'phone' - Uses phone number (digits only) as password
+  // 'legacy' - Uses firstname + last 3 digits of regNo + year (original method)
+  passwordType: 'phone', // Changed to use phone number
+}
+
+// Generate default password - updated to use more practical options
+const generateDefaultPassword = (
+  studentData,
+  passwordType = BULK_UPLOAD_CONFIG.passwordType
+) => {
+  switch (passwordType) {
+    case 'phone':
+      // Use phone number as password (remove any non-digits)
+      return studentData.phone.replace(/\D/g, '')
+    case 'regNo':
+      // Use registration number as password
+      return studentData.regNo
+    case 'legacy':
+      // Original method: firstname + last 3 digits of regNo + year
+      return `${studentData.firstname.toLowerCase()}${studentData.regNo.slice(
+        -3
+      )}2024`
+    default:
+      // Default to regNo for simplicity
+      return studentData.regNo
+  }
 }
 
 // Process Excel file and create students
@@ -117,7 +145,7 @@ exports.bulkUploadStudents = async (req, res) => {
     }
 
     // Verify school exists and user has access
-    const school = await School.findById(school_id)
+    const school = await School.findById(school_id).populate('groupSchool')
     if (!school) {
       return res.status(404).json({
         success: false,
@@ -275,11 +303,8 @@ exports.bulkUploadStudents = async (req, res) => {
         const profile = new Profile({})
         const savedProfile = await profile.save()
 
-        // Generate password
-        const defaultPassword = generateDefaultPassword(
-          studentData.firstname,
-          studentData.regNo
-        )
+        // Generate password using configured method
+        const defaultPassword = generateDefaultPassword(studentData)
         const hashedPassword = await bcrypt.hash(defaultPassword, 10)
 
         // Create student
@@ -333,16 +358,63 @@ exports.bulkUploadStudents = async (req, res) => {
     // Clean up uploaded file
     fs.unlinkSync(req.file.path)
 
-    res.status(200).json({
-      success: true,
-      message: `Bulk upload completed. ${results.successful.length} students created successfully, ${results.failed.length} failed.`,
-      data: {
-        totalProcessed: processedData.length,
-        successful: results.successful.length,
-        failed: results.failed.length,
-        results: results,
-      },
-    })
+    // Generate PDF with student credentials if there were successful uploads
+    if (results.successful.length > 0) {
+      try {
+        const pdfResult = await generateStudentCredentialsPDF(
+          results.successful,
+          school,
+          {
+            title: `Student Login Credentials - ${school.name}`,
+            subtitle: 'Bulk Upload Results',
+          }
+        )
+
+        // Set PDF response headers
+        res.setHeader('Content-Type', 'application/pdf')
+        res.setHeader(
+          'Content-Disposition',
+          `attachment; filename="${pdfResult.filename}"`
+        )
+        res.setHeader('Content-Length', pdfResult.buffer.length)
+
+        // Send PDF as response
+        res.send(pdfResult.buffer)
+
+        // Clean up temporary PDF file
+        setTimeout(() => {
+          if (fs.existsSync(pdfResult.filepath)) {
+            fs.unlinkSync(pdfResult.filepath)
+          }
+        }, 5000) // Clean up after 5 seconds
+      } catch (pdfError) {
+        console.error('Error generating PDF:', pdfError)
+
+        // Fall back to JSON response if PDF generation fails
+        res.status(200).json({
+          success: true,
+          message: `Bulk upload completed. ${results.successful.length} students created successfully, ${results.failed.length} failed. PDF generation failed.`,
+          data: {
+            totalProcessed: processedData.length,
+            successful: results.successful.length,
+            failed: results.failed.length,
+            results: results,
+          },
+        })
+      }
+    } else {
+      // No successful uploads, return JSON response
+      res.status(200).json({
+        success: true,
+        message: `Bulk upload completed. ${results.successful.length} students created successfully, ${results.failed.length} failed.`,
+        data: {
+          totalProcessed: processedData.length,
+          successful: results.successful.length,
+          failed: results.failed.length,
+          results: results,
+        },
+      })
+    }
   } catch (error) {
     // Clean up uploaded file if it exists
     if (req.file && fs.existsSync(req.file.path)) {

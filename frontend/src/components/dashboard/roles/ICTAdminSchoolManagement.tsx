@@ -196,7 +196,7 @@ const ICTAdminSchoolManagement: React.FC = () => {
     
     try {
       const formData = new FormData();
-      formData.append('studentFile', bulkUploadFile);
+      formData.append('file', bulkUploadFile);
       formData.append('school_id', bulkUploadSchool);
 
       const result = await ApiService.postFormData('/bulk-students/upload', formData);

@@ -13,7 +13,8 @@ router
       roleList.Admin,
       roleList.Principal,
       roleList.Proprietor,
-      roleList.Bursar
+      roleList.Bursar,
+      roleList.ICT_administrator
     ),
     termController.getAllTerms
   )
@@ -21,7 +22,12 @@ router
   .route('/:id')
   .get(
     authenticateToken,
-    verifyRoles(roleList.Admin, roleList.Principal, roleList.Proprietor),
+    verifyRoles(
+      roleList.Admin,
+      roleList.Principal,
+      roleList.Proprietor,
+      roleList.ICT_administrator
+    ),
     termController.getTermById
   )
 router
@@ -49,7 +55,12 @@ router
   .route('/:school_id/sessions/:session_id/terms')
   .get(
     authenticateToken,
-    verifyRoles(roleList.Admin, roleList.Principal, roleList.Proprietor),
+    verifyRoles(
+      roleList.Admin,
+      roleList.Principal,
+      roleList.Proprietor,
+      roleList.ICT_administrator
+    ),
     termController.getTermsBySessionAndSchool
   )
 

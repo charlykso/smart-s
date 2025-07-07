@@ -1653,7 +1653,14 @@ exports.getCurrentUser = async (req, res) => {
     // Get user data with populated fields
     const user = await User.findById(userId)
       .select('-password -__v')
-      .populate('school', 'name')
+      .populate({
+        path: 'school',
+        select: 'name email phoneNumber',
+        populate: {
+          path: 'groupSchool',
+          select: 'name description logo',
+        },
+      })
       .populate('classArm', 'name')
       .populate('profile')
 
