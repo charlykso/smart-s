@@ -54,7 +54,7 @@ const checkExistingProprietorInGroupSchool = async (
   }
 }
 
-exports.getAllUsers = async (req, res) => {
+const getAllUsers = async (req, res) => {
   try {
     // This endpoint should only be accessible to general Admins
     const userRoles = req.user.roles || []
@@ -1366,7 +1366,6 @@ exports.updateStudent = async (req, res) => {
         })
       }
     }
-
     const oldClassArmId = currentStudent.classArm?.toString()
     const newClassArmId = classArm_id
 
@@ -1683,3 +1682,223 @@ exports.getCurrentUser = async (req, res) => {
     })
   }
 }
+
+// Bulk delete users
+const bulkDeleteUsers = async (req, res) => {
+  try {
+    const { userIds } = req.body
+
+    // Validate input
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'User IDs array is required and cannot be empty',
+      })
+    }
+
+    // Check if current user has permission to delete users
+    const currentUser = await User.findById(req.user.id)
+    if (!currentUser) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not found',
+      })
+    }
+
+    // Only Admin and ICT_administrator can bulk delete users
+    const canDelete = currentUser.roles.some((role) =>
+      ['Admin', 'ICT_administrator'].includes(role)
+    )
+
+    if (!canDelete) {
+      return res.status(403).json({
+        success: false,
+        message: 'Insufficient permissions to delete users',
+      })
+    }
+
+    // Get users to be deleted for validation
+    const usersToDelete = await User.find({ _id: { $in: userIds } }).populate(
+      'school',
+      'name groupSchool'
+    )
+
+    if (usersToDelete.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No users found with provided IDs',
+      })
+    }
+
+    // Validate permissions based on user role
+    if (
+      currentUser.roles.includes('ICT_administrator') &&
+      !currentUser.roles.includes('Admin')
+    ) {
+      // ICT Admin can only delete users in their group school
+      const currentUserSchool = await User.findById(req.user.id).populate(
+        'school'
+      )
+
+      if (!currentUserSchool.school || !currentUserSchool.school.groupSchool) {
+        return res.status(403).json({
+          success: false,
+          message: 'ICT Administrator not associated with a group school',
+        })
+      }
+
+      // Check if all users to delete are in the same group school
+      const unauthorizedUsers = usersToDelete.filter(
+        (user) =>
+          !user.school ||
+          String(user.school.groupSchool) !==
+            String(currentUserSchool.school.groupSchool)
+      )
+
+      if (unauthorizedUsers.length > 0) {
+        return res.status(403).json({
+          success: false,
+          message: 'Cannot delete users outside your group school',
+        })
+      }
+    }
+
+    // Prevent deletion of critical users
+    const criticalUsers = usersToDelete.filter(
+      (user) =>
+        user.roles.includes('Admin') ||
+        (user.roles.includes('ICT_administrator') &&
+          String(user._id) === String(req.user.id))
+    )
+
+    if (criticalUsers.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'Cannot delete Admin users or your own ICT Administrator account',
+      })
+    }
+
+    // Get profiles to be deleted
+    const profilesToDelete = usersToDelete
+      .filter((user) => user.profile)
+      .map((user) => user.profile)
+
+    // Perform bulk delete operations
+    const deletedUsers = await User.deleteMany({ _id: { $in: userIds } })
+
+    // Delete associated profiles
+    if (profilesToDelete.length > 0) {
+      await Profile.deleteMany({ _id: { $in: profilesToDelete } })
+    }
+
+    // Update class arm student counts for deleted students
+    const deletedStudents = usersToDelete.filter(
+      (user) => user.roles.includes('Student') && user.classArm
+    )
+
+    for (const student of deletedStudents) {
+      try {
+        await autoUpdateClassArmStudentCount(student.classArm)
+      } catch (error) {
+        console.warn(
+          `Failed to update class arm count for ${student.classArm}:`,
+          error.message
+        )
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Successfully deleted ${deletedUsers.deletedCount} users`,
+      data: {
+        deletedCount: deletedUsers.deletedCount,
+        requestedCount: userIds.length,
+      },
+    })
+  } catch (error) {
+    console.error('Bulk delete users error:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting users',
+      error: error.message,
+    })
+  }
+}
+
+// Bulk update users
+const bulkUpdateUsers = async (req, res) => {
+  try {
+    const { userIds, updates } = req.body
+
+    // Validate input
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'User IDs array is required and cannot be empty',
+      })
+    }
+
+    if (!updates || typeof updates !== 'object') {
+      return res.status(400).json({
+        success: false,
+        message: 'Updates object is required',
+      })
+    }
+
+    // Check permissions
+    const currentUser = await User.findById(req.user.id)
+    if (!currentUser) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not found',
+      })
+    }
+
+    const canUpdate = currentUser.roles.some((role) =>
+      ['Admin', 'ICT_administrator'].includes(role)
+    )
+
+    if (!canUpdate) {
+      return res.status(403).json({
+        success: false,
+        message: 'Insufficient permissions to update users',
+      })
+    }
+
+    // Clean updates object - remove sensitive fields
+    const allowedUpdates = { ...updates }
+    delete allowedUpdates.password
+    delete allowedUpdates._id
+    delete allowedUpdates.__v
+    delete allowedUpdates.email // Email changes should be handled separately
+
+    // Perform bulk update
+    const result = await User.updateMany(
+      { _id: { $in: userIds } },
+      { $set: allowedUpdates },
+      { new: true }
+    )
+
+    res.status(200).json({
+      success: true,
+      message: `Successfully updated ${result.modifiedCount} users`,
+      data: {
+        modifiedCount: result.modifiedCount,
+        matchedCount: result.matchedCount,
+      },
+    })
+  } catch (error) {
+    console.error('Bulk update users error:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Error updating users',
+      error: error.message,
+    })
+  }
+}
+
+// Export bulk functions the same way as other functions in this file
+exports.getAllUsers = getAllUsers
+exports.bulkDeleteUsers = bulkDeleteUsers
+exports.bulkUpdateUsers = bulkUpdateUsers

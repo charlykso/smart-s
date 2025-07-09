@@ -409,4 +409,21 @@ router.get('/staff/:school_id', userController.getStaffBySchool)
 // Get current user profile
 router.route('/profile').get(authenticateToken, userController.getCurrentUser)
 
+// Bulk operations
+router
+  .route('/bulk-delete')
+  .post(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.ICT_administrator),
+    userController.bulkDeleteUsers
+  )
+
+router
+  .route('/bulk-update')
+  .post(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.ICT_administrator),
+    userController.bulkUpdateUsers
+  )
+
 module.exports = router
