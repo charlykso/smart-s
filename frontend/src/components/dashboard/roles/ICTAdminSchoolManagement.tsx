@@ -338,14 +338,6 @@ const ICTAdminSchoolManagement: React.FC = () => {
     },
     {
       id: '4',
-      title: 'Create Group School',
-      description: 'Set up a new group school',
-      icon: BuildingOfficeIcon,
-      color: 'primary',
-      onClick: () => setIsGroupSchoolModalOpen(true),
-    },
-    {
-      id: '5',
       title: 'Add New School',
       description: 'Register a new school in the system',
       icon: PlusIcon,
@@ -353,7 +345,7 @@ const ICTAdminSchoolManagement: React.FC = () => {
       onClick: () => setIsSchoolModalOpen(true),
     },
     {
-      id: '6',
+      id: '5',
       title: 'Create Academic Session',
       description: 'Set up a new academic session',
       icon: CalendarDaysIcon,
@@ -361,7 +353,7 @@ const ICTAdminSchoolManagement: React.FC = () => {
       onClick: () => setIsSessionModalOpen(true),
     },
     {
-      id: '7',
+      id: '6',
       title: 'Add Term',
       description: 'Create a new academic term',
       icon: AcademicCapIcon,
@@ -369,7 +361,7 @@ const ICTAdminSchoolManagement: React.FC = () => {
       onClick: () => setIsTermModalOpen(true),
     },
     {
-      id: '8',
+      id: '7',
       title: 'Setup Class Arms',
       description: 'Configure class arms for schools',
       icon: UsersIcon,
@@ -377,7 +369,7 @@ const ICTAdminSchoolManagement: React.FC = () => {
       onClick: () => setIsClassArmModalOpen(true),
     },
     {
-      id: '9',
+      id: '8',
       title: 'View All Schools',
       description: 'Browse and manage all schools',
       icon: EyeIcon,
@@ -385,7 +377,7 @@ const ICTAdminSchoolManagement: React.FC = () => {
       onClick: () => { navigate('/schools'); },
     },
     {
-      id: '10',
+      id: '9',
       title: 'System Settings',
       description: 'Configure system-wide settings',
       icon: CogIcon,

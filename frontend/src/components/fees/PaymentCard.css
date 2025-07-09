@@ -20,6 +20,7 @@
 .word-break-break-all {
   word-break: break-all;
   overflow-wrap: break-word;
+  -webkit-hyphens: auto;
   hyphens: auto;
 }
 
