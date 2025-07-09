@@ -23,7 +23,8 @@ const SessionCard: React.FC<SessionCardProps> = ({
         await deleteSession(session._id);
         onDelete?.(session);
       } catch (error) {
-        // Error is handled in the store
+        // Error is handled in the store, no additional action needed
+        console.error('Failed to delete session:', error);
       }
     }
   };
@@ -48,7 +49,7 @@ const SessionCard: React.FC<SessionCardProps> = ({
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900 border-2 transition-all duration-200 hover:shadow-md ${
+      className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900 border-2 transition-all duration-200 hover:shadow-md overflow-hidden w-full max-w-sm h-fit ${
         isSelected
           ? 'border-primary-500 ring-2 ring-primary-200 dark:ring-primary-800'
           : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
@@ -57,60 +58,62 @@ const SessionCard: React.FC<SessionCardProps> = ({
       {/* Header */}
       <div className="p-6 pb-4">
         <div className="flex items-start justify-between">
-          <div className="flex items-center">
+          <div className="flex items-center min-w-0 flex-1">
             <div className="flex-shrink-0">
               <CalendarDaysIcon className="h-8 w-8 text-primary-600 dark:text-primary-400" />
             </div>
-            <div className="ml-3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 truncate">
+            <div className="ml-3 min-w-0 flex-1">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 truncate max-w-full break-words">
                 {session.name}
               </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{getSchoolName()}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-full break-words">{getSchoolName()}</p>
             </div>
           </div>
 
           {/* Status Badge */}
-          {isCurrentSession() && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
-              Current
-            </span>
-          )}
+          <div className="flex-shrink-0 ml-3">
+            {isCurrentSession() && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 whitespace-nowrap">
+                Current
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="px-6 pb-4 space-y-3">
+      <div className="px-6 pb-4 space-y-3 overflow-hidden">
         {/* Date Information */}
         <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500 dark:text-gray-400">Start Date:</span>
-            <span className="font-medium text-gray-900 dark:text-gray-100">{formatDate(session.startDate)}</span>
+          <div className="flex justify-between text-sm min-w-0">
+            <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">Start Date:</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100 truncate ml-2">{formatDate(session.startDate)}</span>
           </div>
 
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500 dark:text-gray-400">End Date:</span>
-            <span className="font-medium text-gray-900 dark:text-gray-100">{formatDate(session.endDate)}</span>
+          <div className="flex justify-between text-sm min-w-0">
+            <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">End Date:</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100 truncate ml-2">{formatDate(session.endDate)}</span>
           </div>
         </div>
 
         {/* Metadata */}
         <div className="pt-3 border-t border-gray-100 dark:border-gray-700">
-          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-            <span>Created: {new Date(session.createdAt).toLocaleDateString()}</span>
-            <span>Updated: {new Date(session.updatedAt).toLocaleDateString()}</span>
+          <div className="flex flex-col sm:flex-row sm:justify-between text-xs text-gray-500 dark:text-gray-400 space-y-1 sm:space-y-0 min-w-0">
+            <span className="truncate">Created: {new Date(session.createdAt).toLocaleDateString()}</span>
+            <span className="truncate">Updated: {new Date(session.updatedAt).toLocaleDateString()}</span>
           </div>
         </div>
       </div>
 
       {/* Actions */}
       <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 rounded-b-lg">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between min-w-0">
           {/* Select Button */}
           {onSelect && (
             <button
               type="button"
               onClick={() => onSelect(session)}
-              className={`inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+              className={`inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors flex-shrink-0 ${
                 isSelected
                   ? 'text-primary-700 dark:text-primary-300 bg-primary-100 dark:bg-primary-900 hover:bg-primary-200 dark:hover:bg-primary-800'
                   : 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500'
@@ -122,7 +125,7 @@ const SessionCard: React.FC<SessionCardProps> = ({
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-shrink-0 ml-3">
             {onEdit && (
               <button
                 type="button"

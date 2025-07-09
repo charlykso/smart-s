@@ -26,7 +26,6 @@ const SchoolModal: React.FC<SchoolModalProps> = ({
   onClose,
   school,
   groupSchools,
-  onSubmit,
 }) => {
   const { createSchool, updateSchool, isLoading } = useSchoolStore();
 
@@ -89,14 +88,24 @@ const SchoolModal: React.FC<SchoolModalProps> = ({
         await updateSchool(updateData);
       } else {
         // Create new school
-        const createData: CreateSchoolData = data;
+        const createData: CreateSchoolData = {
+          groupSchool_id: data.groupSchool_id,
+          name: data.name,
+          email: data.email,
+          phoneNumber: data.phoneNumber,
+          country: data.country,
+          state: data.state,
+          town: data.town,
+          street: data.street,
+          street_no: data.street_no,
+          zip_code: data.zip_code,
+        };
         await createSchool(createData);
       }
       
-      onSubmit(data);
       onClose();
     } catch (error) {
-      // Error is handled in the store
+      console.error('Error submitting school:', error);
     }
   };
 
@@ -107,16 +116,17 @@ const SchoolModal: React.FC<SchoolModalProps> = ({
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         {/* Background overlay */}
         <div
-          className="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75 transition-opacity"
+          className="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75 transition-opacity cursor-pointer"
           onClick={onClose}
+          aria-hidden="true"
         />
 
         {/* Modal panel */}
-        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl dark:shadow-gray-900 transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl dark:shadow-gray-900 transform transition-all sm:my-8 sm:align-middle w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-3xl mx-auto">
           {/* Header */}
           <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4 transition-colors duration-200">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">
                 {school ? 'Edit School' : 'Create New School'}
               </h3>
               <button
@@ -132,16 +142,17 @@ const SchoolModal: React.FC<SchoolModalProps> = ({
 
           {/* Form */}
           <form onSubmit={handleSubmit(handleFormSubmit)}>
-            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
-              <div className="space-y-6">
+            <div className="px-4 pb-4 sm:px-6 sm:pb-6 max-h-96 sm:max-h-[70vh] overflow-y-auto">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Group School Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="groupSchool_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Group School *
                   </label>
                   <select
+                    id="groupSchool_id"
                     {...register('groupSchool_id')}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   >
                     <option value="">Select a group school</option>
                     {groupSchools.map((groupSchool) => (
@@ -151,149 +162,158 @@ const SchoolModal: React.FC<SchoolModalProps> = ({
                     ))}
                   </select>
                   {errors.groupSchool_id && (
-                    <p className="mt-1 text-sm text-red-600">{errors.groupSchool_id.message}</p>
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.groupSchool_id.message}</p>
                   )}
                 </div>
 
                 {/* School Information */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       School Name *
                     </label>
                     <input
+                      id="name"
                       type="text"
                       {...register('name')}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       placeholder="Enter school name"
                     />
                     {errors.name && (
-                      <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name.message}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Email Address *
                     </label>
                     <input
+                      id="email"
                       type="email"
                       {...register('email')}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       placeholder="school@example.com"
                     />
                     {errors.email && (
-                      <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
                     )}
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                  <div className="sm:col-span-2">
+                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Phone Number *
                     </label>
                     <input
+                      id="phoneNumber"
                       type="tel"
                       {...register('phoneNumber')}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                       placeholder="+1234567890"
                     />
                     {errors.phoneNumber && (
-                      <p className="mt-1 text-sm text-red-600">{errors.phoneNumber.message}</p>
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.phoneNumber.message}</p>
                     )}
                   </div>
                 </div>
 
                 {/* Address Information */}
                 <div>
-                  <h4 className="text-md font-medium text-gray-900 mb-4">Address Information</h4>
+                  <h4 className="text-md font-medium text-gray-900 dark:text-gray-100 mb-4">Address Information</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Country *
                       </label>
                       <input
+                        id="country"
                         type="text"
                         {...register('country')}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         placeholder="Country"
                       />
                       {errors.country && (
-                        <p className="mt-1 text-sm text-red-600">{errors.country.message}</p>
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.country.message}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="state" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         State *
                       </label>
                       <input
+                        id="state"
                         type="text"
                         {...register('state')}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         placeholder="State"
                       />
                       {errors.state && (
-                        <p className="mt-1 text-sm text-red-600">{errors.state.message}</p>
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.state.message}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="town" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Town/City *
                       </label>
                       <input
+                        id="town"
                         type="text"
                         {...register('town')}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         placeholder="Town or City"
                       />
                       {errors.town && (
-                        <p className="mt-1 text-sm text-red-600">{errors.town.message}</p>
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.town.message}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="zip_code" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         ZIP Code *
                       </label>
                       <input
+                        id="zip_code"
                         type="text"
                         {...register('zip_code')}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         placeholder="ZIP Code"
                       />
                       {errors.zip_code && (
-                        <p className="mt-1 text-sm text-red-600">{errors.zip_code.message}</p>
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.zip_code.message}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="street" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Street *
                       </label>
                       <input
+                        id="street"
                         type="text"
                         {...register('street')}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         placeholder="Street name"
                       />
                       {errors.street && (
-                        <p className="mt-1 text-sm text-red-600">{errors.street.message}</p>
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.street.message}</p>
                       )}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">
+                      <label htmlFor="street_no" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Street Number *
                       </label>
                       <input
+                        id="street_no"
                         type="text"
                         {...register('street_no')}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         placeholder="Street number"
                       />
                       {errors.street_no && (
-                        <p className="mt-1 text-sm text-red-600">{errors.street_no.message}</p>
+                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.street_no.message}</p>
                       )}
                     </div>
                   </div>
@@ -302,18 +322,21 @@ const SchoolModal: React.FC<SchoolModalProps> = ({
             </div>
 
             {/* Footer */}
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 flex flex-col sm:flex-row-reverse gap-3">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isLoading ? 'Saving...' : school ? 'Update School' : 'Create School'}
+                {(() => {
+                  if (isLoading) return 'Saving...';
+                  return school ? 'Update School' : 'Create School';
+                })()}
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                className="w-full sm:w-auto inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
               >
                 Cancel
               </button>
