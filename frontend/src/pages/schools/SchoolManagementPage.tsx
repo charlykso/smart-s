@@ -21,6 +21,12 @@ import TermModal from '../../components/schools/TermModal';
 import ClassArmModal from '../../components/schools/ClassArmModal';
 import GroupSchoolModal from '../../components/schools/GroupSchoolModal';
 import SchoolStats from '../../components/schools/SchoolStats';
+import type { 
+  School,
+  Session,
+  Term,
+  ClassArm,
+} from '../../types/school';
 
 const SchoolManagementPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -56,7 +62,8 @@ const SchoolManagementPage: React.FC = () => {
   const [editingGroupSchool, setEditingGroupSchool] = useState(null);
 
   // Active tab state
-  const [activeTab, setActiveTab] = useState<'overview' | 'schools' | 'sessions' | 'terms' | 'classes'>('overview');
+  type TabType = 'overview' | 'schools' | 'sessions' | 'terms' | 'classes';
+  const [activeTab, setActiveTab] = useState<TabType>('overview');
 
   useEffect(() => {
     // Use role-based loading instead of loading everything
@@ -68,6 +75,10 @@ const SchoolManagementPage: React.FC = () => {
   // Check user permissions
   const canManageSchools = user?.roles?.some(role => 
     ['Admin', 'ICT_administrator', 'Proprietor'].includes(role)
+  );
+
+  const canManageGroupSchools = user?.roles?.some(role => 
+    ['Admin', 'Proprietor'].includes(role)
   );
 
   const canManageSessions = user?.roles?.some(role => 
@@ -97,7 +108,7 @@ const SchoolManagementPage: React.FC = () => {
     setIsSchoolModalOpen(true);
   };
 
-  const handleEditSchool = (school: any) => {
+  const handleEditSchool = (school: School) => {
     setEditingSchool(school);
     setIsSchoolModalOpen(true);
   };
@@ -107,7 +118,7 @@ const SchoolManagementPage: React.FC = () => {
     setIsSessionModalOpen(true);
   };
 
-  const handleEditSession = (session: any) => {
+  const handleEditSession = (session: Session) => {
     setEditingSession(session);
     setIsSessionModalOpen(true);
   };
@@ -117,7 +128,7 @@ const SchoolManagementPage: React.FC = () => {
     setIsTermModalOpen(true);
   };
 
-  const handleEditTerm = (term: any) => {
+  const handleEditTerm = (term: Term) => {
     setEditingTerm(term);
     setIsTermModalOpen(true);
   };
@@ -127,7 +138,7 @@ const SchoolManagementPage: React.FC = () => {
     setIsClassArmModalOpen(true);
   };
 
-  const handleEditClassArm = (classArm: any) => {
+  const handleEditClassArm = (classArm: ClassArm) => {
     setEditingClassArm(classArm);
     setIsClassArmModalOpen(true);
   };
@@ -157,14 +168,16 @@ const SchoolManagementPage: React.FC = () => {
 
             {canManageSchools && (
               <div className="flex space-x-3">
-                <button
-                  type="button"
-                  onClick={handleCreateGroupSchool}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-                >
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  Group School
-                </button>
+                {canManageGroupSchools && (
+                  <button
+                    type="button"
+                    onClick={handleCreateGroupSchool}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    Group School
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={handleCreateSchool}
@@ -215,7 +228,7 @@ const SchoolManagementPage: React.FC = () => {
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id as TabType)}
                   className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900'
@@ -428,7 +441,7 @@ const SchoolManagementPage: React.FC = () => {
         onClose={() => setIsSchoolModalOpen(false)}
         school={editingSchool}
         groupSchools={groupSchools}
-        onSubmit={async (data) => {
+        onSubmit={async () => {
           // Handle in the modal component
           setIsSchoolModalOpen(false);
         }}
@@ -439,7 +452,7 @@ const SchoolManagementPage: React.FC = () => {
         onClose={() => setIsSessionModalOpen(false)}
         session={editingSession}
         schools={schools}
-        onSubmit={async (data) => {
+        onSubmit={async () => {
           // Handle in the modal component
           setIsSessionModalOpen(false);
         }}
@@ -450,7 +463,7 @@ const SchoolManagementPage: React.FC = () => {
         onClose={() => setIsTermModalOpen(false)}
         term={editingTerm}
         sessions={sessions}
-        onSubmit={async (data) => {
+        onSubmit={async () => {
           // Handle in the modal component
           setIsTermModalOpen(false);
         }}
@@ -461,20 +474,16 @@ const SchoolManagementPage: React.FC = () => {
         onClose={() => setIsClassArmModalOpen(false)}
         classArm={editingClassArm}
         schools={schools}
-        onSubmit={async (data) => {
+        onSubmit={async () => {
           // Handle in the modal component
           setIsClassArmModalOpen(false);
         }}
       />
 
       <GroupSchoolModal
-        isOpen={isGroupSchoolModalOpen}
+        isOpen={canManageGroupSchools && isGroupSchoolModalOpen}
         onClose={() => setIsGroupSchoolModalOpen(false)}
         groupSchool={editingGroupSchool}
-        onSubmit={async (data) => {
-          // Handle in the modal component
-          setIsGroupSchoolModalOpen(false);
-        }}
       />
     </MainLayout>
   );
