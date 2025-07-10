@@ -169,20 +169,20 @@ const BursarDashboard: React.FC = () => {
       {dashboardLoading && (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-          <span className="ml-3 text-secondary-600">Loading dashboard...</span>
+          <span className="ml-3 text-secondary-600 dark:text-gray-400">Loading dashboard...</span>
         </div>
       )}
 
       {/* Error State */}
       {dashboardError && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
           <div className="flex items-center">
-            <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mr-2" />
+            <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-400 mr-2" />
             <div>
-              <h4 className="text-sm font-medium text-red-800">
+              <h4 className="text-sm font-medium text-red-800 dark:text-red-300">
                 Error Loading Dashboard
               </h4>
-              <p className="text-sm text-red-700 mt-1">
+              <p className="text-sm text-red-700 dark:text-red-400 mt-1">
                 {dashboardError}. Please try refreshing the page.
               </p>
             </div>
@@ -192,14 +192,14 @@ const BursarDashboard: React.FC = () => {
 
       {/* Financial Alert */}
       {dashboardData && dashboardData.financialStats && dashboardData.financialStats.pendingPayments > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
           <div className="flex items-center">
-            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 mr-2" />
+            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mr-2" />
             <div>
-              <h4 className="text-sm font-medium text-yellow-800">
+              <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
                 Payment Processing Alert
               </h4>
-              <p className="text-sm text-yellow-700 mt-1">
+              <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
                 {dashboardData.financialStats.pendingPayments} payments are pending verification. Please review and process them today.
               </p>
             </div>
@@ -255,18 +255,18 @@ const BursarDashboard: React.FC = () => {
                   return (
                     <div key={`payment-method-${index}`} className="flex items-center justify-between">
                       <div>
-                        <div className="font-medium text-secondary-900 capitalize">
+                        <div className="font-medium text-secondary-900 dark:text-white capitalize">
                           {method && typeof method === 'string' ? method.replace('_', ' ') : method}
                         </div>
-                        <div className="text-sm text-secondary-600">
+                        <div className="text-sm text-secondary-600 dark:text-gray-400">
                           {formatCurrency(totalAmount)}
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm font-medium text-secondary-900">{percentage}%</div>
-                        <div className="w-16 bg-secondary-200 rounded-full h-2 mt-1">
+                        <div className="text-sm font-medium text-secondary-900 dark:text-white">{percentage}%</div>
+                        <div className="w-16 bg-secondary-200 dark:bg-gray-600 rounded-full h-2 mt-1">
                           <div
-                            className="bg-primary-600 h-2 rounded-full"
+                            className="bg-primary-600 dark:bg-primary-500 h-2 rounded-full"
                             style={{ width: `${Math.min(percentage, 100)}%` }}
                           ></div>
                         </div>
@@ -276,7 +276,7 @@ const BursarDashboard: React.FC = () => {
                 })
               ) : (
                 <div className="text-center py-4">
-                  <p className="text-sm text-secondary-600">No payment methods data available</p>
+                  <p className="text-sm text-secondary-600 dark:text-gray-400">No payment methods data available</p>
                 </div>
               )}
             </div>
@@ -323,20 +323,20 @@ const BursarDashboard: React.FC = () => {
                                     transaction.status === 'pending' ? 'Pending' : 'Failed';
 
                 return (
-                  <div key={transaction._id || `transaction-${Date.now()}`} className="flex items-center justify-between p-3 border border-secondary-200 rounded-lg">
+                  <div key={transaction._id || `transaction-${Date.now()}`} className="flex items-center justify-between p-3 border border-secondary-200 dark:border-gray-600 rounded-lg">
                     <div>
-                      <div className="font-medium text-secondary-900">
+                      <div className="font-medium text-secondary-900 dark:text-white">
                         {transaction.user?.firstname || 'Unknown'} {transaction.user?.lastname || ''}
                         {transaction.user?.regNo && ` (${transaction.user.regNo})`}
                       </div>
-                      <div className="text-sm text-secondary-600">{timeAgo}</div>
+                      <div className="text-sm text-secondary-600 dark:text-gray-400">{timeAgo}</div>
                     </div>
                     <div className="text-right">
-                      <div className="font-medium text-secondary-900">{formatCurrency(transaction.amount || 0)}</div>
+                      <div className="font-medium text-secondary-900 dark:text-white">{formatCurrency(transaction.amount || 0)}</div>
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        statusDisplay === 'Completed' ? 'bg-green-100 text-green-800' :
-                        statusDisplay === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
+                        statusDisplay === 'Completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
+                        statusDisplay === 'Pending' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                        'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                       }`}>
                         {statusDisplay === 'Completed' && <CheckCircleIcon className="h-3 w-3 mr-1" />}
                         {statusDisplay === 'Pending' && <ClockIcon className="h-3 w-3 mr-1" />}
@@ -349,7 +349,7 @@ const BursarDashboard: React.FC = () => {
               })
             ) : (
               <div className="text-center py-4">
-                <p className="text-sm text-secondary-600">No recent transactions available</p>
+                <p className="text-sm text-secondary-600 dark:text-gray-400">No recent transactions available</p>
               </div>
             )}
           </div>
