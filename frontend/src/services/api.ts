@@ -92,6 +92,7 @@ api.interceptors.response.use(
           case 401:
             // For login failures, show the specific error message
             if (originalRequest.url?.includes('/auth/login')) {
+              // Show toast but don't prevent local error handling
               toast.error(data.message ?? 'Invalid email or password');
             } else {
               toast.error('Session expired. Please login again.');

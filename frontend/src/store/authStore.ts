@@ -12,6 +12,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   rememberMe: boolean;
+  error: string | null;
 }
 
 interface AuthActions {
@@ -22,6 +23,7 @@ interface AuthActions {
   setLoading: (loading: boolean) => void;
   refreshAccessToken: () => Promise<{ token: string; refreshToken: string }>;
   clearAuth: () => void;
+  clearError: () => void;
   hasRole: (role: string) => boolean;
   hasAnyRole: (roles: string[]) => boolean;
   initializeAuth: () => Promise<void>;
@@ -36,6 +38,7 @@ const initialState: AuthState = {
   isAuthenticated: false,
   isLoading: false,
   rememberMe: false,
+  error: null,
 };
 
 export const useAuthStore = create<AuthStore>()(
@@ -44,7 +47,7 @@ export const useAuthStore = create<AuthStore>()(
       ...initialState,
 
       login: async (credentials: LoginCredentials) => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
 
         try {
           // Use AuthService for consistent API handling
@@ -59,6 +62,7 @@ export const useAuthStore = create<AuthStore>()(
             isAuthenticated: true,
             isLoading: false,
             rememberMe: credentials.rememberMe || false,
+            error: null,
           });
 
           // Store tokens in localStorage if remember me is checked
@@ -70,9 +74,9 @@ export const useAuthStore = create<AuthStore>()(
 
           toast.success('Successfully logged in!');
         } catch (error) {
-          set({ isLoading: false });
-          // Don't show toast error here - the API interceptor will handle it
-          // This prevents duplicate error messages
+          const errorMessage = error instanceof Error ? error.message : 'Login failed';
+          set({ isLoading: false, error: errorMessage });
+          // Re-throw so the component can handle the error for local display
           throw error;
         }
       },
@@ -153,6 +157,10 @@ export const useAuthStore = create<AuthStore>()(
 
       clearAuth: () => {
         set(initialState);
+      },
+
+      clearError: () => {
+        set({ error: null });
       },
 
       hasRole: (role: string) => {
