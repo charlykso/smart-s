@@ -18,9 +18,24 @@ export class AuthService {
 
       return response.data;
     } catch (error) {
-      // Re-throw the error so the auth store can handle it
-      // The API interceptor will already show the toast error
-      throw error;
+      // Extract meaningful error message from various error formats
+      let errorMessage = 'Login failed. Please try again.';
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null) {
+        // Handle axios error structure
+        const axiosError = error as any;
+        if (axiosError.response?.data?.message) {
+          errorMessage = axiosError.response.data.message;
+        } else if (axiosError.message) {
+          errorMessage = axiosError.message;
+        }
+      }
+
+      // Create a proper Error object with the extracted message
+      const loginError = new Error(errorMessage);
+      throw loginError;
     }
   }
 
