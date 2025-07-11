@@ -7,7 +7,6 @@ import type {
   GroupSchool,
   Session,
   Term,
-  ClassArm,
   CreateSchoolData,
   UpdateSchoolData,
   CreateGroupSchoolData,
@@ -32,6 +31,9 @@ interface SchoolStore extends SchoolManagementState, SchoolManagementActions {
   updateGroupSchool: (data: UpdateGroupSchoolData) => Promise<GroupSchool>;
   deleteGroupSchool: (id: string) => Promise<void>;
   uploadGroupSchoolLogo: (id: string, file: File) => Promise<string>;
+  
+  // Role-based loading
+  loadDataByUserRole: (userRoles: string[]) => Promise<void>;
   
   // Utility actions
   clearError: () => void;
@@ -64,9 +66,16 @@ export const useSchoolStore = create<SchoolStore>()(
           const groupSchools = await SchoolService.getGroupSchools();
           set({ groupSchools, isLoading: false });
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load group schools';
-          set({ error: errorMessage, isLoading: false });
-          toast.error(errorMessage);
+          // Check if it's an authentication error (401)
+          if (error?.response?.status === 401) {
+            console.warn('No permission to access all group schools - this is normal for ICT administrators');
+            // Set empty array and clear loading state without showing error
+            set({ groupSchools: [], isLoading: false, error: null });
+          } else {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to load group schools';
+            set({ error: errorMessage, isLoading: false });
+            toast.error(errorMessage);
+          }
         }
       },
 
@@ -156,9 +165,16 @@ export const useSchoolStore = create<SchoolStore>()(
           const schools = await SchoolService.getSchools();
           set({ schools, isLoading: false });
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load schools';
-          set({ error: errorMessage, isLoading: false });
-          toast.error(errorMessage);
+          // Check if it's an authentication error (401)
+          if (error?.response?.status === 401) {
+            console.warn('No permission to access schools - this may be normal for some user roles');
+            // Set empty array and clear loading state without showing error
+            set({ schools: [], isLoading: false, error: null });
+          } else {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to load schools';
+            set({ error: errorMessage, isLoading: false });
+            toast.error(errorMessage);
+          }
         }
       },
 
@@ -479,6 +495,37 @@ export const useSchoolStore = create<SchoolStore>()(
 
       setSelectedTerm: (term: Term | null) => {
         set({ selectedTerm: term });
+      },
+
+      // Role-based loading method
+      loadDataByUserRole: async (userRoles: string[]) => {
+        const promises: Promise<void>[] = [];
+
+        // Always load sessions, terms, and class arms for all authenticated users
+        promises.push(get().loadSessions());
+        promises.push(get().loadTerms());
+        promises.push(get().loadClassArms());
+
+        // Role-specific data loading
+        if (userRoles.some(role => ['Admin', 'Proprietor'].includes(role))) {
+          // Full admin access - load all data
+          promises.push(get().loadGroupSchools());
+          promises.push(get().loadSchools());
+        } else if (userRoles.includes('ICT_administrator')) {
+          // ICT administrators should only see their assigned schools
+          // Don't load group schools or all schools - they'll use their own endpoints
+          console.log('ICT Administrator detected - skipping full school/group school loading');
+        } else if (userRoles.some(role => ['Principal', 'Bursar', 'Teacher'].includes(role))) {
+          // School-level users - only load schools (they should see their school)
+          promises.push(get().loadSchools());
+        }
+
+        // Execute all promises
+        try {
+          await Promise.allSettled(promises);
+        } catch (error) {
+          console.error('Error in role-based data loading:', error);
+        }
       },
 
       // Utility Actions

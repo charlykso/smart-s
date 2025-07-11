@@ -1,19 +1,16 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { FeeService } from '../services/feeService';
 import toast from 'react-hot-toast';
+import { FeeService } from '../services/feeService';
 import type {
   Fee,
   Payment,
-  PaymentProfile,
   CreateFeeData,
   UpdateFeeData,
   InitiatePaymentData,
   CashPaymentData,
   CreatePaymentProfileData,
   UpdatePaymentProfileData,
-  FeeStats,
-  PaymentStats,
   FeeFilters,
   PaymentFilters,
   FeeManagementState,
@@ -45,11 +42,14 @@ export const useFeeStore = create<FeeStore>()(
         set({ isLoading: true, error: null });
         try {
           const fees = await FeeService.getFees();
+          // Ensure fees is always an array
+          const feeArray = Array.isArray(fees) ? fees : [];
+          
           // Apply client-side filtering if filters are provided
-          let filteredFees = fees;
+          let filteredFees = feeArray;
           
           if (filters) {
-            filteredFees = fees.filter(fee => {
+            filteredFees = feeArray.filter(fee => {
               if (filters.school && typeof fee.school === 'object' && fee.school._id !== filters.school) return false;
               if (filters.term && typeof fee.term === 'object' && fee.term._id !== filters.term) return false;
               if (filters.type && fee.type !== filters.type) return false;
@@ -68,7 +68,7 @@ export const useFeeStore = create<FeeStore>()(
           set({ fees: filteredFees, isLoading: false });
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to load fees';
-          set({ error: errorMessage, isLoading: false });
+          set({ error: errorMessage, isLoading: false, fees: [] });
           toast.error(errorMessage);
         }
       },
@@ -77,10 +77,11 @@ export const useFeeStore = create<FeeStore>()(
         set({ isLoading: true, error: null });
         try {
           const fees = await FeeService.getFeesByTerm(termId);
-          set({ fees, isLoading: false });
+          const feeArray = Array.isArray(fees) ? fees : [];
+          set({ fees: feeArray, isLoading: false });
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to load fees by term';
-          set({ error: errorMessage, isLoading: false });
+          set({ error: errorMessage, isLoading: false, fees: [] });
           toast.error(errorMessage);
         }
       },
@@ -89,10 +90,11 @@ export const useFeeStore = create<FeeStore>()(
         set({ isLoading: true, error: null });
         try {
           const fees = await FeeService.getApprovedFees();
-          set({ fees, isLoading: false });
+          const feeArray = Array.isArray(fees) ? fees : [];
+          set({ fees: feeArray, isLoading: false });
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to load approved fees';
-          set({ error: errorMessage, isLoading: false });
+          set({ error: errorMessage, isLoading: false, fees: [] });
           toast.error(errorMessage);
         }
       },
@@ -101,10 +103,11 @@ export const useFeeStore = create<FeeStore>()(
         set({ isLoading: true, error: null });
         try {
           const fees = await FeeService.getUnapprovedFees();
-          set({ fees, pendingApprovals: fees, isLoading: false });
+          const feeArray = Array.isArray(fees) ? fees : [];
+          set({ fees: feeArray, pendingApprovals: feeArray, isLoading: false });
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to load unapproved fees';
-          set({ error: errorMessage, isLoading: false });
+          set({ error: errorMessage, isLoading: false, fees: [], pendingApprovals: [] });
           toast.error(errorMessage);
         }
       },
@@ -114,8 +117,9 @@ export const useFeeStore = create<FeeStore>()(
         try {
           const newFee = await FeeService.createFee(data);
           const { fees } = get();
+          const feeArray = Array.isArray(fees) ? fees : [];
           set({ 
-            fees: [...fees, newFee], 
+            fees: [...feeArray, newFee], 
             isLoading: false 
           });
           toast.success('Fee created successfully!');
@@ -241,12 +245,12 @@ export const useFeeStore = create<FeeStore>()(
             payments: [...payments, newPayment], 
             isLoading: false 
           });
-          toast.success('Cash payment processed successfully!');
+          // Don't show toast here - let the component handle it
           return newPayment;
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to process cash payment';
           set({ error: errorMessage, isLoading: false });
-          toast.error(errorMessage);
+          // Don't show toast here - let the component handle it
           throw error;
         }
       },
@@ -316,7 +320,7 @@ export const useFeeStore = create<FeeStore>()(
       updatePaymentProfile: async (data: UpdatePaymentProfileData) => {
         set({ isLoading: true, error: null });
         try {
-          const updatedProfile = await FeeService.updatePaymentProfile(data);
+          const updatedProfile = await FeeService.updatePaymentProfile(data._id, data);
           const { paymentProfiles } = get();
           set({ 
             paymentProfiles: paymentProfiles.map(profile => 
@@ -339,9 +343,23 @@ export const useFeeStore = create<FeeStore>()(
         try {
           const feeStats = await FeeService.getFeeStats(schoolId, termId);
           set({ feeStats });
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load fee statistics';
-          console.error(errorMessage);
+        } catch (error: unknown) {
+          // If stats endpoint doesn't exist, calculate from existing fees
+          const { fees } = get();
+          if (fees.length > 0) {
+            const calculatedStats = {
+              totalFees: fees.length,
+              approvedFees: fees.filter(fee => fee.isApproved).length,
+              pendingApproval: fees.filter(fee => !fee.isApproved).length,
+              activeFees: fees.filter(fee => fee.isActive).length,
+              totalAmount: fees.reduce((sum, fee) => sum + fee.amount, 0),
+              approvedAmount: fees.filter(fee => fee.isApproved).reduce((sum, fee) => sum + fee.amount, 0),
+              pendingAmount: fees.filter(fee => !fee.isApproved).reduce((sum, fee) => sum + fee.amount, 0),
+            };
+            set({ feeStats: calculatedStats });
+          }
+          // Don't show error toast for missing stats endpoint
+          console.warn('Fee stats endpoint not available, using calculated stats:', error);
         }
       },
 
@@ -349,9 +367,30 @@ export const useFeeStore = create<FeeStore>()(
         try {
           const paymentStats = await FeeService.getPaymentStats(schoolId, termId);
           set({ paymentStats });
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Failed to load payment statistics';
-          console.error(errorMessage);
+        } catch (error: unknown) {
+          // If stats endpoint doesn't exist, calculate from existing payments
+          const { payments } = get();
+          if (payments.length > 0) {
+            const calculatedStats = {
+              totalPayments: payments.length,
+              successfulPayments: payments.filter(payment => payment.status === 'success').length,
+              pendingPayments: payments.filter(payment => payment.status === 'pending').length,
+              failedPayments: payments.filter(payment => payment.status === 'failed').length,
+              totalAmount: payments.reduce((sum, payment) => sum + payment.amount, 0),
+              successfulAmount: payments.filter(payment => payment.status === 'success').reduce((sum, payment) => sum + payment.amount, 0),
+              pendingAmount: payments.filter(payment => payment.status === 'pending').reduce((sum, payment) => sum + payment.amount, 0),
+              paymentsByMethod: {
+                paystack: payments.filter(p => p.mode_of_payment === 'paystack').length,
+                flutterwave: payments.filter(p => p.mode_of_payment === 'flutterwave').length,
+                bank_transfer: payments.filter(p => p.mode_of_payment === 'bank_transfer').length,
+                cash: payments.filter(p => p.mode_of_payment === 'cash').length,
+              },
+              recentPayments: payments.slice(-5), // Add recent payments to match interface
+            };
+            set({ paymentStats: calculatedStats });
+          }
+          // Don't show error toast for missing stats endpoint
+          console.warn('Payment stats endpoint not available, using calculated stats:', error);
         }
       },
 

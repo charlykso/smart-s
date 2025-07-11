@@ -115,7 +115,7 @@ exports.getUsersBySchool = async (req, res) => {
     const { role, status, search } = req.query
 
     if (role && role !== 'all') {
-      query.roles = role
+      query.roles = { $in: [role] }
     }
 
     if (status && status !== 'all') {

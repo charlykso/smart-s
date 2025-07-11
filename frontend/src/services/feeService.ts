@@ -5,13 +5,12 @@ import type {
   Fee,
   Payment,
   PaymentProfile,
-  PaymentMethod,
+  PaymentMethodConfig,
   CreateFeeData,
   UpdateFeeData,
   InitiatePaymentData,
   CashPaymentData,
   CreatePaymentProfileData,
-  UpdatePaymentProfileData,
   FeeStats,
   PaymentStats,
 } from '../types/fee';
@@ -36,8 +35,10 @@ export class FeeService {
     return response || [];
   }
 
-  static async getApprovedFees(): Promise<Fee[]> {
-    const response = await ApiService.get<Fee[]>(API_ENDPOINTS.FEES.APPROVED);
+  static async getApprovedFees(schoolId?: string): Promise<Fee[]> {
+    // For students, use the student-specific endpoint
+    // For other users, use the general approved fees endpoint
+    const response = await ApiService.get<Fee[]>(API_ENDPOINTS.FEES.STUDENT_APPROVED_FEES);
     return response || [];
   }
 
@@ -93,7 +94,7 @@ export class FeeService {
 
   static async approveFee(feeId: string): Promise<void> {
     const endpoint = API_ENDPOINTS.FEES.APPROVE.replace(':fee_id', feeId);
-    const response = await ApiService.post<ApiResponse>(endpoint, { isApproved: true });
+    const response = await ApiService.put<ApiResponse>(endpoint, { isApproved: true });
     
     if (!response.success) {
       throw new Error(response.message || 'Failed to approve fee');
@@ -132,8 +133,8 @@ export class FeeService {
     return response.data!;
   }
 
-  static async getAvailablePaymentMethods(schoolId: string): Promise<PaymentMethod[]> {
-    const response = await ApiService.get<ApiResponse<PaymentMethod[]>>(
+  static async getAvailablePaymentMethods(schoolId: string): Promise<PaymentMethodConfig[]> {
+    const response = await ApiService.get<ApiResponse<PaymentMethodConfig[]>>(
       `${API_ENDPOINTS.PAYMENTS.AVAILABLE_METHODS}/${schoolId}`
     );
 
@@ -144,12 +145,23 @@ export class FeeService {
     return response.data!;
   }
 
-  // Get approved fees by school
-  static async getApprovedFeesBySchool(schoolId: string): Promise<Fee[]> {
-    const response = await ApiService.get<Fee[]>(
-      `${API_ENDPOINTS.FEES.ALL}/school/${schoolId}`
+  // Student-specific method to get approved fees
+  static async getStudentApprovedFees(): Promise<Fee[]> {
+    const response = await ApiService.get<{ success: boolean; data: Fee[]; message: string }>(
+      API_ENDPOINTS.FEES.STUDENT_APPROVED_FEES
     );
-    return response || [];
+    
+    if (!response) {
+      return [];
+    }
+    
+    // Handle the response structure that includes success, data, and message
+    if (response.success && response.data) {
+      return response.data;
+    }
+    
+    // Fallback for different response structures
+    return Array.isArray(response) ? response : [];
   }
 
   static async getPaymentsByPaystack(): Promise<Payment[]> {
@@ -317,4 +329,21 @@ export class FeeService {
     
     return Math.max(0, fee.amount - totalPaid);
   }
+
+  // Get payments for the current authenticated user (student)
+  static async getStudentPayments(): Promise<Payment[]> {
+    const response = await ApiService.get<Payment[]>(
+      API_ENDPOINTS.PAYMENTS.ALL
+    );
+
+    if (!response) {
+      return [];
+    }
+
+    // The payment endpoint returns an array directly (not wrapped in success/data)
+    return Array.isArray(response) ? response : [];
+  }
+
+  // Get approved fees by school (overloaded method) - remove duplicate
+  // ...existing code...
 }

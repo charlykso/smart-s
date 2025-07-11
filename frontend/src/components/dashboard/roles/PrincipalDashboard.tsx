@@ -6,7 +6,6 @@ import {
   DocumentCheckIcon,
   UserGroupIcon,
   ChartBarIcon,
-  ClipboardDocumentCheckIcon,
   BanknotesIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
@@ -19,9 +18,11 @@ import {
   RecentActivityCard,
 } from '../widgets';
 
-import type { QuickAction, Activity } from '../widgets/QuickActionCard';
+import type { QuickAction } from '../widgets/QuickActionCard';
+import type { Activity } from '../widgets/RecentActivityCard';
 import { usePrincipalStore } from '../../../store/principalStore';
 import { principalService } from '../../../services/principalService';
+import { createSafeDate, isValidDate } from '../../../utils/dateUtils';
 
 const PrincipalDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -42,6 +43,26 @@ const PrincipalDashboard: React.FC = () => {
     return principalService.formatCurrency(amount);
   };
 
+  // Safe percentage formatting
+  const formatPercentage = (value: number | null | undefined): string => {
+    if (typeof value !== 'number' || isNaN(value)) {
+      return '0';
+    }
+    return Math.round(Math.max(0, Math.min(100, value))).toString();
+  };
+
+  // Safe collection rate color determination
+  const getCollectionRateColor = (rate: number | null | undefined): string => {
+    const safeRate = typeof rate === 'number' && !isNaN(rate) ? rate : 0;
+    return principalService.getCollectionRateColor(safeRate);
+  };
+
+  // Safe collection rate description
+  const getCollectionRateDescription = (rate: number | null | undefined): string => {
+    const safeRate = typeof rate === 'number' && !isNaN(rate) ? rate : 0;
+    return safeRate >= 80 ? 'Good collection rate' : 'Needs improvement';
+  };
+
   // Generate stats from dashboard data
   const stats = dashboardData ? [
     {
@@ -53,10 +74,10 @@ const PrincipalDashboard: React.FC = () => {
     },
     {
       title: 'Fee Collection',
-      value: `${Math.round(dashboardData.financial.collectionRate)}%`,
-      description: dashboardData.financial.collectionRate >= 80 ? 'Good collection rate' : 'Needs improvement',
+      value: `${formatPercentage(dashboardData.financial.collectionRate)}%`,
+      description: getCollectionRateDescription(dashboardData.financial.collectionRate),
       icon: CurrencyDollarIcon,
-      iconColor: principalService.getCollectionRateColor(dashboardData.financial.collectionRate),
+      iconColor: getCollectionRateColor(dashboardData.financial.collectionRate),
     },
     {
       title: 'Total Revenue',
@@ -84,23 +105,23 @@ const PrincipalDashboard: React.FC = () => {
       title: 'Approve Fees',
       description: 'Review and approve pending fee structures',
       icon: DocumentCheckIcon,
-      onClick: () => console.log('Approve fees'),
+      onClick: () => navigate('/fees?tab=approvals'),
       color: 'primary',
     },
     {
-      id: 'view-reports',
-      title: 'School Reports',
-      description: 'View comprehensive school reports',
-      icon: ChartBarIcon,
-      onClick: () => console.log('View reports'),
+      id: 'manage-students',
+      title: 'Manage Students',
+      description: 'Create or upload students for your school',
+      icon: AcademicCapIcon,
+      onClick: () => navigate('/principal/students'),
       color: 'success',
     },
     {
       id: 'manage-staff',
       title: 'Manage Staff',
-      description: 'Staff assignments and management',
+      description: 'Create bursars, teachers and auditors',
       icon: UserGroupIcon,
-      onClick: () => console.log('Manage staff'),
+      onClick: () => navigate('/principal/staff'),
       color: 'secondary',
     },
     {
@@ -108,32 +129,35 @@ const PrincipalDashboard: React.FC = () => {
       title: 'Financial Overview',
       description: 'Review school financial status',
       icon: BanknotesIcon,
-      onClick: () => console.log('Financial overview'),
+      onClick: () => navigate('/fees'),
       color: 'warning',
     },
     {
-      id: 'academic-review',
-      title: 'Academic Review',
-      description: 'Monitor academic performance',
-      icon: ClipboardDocumentCheckIcon,
-      onClick: () => console.log('Academic review'),
-      color: 'error',
+      id: 'view-reports',
+      title: 'School Reports',
+      description: 'View comprehensive school reports',
+      icon: ChartBarIcon,
+      onClick: () => console.log('View reports'),
+      color: 'secondary',
     },
   ];
 
   // Generate recent activities from dashboard data
   const recentActivities: Activity[] = dashboardData ?
-    dashboardData.recentActivities.slice(0, 5).map((activity) => ({
-      id: activity._id,
-      title: activity.type === 'payment' ? 'Payment Activity' :
-             activity.type === 'academic' ? 'Academic Update' :
-             activity.type === 'fee' ? 'Fee Management' :
-             activity.type === 'user' ? 'Staff Update' : 'School Activity',
-      description: activity.description,
-      timestamp: new Date(activity.date),
-      type: activity.type as 'payment' | 'academic' | 'fee' | 'user' | 'system',
-      user: activity.user,
-    })) : [];
+    dashboardData.recentActivities.slice(0, 5).map((activity) => {
+      const timestamp = createSafeDate(activity.date);
+      return {
+        id: activity._id,
+        title: activity.type === 'payment' ? 'Payment Activity' :
+               activity.type === 'academic' ? 'Academic Update' :
+               activity.type === 'fee' ? 'Fee Management' :
+               activity.type === 'user' ? 'Staff Update' : 'School Activity',
+        description: activity.description,
+        timestamp,
+        type: activity.type as 'payment' | 'academic' | 'fee' | 'user' | 'system',
+        user: activity.user,
+      };
+    }).filter(activity => isValidDate(activity.timestamp)) : [];
 
   return (
     <div className="space-y-6">
@@ -175,7 +199,7 @@ const PrincipalDashboard: React.FC = () => {
                 Outstanding Fees Alert
               </h4>
               <p className="text-sm text-yellow-700 mt-1">
-                There are {formatCurrency(dashboardData.financial.outstandingFees)} in outstanding fees. Collection rate is {Math.round(dashboardData.financial.collectionRate)}%.
+                There are {formatCurrency(dashboardData.financial.outstandingFees)} in outstanding fees. Collection rate is {formatPercentage(dashboardData.financial.collectionRate)}%.
               </p>
             </div>
           </div>

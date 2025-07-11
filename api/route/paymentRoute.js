@@ -26,7 +26,7 @@ router
   .route('/pay-with-cash')
   .post(
     authenticateToken,
-    verifyRoles(roleList.Student, roleList.Admin),
+    verifyRoles(roleList.Student, roleList.Admin, roleList.Bursar),
     paymentController.PayWithCash
   )
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatTimestamp } from '../../../utils/dateUtils';
 
 export interface Activity {
   id: string;
@@ -8,7 +8,7 @@ export interface Activity {
   timestamp: Date;
   type: 'payment' | 'user' | 'system' | 'audit' | 'academic' | 'fee';
   user?: string;
-  icon?: React.ComponentType<any>;
+  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 }
 
 export interface RecentActivityCardProps {
@@ -117,7 +117,7 @@ const RecentActivityCard: React.FC<RecentActivityCardProps> = ({
                       </p>
                     )}
                     <p className="text-xs text-secondary-400 dark:text-gray-500">
-                      {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
+                      {formatTimestamp(activity.timestamp)}
                     </p>
                   </div>
                 </div>

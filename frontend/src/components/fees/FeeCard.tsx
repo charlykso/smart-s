@@ -6,11 +6,11 @@ import {
   XCircleIcon,
   PencilIcon,
   TrashIcon,
-  CreditCardIcon,
 } from '@heroicons/react/24/outline';
 import { FeeService } from '../../services/feeService';
 import { useFeeStore } from '../../store/feeStore';
 import type { FeeCardProps } from '../../types/fee';
+import './FeeCard.css';
 
 const FeeCard: React.FC<FeeCardProps> = ({
   fee,
@@ -18,7 +18,6 @@ const FeeCard: React.FC<FeeCardProps> = ({
   onDelete,
   onApprove,
   onReject,
-  onInitiatePayment,
   showActions = true,
 }) => {
   const { deleteFee } = useFeeStore();
@@ -28,7 +27,7 @@ const FeeCard: React.FC<FeeCardProps> = ({
       try {
         await deleteFee(fee._id);
         onDelete?.(fee);
-      } catch (error) {
+      } catch {
         // Error is handled in the store
       }
     }
@@ -51,14 +50,14 @@ const FeeCard: React.FC<FeeCardProps> = ({
   const getStatusBadge = () => {
     if (fee.isApproved) {
       return (
-        <div className="flex items-center text-green-600">
+        <div className="flex items-center text-green-600 dark:text-green-400">
           <CheckCircleIcon className="h-4 w-4 mr-1" />
           <span className="text-xs font-medium">Approved</span>
         </div>
       );
     } else {
       return (
-        <div className="flex items-center text-yellow-600">
+        <div className="flex items-center text-yellow-600 dark:text-yellow-400">
           <ClockIcon className="h-4 w-4 mr-1" />
           <span className="text-xs font-medium">Pending</span>
         </div>
@@ -69,13 +68,13 @@ const FeeCard: React.FC<FeeCardProps> = ({
   const getActiveBadge = () => {
     if (fee.isActive) {
       return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
           Active
         </span>
       );
     } else {
       return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
           Inactive
         </span>
       );
@@ -92,24 +91,26 @@ const FeeCard: React.FC<FeeCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow duration-200">
       {/* Header */}
       <div className="p-6 pb-4">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start min-w-0 flex-1">
             <div className="flex-shrink-0">
-              <CurrencyDollarIcon className="h-8 w-8 text-primary-600" />
+              <CurrencyDollarIcon className="h-6 w-6 text-primary-600 dark:text-primary-400" />
             </div>
-            <div className="ml-3">
-              <h3 className="text-lg font-medium text-gray-900 truncate">
+            <div className="ml-3 min-w-0 flex-1">
+              <h3 title={fee.name} className="text-sm font-medium text-gray-900 dark:text-white fee-card-title">
                 {fee.name}
               </h3>
-              <p className="text-sm text-gray-500">{getSchoolName()}</p>
+              <p title={getSchoolName()} className="text-xs text-gray-500 dark:text-gray-400 mt-1 fee-card-school-name">
+                {getSchoolName()}
+              </p>
             </div>
           </div>
           
           {/* Status Badge */}
-          <div className="flex flex-col items-end space-y-1">
+          <div className="flex flex-col items-end space-y-1 flex-shrink-0">
             {getStatusBadge()}
             {getActiveBadge()}
           </div>
@@ -120,27 +121,29 @@ const FeeCard: React.FC<FeeCardProps> = ({
       <div className="px-6 pb-4 space-y-3">
         {/* Fee Details */}
         <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Amount:</span>
-            <span className="font-medium text-gray-900">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">Amount:</span>
+            <span className="font-medium text-gray-900 dark:text-white text-right">
               {FeeService.formatAmount(fee.amount)}
             </span>
           </div>
           
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Term:</span>
-            <span className="font-medium text-gray-900">{getTermName()}</span>
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">Term:</span>
+            <span title={getTermName()} className="font-medium text-gray-900 dark:text-white fee-card-term-name ml-2">
+              {getTermName()}
+            </span>
           </div>
           
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Type:</span>
-            <div>{getTypeBadge()}</div>
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">Type:</span>
+            <div className="flex-shrink-0">{getTypeBadge()}</div>
           </div>
 
           {fee.isInstallmentAllowed && (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Installments:</span>
-              <span className="font-medium text-gray-900">
+            <div className="flex justify-between items-start text-sm">
+              <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">Installments:</span>
+              <span className="font-medium text-gray-900 dark:text-white fee-card-installment-text text-xs ml-2">
                 {fee.no_ofInstallments} payments of {FeeService.formatAmount(FeeService.calculateInstallmentAmount(fee.amount, fee.no_ofInstallments))}
               </span>
             </div>
@@ -149,43 +152,39 @@ const FeeCard: React.FC<FeeCardProps> = ({
 
         {/* Description */}
         {fee.decription && (
-          <div className="pt-2 border-t border-gray-100">
-            <p className="text-sm text-gray-600 line-clamp-2">{fee.decription}</p>
+          <div className="pt-2 border-t border-gray-100 dark:border-gray-700">
+            <p className="text-xs text-gray-600 dark:text-gray-400 fee-card-description leading-relaxed">
+              {fee.decription}
+            </p>
           </div>
         )}
 
         {/* Metadata */}
-        <div className="pt-3 border-t border-gray-100">
-          <div className="flex justify-between text-xs text-gray-500">
-            <span>Created: {new Date(fee.createdAt).toLocaleDateString()}</span>
-            <span>Updated: {new Date(fee.updatedAt).toLocaleDateString()}</span>
+        <div className="pt-3 border-t border-gray-100 dark:border-gray-700">
+          <div className="grid grid-cols-1 gap-1 text-xs text-gray-500 dark:text-gray-400">
+            <span title={`Created: ${new Date(fee.createdAt).toLocaleDateString()}`} className="fee-card-school-name">
+              Created: {new Date(fee.createdAt).toLocaleDateString()}
+            </span>
+            <span title={`Updated: ${new Date(fee.updatedAt).toLocaleDateString()}`} className="fee-card-school-name">
+              Updated: {new Date(fee.updatedAt).toLocaleDateString()}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Actions */}
       {showActions && (
-        <div className="px-6 py-4 bg-gray-50 rounded-b-lg">
+        <div className="px-6 py-4 bg-gray-50 dark:bg-gray-750 rounded-b-lg border-t border-gray-100 dark:border-gray-700">
           <div className="flex items-center justify-between">
             {/* Primary Actions */}
             <div className="flex items-center space-x-2">
               {!fee.isApproved && onApprove && (
                 <button
                   onClick={() => onApprove(fee)}
-                  className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-700 bg-green-100 hover:bg-green-200 rounded-md transition-colors"
+                  className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900 hover:bg-green-200 dark:hover:bg-green-800 rounded-md transition-colors"
                 >
                   <CheckCircleIcon className="h-3 w-3 mr-1" />
                   Approve
-                </button>
-              )}
-              
-              {fee.isApproved && onInitiatePayment && (
-                <button
-                  onClick={() => onInitiatePayment(fee)}
-                  className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-primary-700 bg-primary-100 hover:bg-primary-200 rounded-md transition-colors"
-                >
-                  <CreditCardIcon className="h-3 w-3 mr-1" />
-                  Pay Now
                 </button>
               )}
             </div>
@@ -195,7 +194,7 @@ const FeeCard: React.FC<FeeCardProps> = ({
               {onEdit && (
                 <button
                   onClick={() => onEdit(fee)}
-                  className="inline-flex items-center p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                  className="inline-flex items-center p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
                   title="Edit fee"
                 >
                   <PencilIcon className="h-4 w-4" />
@@ -205,7 +204,7 @@ const FeeCard: React.FC<FeeCardProps> = ({
               {onDelete && (
                 <button
                   onClick={handleDelete}
-                  className="inline-flex items-center p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                  className="inline-flex items-center p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 rounded-md transition-colors"
                   title="Delete fee"
                 >
                   <TrashIcon className="h-4 w-4" />
@@ -215,7 +214,7 @@ const FeeCard: React.FC<FeeCardProps> = ({
               {!fee.isApproved && onReject && (
                 <button
                   onClick={() => onReject(fee)}
-                  className="inline-flex items-center p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                  className="inline-flex items-center p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 rounded-md transition-colors"
                   title="Reject fee"
                 >
                   <XCircleIcon className="h-4 w-4" />

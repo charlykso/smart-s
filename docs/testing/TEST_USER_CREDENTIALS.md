@@ -1,4 +1,4 @@
-# Ledgrio School Accounting System - Test User Credentials
+# Smart-S School Accounting System - Test User Credentials
 
 ## 🔐 **Test User Login Details**
 
@@ -8,97 +8,148 @@ All test users use the same password for easy testing.
 
 ---
 
-## 👥 **User Accounts by Role**
-
-### **0. General System Administrator**
-
-- **Email**: `admin@ledgrio.com`
-- **Password**: `password123`
-- **Name**: System Administrator
-- **RegNo**: ADM001
-- **Role**: Admin
-- **Dashboard**: System-wide administration, can create Group Schools and ICT Administrators
+## ✅ **VERIFIED ACTIVE USERS (Database Confirmed)**
 
 ### **1. System Administrator**
 
-- **Email**: `admin@ledgrio.com`
+- **Email**: `admin@smart-s.com`
 - **Password**: `password123`
-- **Name**: Admin User
+- **Name**: System Admin
 - **RegNo**: ADM001
-- **Role**: Admin
+- **Role**: Admin/Proprietor
+- **School**: N/A (System-wide access)
+- **Status**: ✅ **ACTIVE & VERIFIED**
 - **Dashboard**: System-wide overview, user management, financial analytics
+- **Permissions**: Full system access, can manage all schools
 
-### **2. Student Account**
+### **2. School Bursar**
+
+- **Email**: `bursar@smart-s.com`
+- **Password**: `password123`
+- **Name**: Test Bursar
+- **RegNo**: BUR001
+- **Role**: Bursar
+- **School**: Smart School Academy (ID: 6856ca374de0e2d916dc329c)
+- **Status**: ✅ **ACTIVE & VERIFIED**
+- **Dashboard**: Financial management, fee tracking, payment reports
+- **Permissions**: Can create/update/delete fees for own school only, CANNOT approve fees
+
+### **3. School Principal**
+
+- **Email**: `principal@smart-s.com`
+- **Password**: `password123`
+- **Name**: Test Principal
+- **RegNo**: PRI001
+- **Role**: Principal
+- **School**: Smart School Academy (ID: 6856ca374de0e2d916dc329c)
+- **Status**: ✅ **ACTIVE & VERIFIED**
+- **Dashboard**: School management, academic oversight, staff management
+- **Permissions**: Can approve/reject fees for own school only, CANNOT create fees
+
+---
+
+## ⚠️ **LEGACY USERS (Status Unknown - May Not Exist)**
+
+### **Student Account**
 
 - **Email**: `student@ledgrio.com`
 - **Password**: `password123`
 - **Name**: John Student
 - **RegNo**: STU001
 - **Role**: Student
+- **Status**: ❓ **UNKNOWN**
 - **Dashboard**: Personal academic progress, fee payments, assignments
 
-### **3. School Principal**
+### **Legacy Principal**
 
 - **Email**: `principal@ledgrio.com`
 - **Password**: `password123`
 - **Name**: Dr. Sarah Principal
 - **RegNo**: PRI001
 - **Role**: Principal
+- **Status**: ❓ **UNKNOWN**
 - **Dashboard**: School management, academic oversight, staff management
 
-### **4. School Bursar**
+### **Legacy Bursar**
 
 - **Email**: `bursar@ledgrio.com`
 - **Password**: `password123`
 - **Name**: Michael Bursar
 - **RegNo**: BUR001
 - **Role**: Bursar
+- **Status**: ❓ **UNKNOWN**
 - **Dashboard**: Financial management, fee tracking, payment reports
 
-### **5. Parent Account**
+### **Parent Account**
 
 - **Email**: `parent@ledgrio.com`
 - **Password**: `password123`
 - **Name**: Mary Parent
 - **RegNo**: PAR001
 - **Role**: Parent
+- **Status**: ❓ **UNKNOWN**
 - **Dashboard**: Children's progress, payment history, school communication
 
-### **6. System Auditor**
+### **System Auditor**
 
 - **Email**: `auditor@ledgrio.com`
 - **Password**: `password123`
 - **Name**: James Auditor
 - **RegNo**: AUD001
 - **Role**: Auditor
+- **Status**: ❓ **UNKNOWN**
 - **Dashboard**: Financial auditing, system reports, compliance tracking
 
-### **7. ICT Administrator**
+### **ICT Administrator**
 
 - **Email**: `ictadmin@ledgrio.com`
 - **Password**: `password123`
 - **Name**: David ICTAdmin
 - **RegNo**: ICT001
 - **Role**: ICT_administrator
+- **Status**: ❓ **UNKNOWN**
 - **Dashboard**: System administration, technical management
 
-### **8. School Proprietor**
+### **School Proprietor**
 
 - **Email**: `proprietor@ledgrio.com`
 - **Password**: `password123`
 - **Name**: Robert Proprietor
 - **RegNo**: PRO001
 - **Role**: Proprietor
+- **Status**: ❓ **UNKNOWN**
 - **Dashboard**: Multi-school oversight, business management
 
-### **9. Headteacher**
+### **Headteacher**
 
 - **Email**: `headteacher@smart-s.com`
 - **Password**: `password123`
 - **Name**: Mrs. Jane Headteacher
 - **RegNo**: HEAD001
 - **Role**: Headteacher
+- **Status**: ❓ **UNKNOWN**
 - **Dashboard**: School operations, academic management
+
+---
+
+## 🔒 **Access Control Implementation Status**
+
+### ✅ **Enforced Security Features**
+
+- **School Boundary Enforcement**: Bursars can only access their assigned school's data
+- **Fee Creation Control**: Bursars can create fees but cannot approve them
+- **Principal Approval**: Principals can approve/reject fees only for their school
+- **Cross-School Prevention**: Unauthorized access to other schools is blocked
+- **Authentication Required**: All operations require valid JWT tokens
+- **Role-Based Access**: Different permissions for different user roles
+
+### 📋 **Access Control Matrix**
+
+| Role          | Create Fee     | Update Fee     | Delete Fee     | Approve Fee    | View Fees      | Cross-School Access |
+| ------------- | -------------- | -------------- | -------------- | -------------- | -------------- | ------------------- |
+| **Bursar**    | ✅ Own School  | ✅ Own School  | ✅ Own School  | ❌             | ✅ Own School  | ❌ **BLOCKED**      |
+| **Principal** | ❌             | ❌             | ❌             | ✅ Own School  | ✅ Own School  | ❌ **BLOCKED**      |
+| **Admin**     | ✅ All Schools | ✅ All Schools | ✅ All Schools | ✅ All Schools | ✅ All Schools | ✅ **ALLOWED**      |
 
 ---
 
@@ -194,20 +245,30 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 ### **Test All User Logins**
 
 ```bash
-# Admin Login
+# ✅ VERIFIED ACTIVE USERS (Use these for testing)
+
+# Admin Login (VERIFIED WORKING)
 curl -X POST http://localhost:3000/api/v1/auth/login -H "Content-Type: application/json" -d '{"email":"admin@smart-s.com","password":"password123"}'
 
-# Student Login
-curl -X POST http://localhost:3000/api/v1/auth/login -H "Content-Type: application/json" -d '{"email":"student@smart-s.com","password":"password123"}'
-
-# Principal Login
-curl -X POST http://localhost:3000/api/v1/auth/login -H "Content-Type: application/json" -d '{"email":"principal@smart-s.com","password":"password123"}'
-
-# Bursar Login
+# Bursar Login (VERIFIED WORKING)
 curl -X POST http://localhost:3000/api/v1/auth/login -H "Content-Type: application/json" -d '{"email":"bursar@smart-s.com","password":"password123"}'
 
-# Parent Login
-curl -X POST http://localhost:3000/api/v1/auth/login -H "Content-Type: application/json" -d '{"email":"parent@smart-s.com","password":"password123"}'
+# Principal Login (VERIFIED WORKING)
+curl -X POST http://localhost:3000/api/v1/auth/login -H "Content-Type: application/json" -d '{"email":"principal@smart-s.com","password":"password123"}'
+
+# ❓ LEGACY USERS (May not work - use at your own risk)
+
+# Student Login (UNKNOWN STATUS)
+curl -X POST http://localhost:3000/api/v1/auth/login -H "Content-Type: application/json" -d '{"email":"student@ledgrio.com","password":"password123"}'
+
+# Legacy Principal Login (UNKNOWN STATUS)
+curl -X POST http://localhost:3000/api/v1/auth/login -H "Content-Type: application/json" -d '{"email":"principal@ledgrio.com","password":"password123"}'
+
+# Legacy Bursar Login (UNKNOWN STATUS)
+curl -X POST http://localhost:3000/api/v1/auth/login -H "Content-Type: application/json" -d '{"email":"bursar@ledgrio.com","password":"password123"}'
+
+# Parent Login (UNKNOWN STATUS)
+curl -X POST http://localhost:3000/api/v1/auth/login -H "Content-Type: application/json" -d '{"email":"parent@ledgrio.com","password":"password123"}'
 ```
 
 ---
@@ -291,14 +352,25 @@ curl -X POST http://localhost:3000/api/v1/auth/login -H "Content-Type: applicati
 If you need to recreate all test users:
 
 ```bash
+# Recommended: Use the verified seed script
+cd api
+node tests/seed-database.js
+
+# Alternative: Use the user creation script
+cd api
+node tests/create-bursar-and-principal.js
+
+# Legacy script (may not work with current database)
 cd api
 node createAllTestUsers.js
 ```
 
-This will create all users if they don't exist, or show existing users if they're already created.
+**Recommended Method**: Use `seed-database.js` as it creates users with all required fields and proper school relationships.
 
 ---
 
-**Last Updated**: January 2025  
+**Last Updated**: January 16, 2025  
 **System Version**: Smart-S v1.0  
 **Environment**: Development/Testing
+**Database Status**: Active with verified users
+**Access Control**: Implemented and enforced

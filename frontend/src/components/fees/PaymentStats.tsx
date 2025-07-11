@@ -84,8 +84,8 @@ const PaymentStats: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h3 className="text-lg font-medium text-gray-900 mb-6">Payment Analytics</h3>
+    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">Payment Analytics</h3>
       
       {/* Payment Status Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -98,10 +98,10 @@ const PaymentStats: React.FC = () => {
                   <Icon className={`h-6 w-6 ${stat.color}`} />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">{stat.name}</p>
-                  <p className="text-2xl font-semibold text-gray-900">{stat.value}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{stat.name}</p>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white">{stat.value}</p>
                   {stat.percentage !== undefined && (
-                    <p className="text-sm text-gray-600">{stat.percentage}%</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{stat.percentage}%</p>
                   )}
                 </div>
               </div>
@@ -111,13 +111,13 @@ const PaymentStats: React.FC = () => {
       </div>
 
       {/* Payment Methods */}
-      <div className="border-t border-gray-200 pt-6 mb-6">
-        <h4 className="text-md font-medium text-gray-900 mb-4">Payment Methods</h4>
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mb-6">
+        <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Payment Methods</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {paymentMethods.map((method) => (
             <div key={method.name} className="text-center">
               <div className="text-2xl mb-2">{method.icon}</div>
-              <p className="text-sm font-medium text-gray-500">{method.name}</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{method.name}</p>
               <p className={`text-lg font-semibold ${method.color}`}>{method.value}</p>
             </div>
           ))}
@@ -125,24 +125,24 @@ const PaymentStats: React.FC = () => {
       </div>
 
       {/* Amount Summary */}
-      <div className="border-t border-gray-200 pt-6">
-        <h4 className="text-md font-medium text-gray-900 mb-4">Revenue Summary</h4>
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+        <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">Revenue Summary</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center">
-            <p className="text-sm font-medium text-gray-500">Total Amount</p>
-            <p className="text-xl font-semibold text-gray-900">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Amount</p>
+            <p className="text-xl font-semibold text-gray-900 dark:text-white">
               {FeeService.formatAmount(stats.totalAmount)}
             </p>
           </div>
           <div className="text-center">
-            <p className="text-sm font-medium text-gray-500">Successful Payments</p>
-            <p className="text-xl font-semibold text-green-600">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Successful Payments</p>
+            <p className="text-xl font-semibold text-green-600 dark:text-green-400">
               {FeeService.formatAmount(stats.successfulAmount)}
             </p>
           </div>
           <div className="text-center">
-            <p className="text-sm font-medium text-gray-500">Pending Amount</p>
-            <p className="text-xl font-semibold text-yellow-600">
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pending Amount</p>
+            <p className="text-xl font-semibold text-yellow-600 dark:text-yellow-400">
               {FeeService.formatAmount(stats.pendingAmount)}
             </p>
           </div>
@@ -151,15 +151,15 @@ const PaymentStats: React.FC = () => {
 
       {/* Success Rate Progress Bar */}
       <div className="mt-6">
-        <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+        <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
           <span>Payment Success Rate</span>
           <span>
             {stats.totalPayments > 0 ? Math.round((stats.successfulPayments / stats.totalPayments) * 100) : 0}%
           </span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
           <div
-            className="bg-green-600 h-2 rounded-full transition-all duration-300"
+            className="bg-green-600 dark:bg-green-500 h-2 rounded-full transition-all duration-300"
             style={{
               width: stats.totalPayments > 0 ? `${(stats.successfulPayments / stats.totalPayments) * 100}%` : '0%'
             }}

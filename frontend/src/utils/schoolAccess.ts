@@ -49,7 +49,7 @@ export const canManageUsers = (user: User | null): boolean => {
   if (!user) return false;
   
   return user.roles?.some(role => 
-    ['Admin', 'ICT_administrator', 'Proprietor'].includes(role)
+    ['Admin', 'ICT_administrator', 'Proprietor', 'Principal'].includes(role)
   ) || false;
 };
 

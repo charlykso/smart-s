@@ -6,6 +6,7 @@ const Profile = require('../model/Profile')
 const Address = require('../model/Address')
 const ClassArm = require('../model/ClassArm')
 const School = require('../model/School')
+const { generateStudentCredentialsPDF } = require('../utils/pdfGenerator')
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
@@ -59,11 +60,8 @@ const validateStudentData = (student, rowIndex) => {
   const requiredFields = [
     'firstname',
     'lastname',
-    'email',
-    'phone',
     'regNo',
     'gender',
-    'DOB',
     'classArm',
     'type',
   ]
@@ -75,8 +73,12 @@ const validateStudentData = (student, rowIndex) => {
     }
   })
 
-  // Validate email format
-  if (student.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(student.email)) {
+  // Validate email format (only if provided)
+  if (
+    student.email &&
+    student.email.trim() !== '' &&
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(student.email)
+  ) {
     errors.push(`Row ${rowIndex}: Invalid email format`)
   }
 
@@ -90,17 +92,129 @@ const validateStudentData = (student, rowIndex) => {
     errors.push(`Row ${rowIndex}: Type must be 'day' or 'boarding'`)
   }
 
-  // Validate phone number (basic check)
-  if (student.phone && !/^\+?[\d\s\-\(\)]+$/.test(student.phone)) {
+  // Validate phone number (only if provided)
+  if (
+    student.phone &&
+    student.phone.trim() !== '' &&
+    !/^\+?[\d\s\-\(\)]+$/.test(student.phone)
+  ) {
     errors.push(`Row ${rowIndex}: Invalid phone number format`)
   }
 
   return errors
 }
 
-// Generate default password
-const generateDefaultPassword = (firstname, regNo) => {
-  return `${firstname.toLowerCase()}${regNo.slice(-3)}2024`
+// Configuration for bulk upload
+const BULK_UPLOAD_CONFIG = {
+  // Password generation method: 'regNoYear', 'regNo', 'phone', or 'legacy'
+  // 'regNoYear' - Uses regNo + current year (e.g., REG123_2025)
+  // 'regNo' - Uses student registration number as password
+  // 'phone' - Uses phone number (digits only) as password
+  // 'legacy' - Uses firstname + last 3 digits of regNo + year
+  passwordType: 'regNoYear', // Changed to use regNo + year
+}
+
+// Generate default password - updated to use regNo + year
+const generateDefaultPassword = (
+  studentData,
+  passwordType = BULK_UPLOAD_CONFIG.passwordType
+) => {
+  const currentYear = new Date().getFullYear()
+
+  switch (passwordType) {
+    case 'regNoYear':
+      // Use registration number + current year
+      return `${studentData.regNo}_${currentYear}`
+    case 'phone':
+      // Use phone number as password (remove any non-digits) - only if phone exists
+      return studentData.phone
+        ? studentData.phone.replace(/\D/g, '')
+        : `${studentData.regNo}_${currentYear}`
+    case 'regNo':
+      // Use registration number as password
+      return studentData.regNo
+    case 'legacy':
+      // Original method: firstname + last 3 digits of regNo + year
+      return `${studentData.firstname.toLowerCase()}${studentData.regNo.slice(
+        -3
+      )}${currentYear}`
+    default:
+      // Default to regNo + year for security
+      return `${studentData.regNo}_${currentYear}`
+  }
+}
+
+// Smart header detection function
+const findHeaderRow = (worksheet) => {
+  const range = XLSX.utils.decode_range(worksheet['!ref'])
+  const expectedHeaders = [
+    'firstname',
+    'lastname',
+    'regNo',
+    'gender',
+    'classArm',
+    'type',
+  ]
+
+  // Check each row to find the one that contains our expected headers
+  for (let r = 0; r <= range.e.r; r++) {
+    const rowData = []
+    for (let c = 0; c <= range.e.c; c++) {
+      const cellAddress = XLSX.utils.encode_cell({ r, c })
+      const cell = worksheet[cellAddress]
+      rowData.push(cell ? cell.v : '')
+    }
+
+    // Check if this row contains most of our expected headers
+    const matchingHeaders = expectedHeaders.filter((header) =>
+      rowData.some(
+        (cell) =>
+          typeof cell === 'string' &&
+          cell.toLowerCase().trim() === header.toLowerCase()
+      )
+    )
+
+    // If we find at least 4 of the 6 required headers, this is likely our header row
+    if (matchingHeaders.length >= 4) {
+      console.log(`Found header row at row ${r + 1} with headers:`, rowData)
+      return r
+    }
+  }
+
+  // If no clear header row found, assume first row (default behavior)
+  console.log('No clear header row found, using first row as default')
+  return 0
+}
+
+// Smart Excel parsing function
+const parseExcelWithHeaderDetection = (worksheet) => {
+  const headerRowIndex = findHeaderRow(worksheet)
+
+  // If header row is 0, use default parsing
+  if (headerRowIndex === 0) {
+    return XLSX.utils.sheet_to_json(worksheet)
+  }
+
+  // Otherwise, parse starting from the detected header row
+  const range = XLSX.utils.decode_range(worksheet['!ref'])
+
+  // Create a new range starting from the header row
+  const newRange = {
+    s: { c: range.s.c, r: headerRowIndex },
+    e: { c: range.e.c, r: range.e.r },
+  }
+
+  // Convert to JSON using the adjusted range
+  const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+    range: newRange,
+  })
+
+  console.log(
+    `Parsed ${jsonData.length} rows starting from header row ${
+      headerRowIndex + 1
+    }`
+  )
+  return jsonData
 }
 
 // Process Excel file and create students
@@ -117,7 +231,7 @@ exports.bulkUploadStudents = async (req, res) => {
     }
 
     // Verify school exists and user has access
-    const school = await School.findById(school_id)
+    const school = await School.findById(school_id).populate('groupSchool')
     if (!school) {
       return res.status(404).json({
         success: false,
@@ -145,11 +259,11 @@ exports.bulkUploadStudents = async (req, res) => {
       })
     }
 
-    // Read Excel file
+    // Read Excel file with smart header detection
     const workbook = XLSX.readFile(req.file.path)
     const sheetName = workbook.SheetNames[0]
     const worksheet = workbook.Sheets[sheetName]
-    const jsonData = XLSX.utils.sheet_to_json(worksheet)
+    const jsonData = parseExcelWithHeaderDetection(worksheet)
 
     if (jsonData.length === 0) {
       // Clean up uploaded file
@@ -275,11 +389,8 @@ exports.bulkUploadStudents = async (req, res) => {
         const profile = new Profile({})
         const savedProfile = await profile.save()
 
-        // Generate password
-        const defaultPassword = generateDefaultPassword(
-          studentData.firstname,
-          studentData.regNo
-        )
+        // Generate password using configured method
+        const defaultPassword = generateDefaultPassword(studentData)
         const hashedPassword = await bcrypt.hash(defaultPassword, 10)
 
         // Create student
@@ -333,16 +444,63 @@ exports.bulkUploadStudents = async (req, res) => {
     // Clean up uploaded file
     fs.unlinkSync(req.file.path)
 
-    res.status(200).json({
-      success: true,
-      message: `Bulk upload completed. ${results.successful.length} students created successfully, ${results.failed.length} failed.`,
-      data: {
-        totalProcessed: processedData.length,
-        successful: results.successful.length,
-        failed: results.failed.length,
-        results: results,
-      },
-    })
+    // Generate PDF with student credentials if there were successful uploads
+    if (results.successful.length > 0) {
+      try {
+        const pdfResult = await generateStudentCredentialsPDF(
+          results.successful,
+          school,
+          {
+            title: `Student Login Credentials - ${school.name}`,
+            subtitle: 'Bulk Upload Results',
+          }
+        )
+
+        // Set PDF response headers
+        res.setHeader('Content-Type', 'application/pdf')
+        res.setHeader(
+          'Content-Disposition',
+          `attachment; filename="${pdfResult.filename}"`
+        )
+        res.setHeader('Content-Length', pdfResult.buffer.length)
+
+        // Send PDF as response
+        res.send(pdfResult.buffer)
+
+        // Clean up temporary PDF file
+        setTimeout(() => {
+          if (fs.existsSync(pdfResult.filepath)) {
+            fs.unlinkSync(pdfResult.filepath)
+          }
+        }, 5000) // Clean up after 5 seconds
+      } catch (pdfError) {
+        console.error('Error generating PDF:', pdfError)
+
+        // Fall back to JSON response if PDF generation fails
+        res.status(200).json({
+          success: true,
+          message: `Bulk upload completed. ${results.successful.length} students created successfully, ${results.failed.length} failed. PDF generation failed.`,
+          data: {
+            totalProcessed: processedData.length,
+            successful: results.successful.length,
+            failed: results.failed.length,
+            results: results,
+          },
+        })
+      }
+    } else {
+      // No successful uploads, return JSON response
+      res.status(200).json({
+        success: true,
+        message: `Bulk upload completed. ${results.successful.length} students created successfully, ${results.failed.length} failed.`,
+        data: {
+          totalProcessed: processedData.length,
+          successful: results.successful.length,
+          failed: results.failed.length,
+          results: results,
+        },
+      })
+    }
   } catch (error) {
     // Clean up uploaded file if it exists
     if (req.file && fs.existsSync(req.file.path)) {
@@ -448,23 +606,44 @@ exports.downloadStudentTemplate = async (req, res) => {
 
     // Add school information
     if (school) {
-      // School name
+      // School name - make it more prominent
       const schoolNameCell = worksheet.getCell(`A${currentRow}`)
-      schoolNameCell.value = school.name
-      schoolNameCell.font = { bold: true, size: 16 }
+      schoolNameCell.value = school.name.toUpperCase()
+      schoolNameCell.font = {
+        bold: true,
+        size: 20,
+        color: { argb: 'FF0066CC' },
+      }
       schoolNameCell.alignment = { horizontal: 'center' }
+      schoolNameCell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFF0F8FF' },
+      }
+      schoolNameCell.border = {
+        top: { style: 'thick', color: { argb: 'FF0066CC' } },
+        left: { style: 'thick', color: { argb: 'FF0066CC' } },
+        bottom: { style: 'thick', color: { argb: 'FF0066CC' } },
+        right: { style: 'thick', color: { argb: 'FF0066CC' } },
+      }
       worksheet.mergeCells(`A${currentRow}:J${currentRow}`)
       currentRow++
 
       // School contact info
       if (school.email) {
-        worksheet.getCell(`A${currentRow}`).value = `Email: ${school.email}`
+        const emailCell = worksheet.getCell(`A${currentRow}`)
+        emailCell.value = `Email: ${school.email}`
+        emailCell.font = { italic: true, size: 11 }
+        emailCell.alignment = { horizontal: 'center' }
+        worksheet.mergeCells(`A${currentRow}:J${currentRow}`)
         currentRow++
       }
       if (school.phoneNumber) {
-        worksheet.getCell(
-          `A${currentRow}`
-        ).value = `Phone: ${school.phoneNumber}`
+        const phoneCell = worksheet.getCell(`A${currentRow}`)
+        phoneCell.value = `Phone: ${school.phoneNumber}`
+        phoneCell.font = { italic: true, size: 11 }
+        phoneCell.alignment = { horizontal: 'center' }
+        worksheet.mergeCells(`A${currentRow}:J${currentRow}`)
         currentRow++
       }
 
@@ -474,8 +653,13 @@ exports.downloadStudentTemplate = async (req, res) => {
       // Add template title
       const titleCell = worksheet.getCell(`A${currentRow}`)
       titleCell.value = 'STUDENT BULK UPLOAD TEMPLATE'
-      titleCell.font = { bold: true, size: 14 }
+      titleCell.font = { bold: true, size: 14, color: { argb: 'FF333333' } }
       titleCell.alignment = { horizontal: 'center' }
+      titleCell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFFFE4B5' },
+      }
       worksheet.mergeCells(`A${currentRow}:J${currentRow}`)
       currentRow += 2
     }

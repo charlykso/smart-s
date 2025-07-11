@@ -1,0 +1,66 @@
+/* PaymentCard Component CSS */
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+/* Enhanced word breaking for long IDs and references */
+.word-break-break-all {
+  word-break: break-all;
+  overflow-wrap: break-word;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+
+/* Fallback for browsers that don't support line-clamp */
+@supports not (-webkit-line-clamp: 1) {
+  .line-clamp-2 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    max-height: 2.5em; /* Approximate height for 2 lines */
+    line-height: 1.25em;
+  }
+
+  .line-clamp-3 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    max-height: 3.75em; /* Approximate height for 3 lines */
+    line-height: 1.25em;
+  }
+}
+
+/* Enhanced responsive design for payment cards */
+@media (max-width: 1024px) {
+  .payment-card-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1279px) {
+  .payment-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .payment-card-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+}

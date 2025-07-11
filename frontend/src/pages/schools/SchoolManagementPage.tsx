@@ -21,6 +21,12 @@ import TermModal from '../../components/schools/TermModal';
 import ClassArmModal from '../../components/schools/ClassArmModal';
 import GroupSchoolModal from '../../components/schools/GroupSchoolModal';
 import SchoolStats from '../../components/schools/SchoolStats';
+import type { 
+  School,
+  Session,
+  Term,
+  ClassArm,
+} from '../../types/school';
 
 const SchoolManagementPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -35,11 +41,7 @@ const SchoolManagementPage: React.FC = () => {
     selectedTerm,
     isLoading,
     error,
-    loadSchools,
-    loadGroupSchools,
-    loadSessions,
-    loadTerms,
-    loadClassArms,
+    loadDataByUserRole,
     setSelectedSchool,
     setSelectedSession,
     setSelectedTerm,
@@ -60,25 +62,30 @@ const SchoolManagementPage: React.FC = () => {
   const [editingGroupSchool, setEditingGroupSchool] = useState(null);
 
   // Active tab state
-  const [activeTab, setActiveTab] = useState<'overview' | 'schools' | 'sessions' | 'terms' | 'classes'>('overview');
+  type TabType = 'overview' | 'schools' | 'sessions' | 'terms' | 'classes';
+  const [activeTab, setActiveTab] = useState<TabType>('overview');
 
   useEffect(() => {
-    // Load initial data
-    loadGroupSchools();
-    loadSchools();
-    loadSessions();
-    loadTerms();
-    loadClassArms();
-  }, [loadGroupSchools, loadSchools, loadSessions, loadTerms, loadClassArms]);
+    // Use role-based loading instead of loading everything
+    if (user?.roles && user.roles.length > 0) {
+      loadDataByUserRole(user.roles);
+    }
+  }, [loadDataByUserRole, user?.roles]);
 
   // Check user permissions
   const canManageSchools = user?.roles?.some(role => 
     ['Admin', 'ICT_administrator', 'Proprietor'].includes(role)
   );
 
+  const canManageGroupSchools = user?.roles?.some(role => 
+    ['Admin', 'Proprietor'].includes(role)
+  );
+
   const canManageSessions = user?.roles?.some(role => 
     ['Admin', 'ICT_administrator', 'Proprietor', 'Principal'].includes(role)
   );
+
+  const isICTAdmin = user?.roles?.includes('ICT_administrator');
 
   if (isLoading && schools.length === 0) {
     return (
@@ -101,7 +108,7 @@ const SchoolManagementPage: React.FC = () => {
     setIsSchoolModalOpen(true);
   };
 
-  const handleEditSchool = (school: any) => {
+  const handleEditSchool = (school: School) => {
     setEditingSchool(school);
     setIsSchoolModalOpen(true);
   };
@@ -111,7 +118,7 @@ const SchoolManagementPage: React.FC = () => {
     setIsSessionModalOpen(true);
   };
 
-  const handleEditSession = (session: any) => {
+  const handleEditSession = (session: Session) => {
     setEditingSession(session);
     setIsSessionModalOpen(true);
   };
@@ -121,7 +128,7 @@ const SchoolManagementPage: React.FC = () => {
     setIsTermModalOpen(true);
   };
 
-  const handleEditTerm = (term: any) => {
+  const handleEditTerm = (term: Term) => {
     setEditingTerm(term);
     setIsTermModalOpen(true);
   };
@@ -131,7 +138,7 @@ const SchoolManagementPage: React.FC = () => {
     setIsClassArmModalOpen(true);
   };
 
-  const handleEditClassArm = (classArm: any) => {
+  const handleEditClassArm = (classArm: ClassArm) => {
     setEditingClassArm(classArm);
     setIsClassArmModalOpen(true);
   };
@@ -161,14 +168,16 @@ const SchoolManagementPage: React.FC = () => {
 
             {canManageSchools && (
               <div className="flex space-x-3">
-                <button
-                  type="button"
-                  onClick={handleCreateGroupSchool}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-                >
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  Group School
-                </button>
+                {canManageGroupSchools && (
+                  <button
+                    type="button"
+                    onClick={handleCreateGroupSchool}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    Group School
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={handleCreateSchool}
@@ -182,6 +191,34 @@ const SchoolManagementPage: React.FC = () => {
           </div>
         </div>
 
+        {/* ICT Administrator Notice */}
+        {isICTAdmin && (
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                  ICT Administrator Notice
+                </h3>
+                <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
+                  <p>
+                    As an ICT Administrator, you have access to a dedicated management interface. 
+                    While you can view sessions and academic data here, for school and user management tasks, 
+                    consider using your{' '}
+                    <a href="/ict-admin" className="font-medium underline hover:no-underline">
+                      ICT Administrator Dashboard
+                    </a>.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Tab Navigation */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900 border border-secondary-200 dark:border-gray-700 p-4 lg:p-6 transition-colors duration-200">
           <nav className="flex flex-wrap gap-2 sm:gap-4 lg:gap-6 xl:gap-8">
@@ -191,7 +228,7 @@ const SchoolManagementPage: React.FC = () => {
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => setActiveTab(tab.id as any)}
+                  onClick={() => setActiveTab(tab.id as TabType)}
                   className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900'
@@ -310,7 +347,7 @@ const SchoolManagementPage: React.FC = () => {
 
         {/* Sessions Tab */}
         {activeTab === 'sessions' && (
-          <div className="space-y-6">
+          <div className="space-y-6 overflow-hidden">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Academic Sessions ({sessions.length})</h2>
               {canManageSessions && (
@@ -325,15 +362,16 @@ const SchoolManagementPage: React.FC = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6 auto-rows-min">
               {sessions.map((session) => (
-                <SessionCard
-                  key={session._id}
-                  session={session}
-                  onEdit={canManageSessions ? handleEditSession : undefined}
-                  onSelect={setSelectedSession}
-                  isSelected={selectedSession?._id === session._id}
-                />
+                <div key={session._id} className="h-fit min-h-0 w-full">
+                  <SessionCard
+                    session={session}
+                    onEdit={canManageSessions ? handleEditSession : undefined}
+                    onSelect={setSelectedSession}
+                    isSelected={selectedSession?._id === session._id}
+                  />
+                </div>
               ))}
             </div>
           </div>
@@ -403,7 +441,7 @@ const SchoolManagementPage: React.FC = () => {
         onClose={() => setIsSchoolModalOpen(false)}
         school={editingSchool}
         groupSchools={groupSchools}
-        onSubmit={async (data) => {
+        onSubmit={async () => {
           // Handle in the modal component
           setIsSchoolModalOpen(false);
         }}
@@ -414,7 +452,7 @@ const SchoolManagementPage: React.FC = () => {
         onClose={() => setIsSessionModalOpen(false)}
         session={editingSession}
         schools={schools}
-        onSubmit={async (data) => {
+        onSubmit={async () => {
           // Handle in the modal component
           setIsSessionModalOpen(false);
         }}
@@ -425,7 +463,7 @@ const SchoolManagementPage: React.FC = () => {
         onClose={() => setIsTermModalOpen(false)}
         term={editingTerm}
         sessions={sessions}
-        onSubmit={async (data) => {
+        onSubmit={async () => {
           // Handle in the modal component
           setIsTermModalOpen(false);
         }}
@@ -436,20 +474,16 @@ const SchoolManagementPage: React.FC = () => {
         onClose={() => setIsClassArmModalOpen(false)}
         classArm={editingClassArm}
         schools={schools}
-        onSubmit={async (data) => {
+        onSubmit={async () => {
           // Handle in the modal component
           setIsClassArmModalOpen(false);
         }}
       />
 
       <GroupSchoolModal
-        isOpen={isGroupSchoolModalOpen}
+        isOpen={canManageGroupSchools && isGroupSchoolModalOpen}
         onClose={() => setIsGroupSchoolModalOpen(false)}
         groupSchool={editingGroupSchool}
-        onSubmit={async (data) => {
-          // Handle in the modal component
-          setIsGroupSchoolModalOpen(false);
-        }}
       />
     </MainLayout>
   );

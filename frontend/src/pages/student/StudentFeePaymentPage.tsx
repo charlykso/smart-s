@@ -1,143 +1,113 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   CurrencyDollarIcon,
-  CreditCardIcon,
   CheckCircleIcon,
   ClockIcon,
   ExclamationTriangleIcon,
   CalendarIcon,
   BanknotesIcon,
-  AcademicCapIcon,
-  FunnelIcon,
 } from '@heroicons/react/24/outline';
-import { useStudentStore } from '../../store/studentStore';
-import { useFeeStore } from '../../store/feeStore';
 import { useAuthStore } from '../../store/authStore';
-import { useNotificationStore } from '../../store/notificationStore';
+import { STORAGE_KEYS, ENV } from '../../constants';
 import MainLayout from '../../components/layout/MainLayout';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import StudentFeeCard from '../../components/student/StudentFeeCard';
 import EnhancedPaymentModal from '../../components/student/EnhancedPaymentModal';
 import PaymentHistoryCard from '../../components/student/PaymentHistoryCard';
-import { FeeService } from '../../services/feeService';
-import { SchoolService } from '../../services/schoolService';
-import type { Session, Term } from '../../types/school';
-import type { Fee } from '../../types/fee';
+import type { Fee, Payment } from '../../types/fee';
 
 const StudentFeePaymentPage: React.FC = () => {
-  const { user } = useAuthStore();
-  const {
-    dashboardData,
-    outstandingFees,
-    payments,
-    totalOutstanding,
-    dashboardLoading,
-    fetchDashboardData,
-    fetchOutstandingFees,
-    fetchPayments,
-  } = useStudentStore();
+  const { user, token } = useAuthStore();
 
-  const { loadApprovedFees, fees, initiatePayment, isLoading } = useFeeStore();
-  const { loadNotifications, notifications, unreadCount } = useNotificationStore();
+  // State for data
+  const [approvedFees, setApprovedFees] = useState<Fee[]>([]);
+  const [outstandingFees, setOutstandingFees] = useState<Fee[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Modal states
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [selectedFee, setSelectedFee] = useState(null);
+  const [selectedFee, setSelectedFee] = useState<Fee | null>(null);
   const [activeTab, setActiveTab] = useState<'fees' | 'history'>('fees');
 
-  // New states for term/session selection and approved fees
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [terms, setTerms] = useState<Term[]>([]);
-  const [selectedSession, setSelectedSession] = useState<string>('');
-  const [selectedTerm, setSelectedTerm] = useState<string>('');
-  const [approvedFees, setApprovedFees] = useState<Fee[]>([]);
-  const [loadingFees, setLoadingFees] = useState(false);
-  const [loadingSessions, setLoadingSessions] = useState(false);
-
-  // Load sessions and terms on component mount
-  useEffect(() => {
-    loadSessionsAndTerms();
-    fetchDashboardData();
-    fetchPayments();
-    loadNotifications();
-  }, [fetchDashboardData, fetchPayments, loadNotifications]);
-
-  // Load approved fees when term selection changes
-  useEffect(() => {
-    if (selectedTerm) {
-      loadApprovedFeesForTerm(selectedTerm);
-    } else if (selectedSession) {
-      loadApprovedFeesForSession(selectedSession);
+  // Helper function to make authenticated API calls
+  const makeApiCall = useCallback(async (endpoint: string) => {
+    const accessToken = token || localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    
+    if (!accessToken) {
+      throw new Error('No authentication token found');
     }
-  }, [selectedTerm, selectedSession]);
 
-  // Load sessions and terms
-  const loadSessionsAndTerms = async () => {
-    try {
-      setLoadingSessions(true);
-      const [sessionsData, termsData] = await Promise.all([
-        SchoolService.getSessions(),
-        SchoolService.getTerms()
-      ]);
+    const response = await fetch(`${ENV.API_BASE_URL}${endpoint}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
-      setSessions(sessionsData);
-      setTerms(termsData);
-
-      // Auto-select current term if available
-      const currentTerm = termsData.find(term => term.isCurrent);
-      if (currentTerm) {
-        setSelectedTerm(currentTerm._id);
-      } else if (termsData.length > 0) {
-        setSelectedTerm(termsData[0]._id);
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new Error('Session expired. Please login again.');
       }
-    } catch (error) {
-      console.error('Error loading sessions and terms:', error);
-    } finally {
-      setLoadingSessions(false);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-  };
 
-  // Load approved fees for selected term
-  const loadApprovedFeesForTerm = async (termId: string) => {
+    const data = await response.json();
+    return data;
+  }, [token, user]);
+
+  // Load all data
+  const loadData = useCallback(async () => {
+    if (!user) return;
+
     try {
-      setLoadingFees(true);
-      const feesData = await FeeService.getApprovedFeesByTerm(termId);
-      setApprovedFees(feesData);
+      setLoading(true);
+      setError(null);
+      
+      // Load approved fees, outstanding fees, and payments in parallel
+      const [approvedData, outstandingData, paymentsData] = await Promise.all([
+        makeApiCall('/fee/student/approved-fees'),
+        makeApiCall('/student/outstanding-fees'),
+        makeApiCall('/student/payments')
+      ]);
+      
+      // Set approved fees
+      if (approvedData.success && approvedData.data) {
+        setApprovedFees(approvedData.data);
+      } else {
+        setApprovedFees([]);
+      }
+      
+      // Set outstanding fees
+      if (outstandingData.success && outstandingData.data) {
+        setOutstandingFees(outstandingData.data);
+      } else {
+        setOutstandingFees([]);
+      }
+      
+      // Set payments
+      if (paymentsData.success && paymentsData.data) {
+        setPayments(paymentsData.data);
+      } else {
+        setPayments([]);
+      }
+      
     } catch (error) {
-      console.error('Error loading approved fees for term:', error);
-      setApprovedFees([]);
+      console.error('Error loading fee data:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load fee data');
     } finally {
-      setLoadingFees(false);
+      setLoading(false);
     }
-  };
+  }, [user, makeApiCall]);
 
-  // Load approved fees for selected session
-  const loadApprovedFeesForSession = async (sessionId: string) => {
-    try {
-      setLoadingFees(true);
-      // Get all terms for the session
-      const sessionTerms = terms.filter(term =>
-        typeof term.session === 'object' ? term.session._id === sessionId : term.session === sessionId
-      );
+  // Load data on component mount
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
-      // Load fees for all terms in the session
-      const allFeesPromises = sessionTerms.map(term =>
-        FeeService.getApprovedFeesByTerm(term._id)
-      );
-
-      const allFeesArrays = await Promise.all(allFeesPromises);
-      const allFees = allFeesArrays.flat();
-
-      setApprovedFees(allFees);
-    } catch (error) {
-      console.error('Error loading approved fees for session:', error);
-      setApprovedFees([]);
-    } finally {
-      setLoadingFees(false);
-    }
-  };
-
-  const handlePayFee = (fee: any) => {
+  const handlePayFee = (fee: Fee) => {
     setSelectedFee(fee);
     setIsPaymentModalOpen(true);
   };
@@ -146,39 +116,33 @@ const StudentFeePaymentPage: React.FC = () => {
     setIsPaymentModalOpen(false);
     setSelectedFee(null);
     // Refresh data after successful payment
-    fetchDashboardData();
-    fetchPayments();
-    // Reload approved fees for current selection
-    if (selectedTerm) {
-      loadApprovedFeesForTerm(selectedTerm);
-    } else if (selectedSession) {
-      loadApprovedFeesForSession(selectedSession);
-    }
+    loadData();
   };
 
-  // Handle session selection
-  const handleSessionChange = (sessionId: string) => {
-    setSelectedSession(sessionId);
-    setSelectedTerm(''); // Clear term selection when session is selected
-  };
-
-  // Handle term selection
-  const handleTermChange = (termId: string) => {
-    setSelectedTerm(termId);
-    setSelectedSession(''); // Clear session selection when term is selected
-  };
-
-  // Get filtered terms for selected session
-  const getTermsForSession = (sessionId: string) => {
-    return terms.filter(term =>
-      typeof term.session === 'object' ? term.session._id === sessionId : term.session === sessionId
-    );
-  };
-
-  if (loadingSessions) {
+  if (loading) {
     return (
       <MainLayout>
         <LoadingSpinner />
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <ExclamationTriangleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Fees</h3>
+            <p className="text-gray-500 mb-4">{error}</p>
+            <button
+              onClick={loadData}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
       </MainLayout>
     );
   }
@@ -199,111 +163,50 @@ const StudentFeePaymentPage: React.FC = () => {
     return dueDate < today;
   });
 
-  const totalFeesAmount = approvedFees.reduce((sum, fee) => sum + fee.amount, 0);
+  const totalOutstanding = outstandingFees.reduce((sum, fee) => sum + (fee.amount || 0), 0);
 
   return (
     <MainLayout>
       <div className="space-y-6">
         {/* Page Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <CurrencyDollarIcon className="h-8 w-8 text-primary-600 mr-3" />
+              <CurrencyDollarIcon className="h-8 w-8 text-blue-600 mr-3" />
               <div>
-                <h1 className="text-2xl font-bold text-secondary-900">
-                  Fee Payments
+                <h1 className="text-2xl font-bold text-gray-900">
+                  My Fee Payments
                 </h1>
-                <p className="text-secondary-600 mt-1">
-                  Manage your fee payments and view payment history
+                <p className="text-gray-600 mt-1">
+                  View and manage your school fees, payment history, and available payment methods.
                 </p>
               </div>
             </div>
 
             <div className="text-right">
-              <p className="text-sm text-gray-500">Total Fees Amount</p>
-              <p className={`text-2xl font-bold ${totalFeesAmount > 0 ? 'text-primary-600' : 'text-gray-600'}`}>
-                {FeeService.formatAmount(totalFeesAmount)}
+              <p className="text-sm text-gray-500">Outstanding Amount</p>
+              <p className={`text-2xl font-bold ${totalOutstanding > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                ₦{totalOutstanding.toLocaleString()}
               </p>
             </div>
           </div>
         </div>
-
-        {/* Term/Session Selection Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
-          <div className="flex items-center space-x-4">
-            <FunnelIcon className="h-5 w-5 text-gray-600" />
-            <span className="text-sm font-medium text-gray-700">Filter by:</span>
-
-            {/* Session Selection */}
-            <div className="flex items-center space-x-2">
-              <label htmlFor="session-select" className="text-sm text-gray-600">Session:</label>
-              <select
-                id="session-select"
-                value={selectedSession}
-                onChange={(e) => handleSessionChange(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              >
-                <option value="">Select Session</option>
-                {sessions.map(session => (
-                  <option key={session._id} value={session._id}>
-                    {session.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Term Selection */}
-            <div className="flex items-center space-x-2">
-              <label htmlFor="term-select" className="text-sm text-gray-600">Term:</label>
-              <select
-                id="term-select"
-                value={selectedTerm}
-                onChange={(e) => handleTermChange(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-              >
-                <option value="">Select Term</option>
-                {(selectedSession ? getTermsForSession(selectedSession) : terms).map(term => (
-                  <option key={term._id} value={term._id}>
-                    {term.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Clear Filters */}
-            {(selectedSession || selectedTerm) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedSession('');
-                  setSelectedTerm('');
-                  setApprovedFees([]);
-                }}
-                className="text-sm text-primary-600 hover:text-primary-700 font-medium"
-              >
-                Clear Filters
-              </button>
-            )}
-          </div>
-        </div>
-
         {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-4 lg:p-6">
-          <nav className="flex flex-wrap gap-2 sm:gap-4 lg:gap-6 xl:gap-8">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <nav className="flex gap-4">
             <button
               type="button"
               onClick={() => setActiveTab('fees')}
-              className={`flex items-center px-3 py-2 text-sm font-medium rounded-md whitespace-nowrap ${
+              className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                 activeTab === 'fees'
-                  ? 'text-primary-600 bg-primary-50'
+                  ? 'text-blue-600 bg-blue-50'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
               }`}
             >
-              <AcademicCapIcon className="h-4 w-4 mr-2 flex-shrink-0" />
-              <span className="hidden sm:inline">Approved Fees</span>
-              <span className="sm:hidden">Fees</span>
+              <CurrencyDollarIcon className="h-4 w-4 mr-2" />
+              Available Fees
               {approvedFees.length > 0 && (
-                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                   {approvedFees.length}
                 </span>
               )}
@@ -312,14 +215,19 @@ const StudentFeePaymentPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setActiveTab('history')}
-              className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
+              className={`flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                 activeTab === 'history'
-                  ? 'text-primary-600 bg-primary-50'
+                  ? 'text-blue-600 bg-blue-50'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
               }`}
             >
               <CheckCircleIcon className="h-4 w-4 mr-2" />
               Payment History
+              {payments.length > 0 && (
+                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  {payments.length}
+                </span>
+              )}
             </button>
           </nav>
         </div>
@@ -360,36 +268,17 @@ const StudentFeePaymentPage: React.FC = () => {
         {/* Approved Fees Tab */}
         {activeTab === 'fees' && (
           <div className="space-y-6">
-            {/* Selection Info */}
-            {(selectedSession || selectedTerm) && (
-              <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <AcademicCapIcon className="h-5 w-5 text-primary-600 mr-2" />
-                  <div>
-                    <h4 className="text-sm font-medium text-primary-800">
-                      Showing fees for: {' '}
-                      {selectedTerm && terms.find(t => t._id === selectedTerm)?.name}
-                      {selectedSession && sessions.find(s => s._id === selectedSession)?.name}
-                    </h4>
-                    <p className="text-sm text-primary-700 mt-1">
-                      Click on any fee to make a payment using your school's available payment methods.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <CurrencyDollarIcon className="h-8 w-8 text-primary-600" />
+                    <CurrencyDollarIcon className="h-8 w-8 text-blue-600" />
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Total Amount</p>
-                    <p className="text-2xl font-semibold text-primary-600">
-                      {FeeService.formatAmount(totalFeesAmount)}
+                    <p className="text-sm font-medium text-gray-500">Available Fees</p>
+                    <p className="text-2xl font-semibold text-blue-600">
+                      {approvedFees.length}
                     </p>
                   </div>
                 </div>
@@ -410,11 +299,23 @@ const StudentFeePaymentPage: React.FC = () => {
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
-                    <ClockIcon className="h-8 w-8 text-blue-600" />
+                    <ClockIcon className="h-8 w-8 text-yellow-600" />
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-500">Due Soon</p>
-                    <p className="text-2xl font-semibold text-blue-600">{urgentFees.length}</p>
+                    <p className="text-2xl font-semibold text-yellow-600">{urgentFees.length}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <ExclamationTriangleIcon className="h-8 w-8 text-red-600" />
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Overdue</p>
+                    <p className="text-2xl font-semibold text-red-600">{overdueFees.length}</p>
                   </div>
                 </div>
               </div>
@@ -424,35 +325,16 @@ const StudentFeePaymentPage: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-medium text-gray-900">
-                  Approved Fees ({approvedFees.length})
+                  Available Fees for Payment ({approvedFees.length})
                 </h2>
-                {loadingFees && (
-                  <div className="flex items-center text-sm text-gray-500">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600 mr-2"></div>
-                    Loading fees...
-                  </div>
-                )}
               </div>
 
-              {!selectedSession && !selectedTerm ? (
-                <div className="text-center py-12 bg-white rounded-lg shadow">
-                  <FunnelIcon className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">Select a Term or Session</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Please select a term or session above to view approved fees for payment.
-                  </p>
-                </div>
-              ) : loadingFees ? (
-                <div className="text-center py-12 bg-white rounded-lg shadow">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-                  <p className="mt-4 text-sm text-gray-500">Loading approved fees...</p>
-                </div>
-              ) : approvedFees.length === 0 ? (
+              {approvedFees.length === 0 ? (
                 <div className="text-center py-12 bg-white rounded-lg shadow">
                   <CheckCircleIcon className="mx-auto h-12 w-12 text-green-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No approved fees found</h3>
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No fees available for payment</h3>
                   <p className="mt-1 text-sm text-gray-500">
-                    There are no approved fees for the selected {selectedTerm ? 'term' : 'session'}.
+                    All your current fees have been paid. Check back later for new fee notifications.
                   </p>
                 </div>
               ) : (
@@ -460,7 +342,19 @@ const StudentFeePaymentPage: React.FC = () => {
                   {approvedFees.map((fee) => (
                     <StudentFeeCard
                       key={fee._id}
-                      fee={fee}
+                      fee={{
+                        _id: fee._id,
+                        name: fee.name,
+                        amount: fee.amount,
+                        type: fee.type,
+                        term: typeof fee.term === 'string' 
+                          ? { _id: fee.term, name: 'Unknown Term' }
+                          : { _id: fee.term._id, name: fee.term.name },
+                        dueDate: fee.dueDate,
+                        description: fee.decription, // Note: Backend typo
+                        isInstallmentAllowed: fee.isInstallmentAllowed,
+                        no_ofInstallments: fee.no_ofInstallments,
+                      }}
                       onPayNow={handlePayFee}
                       isOverdue={overdueFees.some(f => f._id === fee._id)}
                       isDueSoon={urgentFees.some(f => f._id === fee._id)}
@@ -494,7 +388,31 @@ const StudentFeePaymentPage: React.FC = () => {
                 {payments.map((payment) => (
                   <PaymentHistoryCard
                     key={payment._id}
-                    payment={payment}
+                    payment={{
+                      _id: payment._id,
+                      amount: payment.amount,
+                      fee: typeof payment.fee === 'string'
+                        ? {
+                            _id: payment.fee,
+                            name: 'Unknown Fee',
+                            amount: payment.amount,
+                            type: 'unknown',
+                          }
+                        : {
+                            _id: payment.fee._id,
+                            name: payment.fee.name,
+                            amount: payment.fee.amount,
+                            type: payment.fee.type,
+                            term: payment.fee.term,
+                          },
+                      status: payment.status,
+                      mode_of_payment: payment.mode_of_payment,
+                      trans_date: payment.trans_date,
+                      trx_ref: payment.trx_ref || '',
+                      trans_id: payment.trans_id,
+                      channel: payment.channel,
+                      isInstallment: payment.isInstallment,
+                    }}
                   />
                 ))}
               </div>

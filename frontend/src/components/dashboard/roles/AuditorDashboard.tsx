@@ -7,7 +7,6 @@ import {
   DocumentTextIcon,
   CheckCircleIcon,
 } from '@heroicons/react/24/outline';
-import { useNavigate } from 'react-router-dom';
 
 import {
   WelcomeCard,
@@ -17,19 +16,64 @@ import {
   AuditTrailCard,
 } from '../widgets';
 
-import type { QuickAction, Activity } from '../widgets/QuickActionCard';
+import type { QuickAction } from '../widgets/QuickActionCard';
+import type { Activity } from '../widgets/RecentActivityCard';
 import { useAuditorStore } from '../../../store/auditorStore';
 import { auditorService } from '../../../services/auditorService';
 import type { AuditEntry } from '../widgets/AuditTrailCard';
 
 const AuditorDashboard: React.FC = () => {
-  const navigate = useNavigate();
   const {
     dashboardData,
     dashboardLoading,
     dashboardError,
     fetchDashboardData,
   } = useAuditorStore();
+
+  // Get compliance alert styling
+  const getComplianceAlertStyle = (score: number) => {
+    if (score >= 90) return 'bg-green-50 border-green-200';
+    if (score >= 75) return 'bg-yellow-50 border-yellow-200';
+    return 'bg-red-50 border-red-200';
+  };
+
+  const getComplianceIconStyle = (score: number) => {
+    if (score >= 90) return 'text-green-600';
+    if (score >= 75) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const getComplianceTextStyle = (score: number) => {
+    if (score >= 90) return 'text-green-800';
+    if (score >= 75) return 'text-yellow-800';
+    return 'text-red-800';
+  };
+
+  const getComplianceDescriptionStyle = (score: number) => {
+    if (score >= 90) return 'text-green-700';
+    if (score >= 75) return 'text-yellow-700';
+    return 'text-red-700';
+  };
+
+  const getComplianceStatus = (score: number) => {
+    if (score >= 90) return 'Excellent';
+    if (score >= 75) return 'Good';
+    return 'Needs Attention';
+  };
+
+  // Get metric status styling
+  const getMetricStatusStyle = (status: string) => {
+    if (status === 'excellent') return 'bg-green-100 text-green-800';
+    if (status === 'good') return 'bg-blue-100 text-blue-800';
+    return 'bg-yellow-100 text-yellow-800';
+  };
+
+  // Get issue severity styling
+  const getIssueSeverityStyle = (severity: string) => {
+    if (severity === 'high') return 'bg-red-100 text-red-800';
+    if (severity === 'medium') return 'bg-yellow-100 text-yellow-800';
+    return 'bg-blue-100 text-blue-800';
+  };
 
   // Fetch dashboard data on component mount
   useEffect(() => {
@@ -42,7 +86,7 @@ const AuditorDashboard: React.FC = () => {
       title: 'Audit Entries',
       value: dashboardData.auditStats.totalAuditEntries.toLocaleString(),
       change: `+${dashboardData.auditStats.recentAuditsCount}`,
-      changeType: 'positive' as const,
+      changeType: 'increase' as const,
       icon: DocumentMagnifyingGlassIcon,
       iconColor: 'text-blue-600',
       description: 'This month',
@@ -51,7 +95,7 @@ const AuditorDashboard: React.FC = () => {
       title: 'Compliance Score',
       value: `${dashboardData.auditStats.complianceScore}%`,
       change: dashboardData.auditStats.complianceScore >= 90 ? 'Excellent' : 'Good',
-      changeType: dashboardData.auditStats.complianceScore >= 90 ? 'positive' as const : 'neutral' as const,
+      changeType: dashboardData.auditStats.complianceScore >= 90 ? 'increase' as const : 'neutral' as const,
       icon: ShieldCheckIcon,
       iconColor: auditorService.getComplianceColor(dashboardData.auditStats.complianceScore),
       description: 'Overall compliance',
@@ -60,7 +104,7 @@ const AuditorDashboard: React.FC = () => {
       title: 'Critical Issues',
       value: dashboardData.auditStats.criticalIssues.toString(),
       change: dashboardData.auditStats.criticalIssues > 0 ? 'Needs attention' : 'All clear',
-      changeType: dashboardData.auditStats.criticalIssues > 0 ? 'negative' as const : 'positive' as const,
+      changeType: dashboardData.auditStats.criticalIssues > 0 ? 'decrease' as const : 'increase' as const,
       icon: ExclamationTriangleIcon,
       iconColor: dashboardData.auditStats.criticalIssues > 0 ? 'text-red-600' : 'text-green-600',
       description: 'Require attention',
@@ -69,7 +113,7 @@ const AuditorDashboard: React.FC = () => {
       title: 'Security Score',
       value: `${dashboardData.auditStats.securityScore}%`,
       change: dashboardData.auditStats.securityScore >= 85 ? 'Secure' : 'Review needed',
-      changeType: dashboardData.auditStats.securityScore >= 85 ? 'positive' as const : 'negative' as const,
+      changeType: dashboardData.auditStats.securityScore >= 85 ? 'increase' as const : 'decrease' as const,
       icon: DocumentTextIcon,
       iconColor: auditorService.getComplianceColor(dashboardData.auditStats.securityScore),
       description: 'Security metrics',
@@ -173,39 +217,14 @@ const AuditorDashboard: React.FC = () => {
 
       {/* Compliance Alert */}
       {dashboardData && (
-        <div className={`border rounded-lg p-4 ${
-          dashboardData.auditStats.complianceScore >= 90
-            ? 'bg-green-50 border-green-200'
-            : dashboardData.auditStats.complianceScore >= 75
-            ? 'bg-yellow-50 border-yellow-200'
-            : 'bg-red-50 border-red-200'
-        }`}>
+        <div className={`border rounded-lg p-4 ${getComplianceAlertStyle(dashboardData.auditStats.complianceScore)}`}>
           <div className="flex items-center">
-            <CheckCircleIcon className={`h-5 w-5 mr-2 ${
-              dashboardData.auditStats.complianceScore >= 90
-                ? 'text-green-600'
-                : dashboardData.auditStats.complianceScore >= 75
-                ? 'text-yellow-600'
-                : 'text-red-600'
-            }`} />
+            <CheckCircleIcon className={`h-5 w-5 mr-2 ${getComplianceIconStyle(dashboardData.auditStats.complianceScore)}`} />
             <div>
-              <h4 className={`text-sm font-medium ${
-                dashboardData.auditStats.complianceScore >= 90
-                  ? 'text-green-800'
-                  : dashboardData.auditStats.complianceScore >= 75
-                  ? 'text-yellow-800'
-                  : 'text-red-800'
-              }`}>
-                Compliance Status: {dashboardData.auditStats.complianceScore >= 90 ? 'Excellent' :
-                                   dashboardData.auditStats.complianceScore >= 75 ? 'Good' : 'Needs Attention'}
+              <h4 className={`text-sm font-medium ${getComplianceTextStyle(dashboardData.auditStats.complianceScore)}`}>
+                Compliance Status: {getComplianceStatus(dashboardData.auditStats.complianceScore)}
               </h4>
-              <p className={`text-sm mt-1 ${
-                dashboardData.auditStats.complianceScore >= 90
-                  ? 'text-green-700'
-                  : dashboardData.auditStats.complianceScore >= 75
-                  ? 'text-yellow-700'
-                  : 'text-red-700'
-              }`}>
+              <p className={`text-sm mt-1 ${getComplianceDescriptionStyle(dashboardData.auditStats.complianceScore)}`}>
                 System compliance is at {dashboardData.auditStats.complianceScore}%.
                 {dashboardData.auditStats.criticalIssues > 0
                   ? ` ${dashboardData.auditStats.criticalIssues} critical issues require attention.`
@@ -219,10 +238,9 @@ const AuditorDashboard: React.FC = () => {
 
       {/* Statistics Grid */}
       {!dashboardLoading && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:gap-6">
-          {stats.map((stat, index) => (
-            <StatCard
-              key={`audit-stat-${index}`}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:gap-6">        {stats.map((stat) => (
+          <StatCard
+            key={stat.title}
               title={stat.title}
               value={stat.value}
               change={stat.change}
@@ -237,8 +255,8 @@ const AuditorDashboard: React.FC = () => {
 
       {/* Compliance Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
-          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+        <div className="bg-white dark:bg-secondary-800 rounded-lg shadow-sm border border-secondary-200 dark:border-secondary-700 p-6">
+          <h3 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100 mb-4">
             Compliance Metrics
           </h3>
           <div className="space-y-4">
@@ -248,17 +266,13 @@ const AuditorDashboard: React.FC = () => {
               { category: 'Access Management', score: 91, status: 'good' },
               { category: 'Audit Trail', score: 98, status: 'excellent' },
               { category: 'Policy Compliance', score: 89, status: 'fair' },
-            ].map((metric, index) => (
-              <div key={`compliance-${index}`} className="flex items-center justify-between">
+            ].map((metric) => (
+              <div key={metric.category} className="flex items-center justify-between">
                 <div>
-                  <div className="font-medium text-secondary-900">{metric.category}</div>
-                  <div className="text-sm text-secondary-600">{metric.score}%</div>
+                  <div className="font-medium text-secondary-900 dark:text-secondary-100">{metric.category}</div>
+                  <div className="text-sm text-secondary-600 dark:text-secondary-400">{metric.score}%</div>
                 </div>
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                  metric.status === 'excellent' ? 'bg-green-100 text-green-800' :
-                  metric.status === 'good' ? 'bg-blue-100 text-blue-800' :
-                  'bg-yellow-100 text-yellow-800'
-                }`}>
+                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getMetricStatusStyle(metric.status)}`}>
                   {metric.status}
                 </span>
               </div>
@@ -266,8 +280,8 @@ const AuditorDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
-          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+        <div className="bg-white dark:bg-secondary-800 rounded-lg shadow-sm border border-secondary-200 dark:border-secondary-700 p-6">
+          <h3 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100 mb-4">
             Critical Issues
           </h3>
           <div className="space-y-3">
@@ -275,17 +289,13 @@ const AuditorDashboard: React.FC = () => {
               { issue: 'Outdated Password Policy', severity: 'medium', age: '5 days' },
               { issue: 'Missing Backup Verification', severity: 'low', age: '2 days' },
               { issue: 'Incomplete User Training', severity: 'medium', age: '1 week' },
-            ].map((issue, index) => (
-              <div key={`issue-${index}`} className="flex items-center justify-between p-3 border border-secondary-200 rounded-lg">
+            ].map((issue) => (
+              <div key={issue.issue} className="flex items-center justify-between p-3 border border-secondary-200 dark:border-secondary-700 rounded-lg">
                 <div>
-                  <div className="font-medium text-secondary-900">{issue.issue}</div>
-                  <div className="text-sm text-secondary-600">Age: {issue.age}</div>
+                  <div className="font-medium text-secondary-900 dark:text-secondary-100">{issue.issue}</div>
+                  <div className="text-sm text-secondary-600 dark:text-secondary-400">Age: {issue.age}</div>
                 </div>
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                  issue.severity === 'high' ? 'bg-red-100 text-red-800' :
-                  issue.severity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-blue-100 text-blue-800'
-                }`}>
+                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getIssueSeverityStyle(issue.severity)}`}>
                   {issue.severity}
                 </span>
               </div>
@@ -293,22 +303,22 @@ const AuditorDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
-          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+        <div className="bg-white dark:bg-secondary-800 rounded-lg shadow-sm border border-secondary-200 dark:border-secondary-700 p-6">
+          <h3 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100 mb-4">
             Audit Statistics
           </h3>
           <div className="space-y-4">
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-600">2,847</div>
-              <div className="text-sm text-secondary-600">Total Audit Entries</div>
+              <div className="text-sm text-secondary-600 dark:text-secondary-400">Total Audit Entries</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-green-600">47</div>
-              <div className="text-sm text-secondary-600">Reports Generated</div>
+              <div className="text-sm text-secondary-600 dark:text-secondary-400">Reports Generated</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-red-600">3</div>
-              <div className="text-sm text-secondary-600">Critical Issues</div>
+              <div className="text-sm text-secondary-600 dark:text-secondary-400">Critical Issues</div>
             </div>
           </div>
         </div>

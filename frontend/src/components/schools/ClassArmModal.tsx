@@ -18,7 +18,6 @@ const ClassArmModal: React.FC<ClassArmModalProps> = ({
   onClose,
   classArm,
   schools,
-  onSubmit,
 }) => {
   const { createClassArm, updateClassArm, isLoading } = useSchoolStore();
 
@@ -60,14 +59,16 @@ const ClassArmModal: React.FC<ClassArmModalProps> = ({
         };
         await updateClassArm(updateData);
       } else {
-        const createData: CreateClassArmData = data;
+        const createData: CreateClassArmData = {
+          school_id: data.school_id,
+          name: data.name,
+        };
         await createClassArm(createData);
       }
       
-      onSubmit(data);
       onClose();
     } catch (error) {
-      // Error is handled in the store
+      console.error('Error submitting class arm:', error);
     }
   };
 
@@ -76,20 +77,23 @@ const ClassArmModal: React.FC<ClassArmModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        {/* Background overlay */}
         <div
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+          className="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-50 transition-opacity cursor-pointer"
           onClick={onClose}
+          aria-hidden="true"
         />
 
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl dark:shadow-gray-900 transform transition-all sm:my-8 sm:align-middle w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto">
+          <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                 {classArm ? 'Edit Class Arm' : 'Create New Class Arm'}
               </h3>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600"
+                aria-label="Close modal"
+                className="text-gray-400 hover:text-gray-600 dark:text-gray-300 dark:hover:text-gray-100"
               >
                 <XMarkIcon className="h-6 w-6" />
               </button>
@@ -98,14 +102,15 @@ const ClassArmModal: React.FC<ClassArmModalProps> = ({
 
           <form onSubmit={handleSubmit(handleFormSubmit)}>
             <div className="px-4 pb-4 sm:px-6 sm:pb-6">
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="school_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     School *
                   </label>
                   <select
+                    id="school_id"
                     {...register('school_id')}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   >
                     <option value="">Select a school</option>
                     {schools.map((school) => (
@@ -115,41 +120,45 @@ const ClassArmModal: React.FC<ClassArmModalProps> = ({
                     ))}
                   </select>
                   {errors.school_id && (
-                    <p className="mt-1 text-sm text-red-600">{errors.school_id.message}</p>
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.school_id.message}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Class Arm Name *
                   </label>
                   <input
+                    id="name"
                     type="text"
                     {...register('name')}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                     placeholder="e.g., JSS 1A, SS 2B, Primary 3"
                   />
                   {errors.name && (
-                    <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name.message}</p>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? 'Saving...' : classArm ? 'Update Class Arm' : 'Create Class Arm'}
-              </button>
+            <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 flex flex-col-reverse sm:flex-row sm:justify-end space-y-2 space-y-reverse sm:space-y-0 sm:space-x-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                className="w-full sm:w-auto inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-800 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:text-sm"
               >
                 Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full sm:w-auto inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {(() => {
+                  if (isLoading) return 'Saving...';
+                  return classArm ? 'Update Class Arm' : 'Create Class Arm';
+                })()}
               </button>
             </div>
           </form>

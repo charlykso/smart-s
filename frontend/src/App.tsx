@@ -13,7 +13,7 @@ import UserManagementPage from './pages/users/UserManagementPage';
 import UserProfilePage from './pages/users/UserProfilePage';
 import SchoolManagementPage from './pages/schools/SchoolManagementPage';
 import FeeManagementPage from './pages/fees/FeeManagementPage';
-import StudentFeePaymentPage from './pages/student/StudentFeePaymentPage';
+import StudentFeesPage from './pages/student/StudentFeesPage';
 import CashPaymentPage from './pages/bursar/CashPaymentPage';
 import EmailConfigurationPage from './components/email/EmailConfigurationPage';
 import PaymentConfigurationPage from './pages/admin/PaymentConfigurationPage';
@@ -29,6 +29,10 @@ import AuditPage from './pages/admin/AuditPage';
 import NotificationsPage from './pages/admin/NotificationsPage';
 import PaymentReminderSystem from './components/notifications/PaymentReminderSystem';
 import ThemeProvider from './components/providers/ThemeProvider';
+
+// Principal Pages
+import PrincipalStudentManagementPage from './pages/principal/StudentManagementPage';
+import PrincipalStaffManagementPage from './pages/principal/StaffManagementPage';
 
 function App() {
   const { isAuthenticated, isLoading, initializeAuth } = useAuthStore();
@@ -183,7 +187,7 @@ function App() {
             path="/student/fees"
             element={
               isAuthenticated ? (
-                <StudentFeePaymentPage />
+                <StudentFeesPage />
               ) : (
                 <Navigate to={ROUTES.LOGIN} replace />
               )
@@ -317,6 +321,25 @@ function App() {
               )
             }
           />
+          
+          {/* Principal Routes */}
+          <Route
+            path="/principal/students"
+            element={
+              <ProtectedRoute requiredRoles={['Principal', 'Admin']}>
+                <PrincipalStudentManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/principal/staff"
+            element={
+              <ProtectedRoute requiredRoles={['Principal', 'Admin']}>
+                <PrincipalStaffManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          
           <Route
             path="*"
             element={
@@ -336,22 +359,50 @@ function App() {
           position="top-right"
           toastOptions={{
             duration: 4000,
+            className: 'custom-toast',
             style: {
-              background: '#363636',
-              color: '#fff',
+              borderRadius: '10px',
+              fontSize: '14px',
+              fontWeight: '600',
+              minWidth: '300px',
+              padding: '16px',
             },
             success: {
-              duration: 3000,
+              duration: 5000,
+              className: 'custom-toast-success',
+              style: {
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                color: '#ffffff',
+                border: '2px solid #10b981',
+                borderRadius: '10px',
+                fontSize: '14px',
+                fontWeight: '700',
+                padding: '16px',
+                boxShadow: '0 8px 32px rgba(16, 185, 129, 0.4)',
+                minWidth: '300px',
+              },
               iconTheme: {
-                primary: '#10b981',
-                secondary: '#fff',
+                primary: '#ffffff',
+                secondary: '#10b981',
               },
             },
             error: {
               duration: 5000,
+              className: 'custom-toast-error',
+              style: {
+                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                color: '#ffffff',
+                border: '2px solid #ef4444',
+                borderRadius: '10px',
+                fontSize: '14px',
+                fontWeight: '700',
+                padding: '16px',
+                boxShadow: '0 8px 32px rgba(239, 68, 68, 0.4)',
+                minWidth: '300px',
+              },
               iconTheme: {
-                primary: '#ef4444',
-                secondary: '#fff',
+                primary: '#ffffff',
+                secondary: '#ef4444',
               },
             },
           }}

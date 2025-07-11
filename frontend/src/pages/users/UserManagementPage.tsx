@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   UsersIcon,
   PlusIcon,
@@ -8,60 +8,29 @@ import {
 } from '@heroicons/react/24/outline';
 import MainLayout from '../../components/layout/MainLayout';
 import { useAuthStore } from '../../store/authStore';
-import { canManageUsers, isGeneralAdmin, shouldShowSchoolFilter, getSchoolAccessDeniedMessage } from '../../utils/schoolAccess';
+import { canManageUsers, getSchoolAccessDeniedMessage } from '../../utils/schoolAccess';
 import CreateUserModal from '../../components/users/CreateUserModal';
 import BulkUserActions from '../../components/users/BulkUserActions';
 import UserService from '../../services/userService';
 import toast from 'react-hot-toast';
-
-interface User {
-  id: string;
-  firstname: string;
-  lastname: string;
-  email: string;
-  roles: string[];
-  status: 'active' | 'inactive';
-  lastLogin: Date | null;
-  createdAt: Date;
-}
+import type { User } from '../../types/auth';
+import type { User as IndexUser, UserRole } from '../../types/index';
 
 const UserManagementPage: React.FC = () => {
-  const { user, hasAnyRole } = useAuthStore();
+  const { user } = useAuthStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
 
   // Check permissions using new school access controls
-  const hasManagePermission = canManageUsers(user);
-  const userIsGeneralAdmin = isGeneralAdmin(user);
-  const showSchoolFilter = shouldShowSchoolFilter(user);
-
-  // If user doesn't have permission, show access denied
-  if (!hasManagePermission) {
-    return (
-      <MainLayout>
-        <div className="min-h-screen bg-secondary-50 dark:bg-gray-900 py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center py-12">
-              <UsersIcon className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">Access Denied</h3>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {getSchoolAccessDeniedMessage(user)}
-              </p>
-            </div>
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
+  const hasManagePermission = canManageUsers(user as IndexUser);
 
   // Load users from API
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setLoading(true);
       const response = await UserService.getUsers({
@@ -73,59 +42,42 @@ const UserManagementPage: React.FC = () => {
       });
 
       setUsers(response.users);
-      setTotal(response.total);
     } catch (error) {
       console.error('Failed to load users:', error);
       toast.error('Failed to load users');
-
-      // Fallback to mock data for development
-      const mockUsers: User[] = [
-        {
-          id: '1',
-          firstname: 'John',
-          lastname: 'Doe',
-          email: 'john.doe@school.com',
-          roles: ['Principal'],
-          status: 'active',
-          lastLogin: new Date(Date.now() - 1000 * 60 * 30),
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30),
-        },
-        {
-          id: '2',
-          firstname: 'Jane',
-          lastname: 'Smith',
-          email: 'jane.smith@school.com',
-          roles: ['Bursar'],
-          status: 'active',
-          lastLogin: new Date(Date.now() - 1000 * 60 * 60 * 2),
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60),
-        },
-        {
-          id: '3',
-          firstname: 'Mike',
-          lastname: 'Johnson',
-          email: 'mike.johnson@school.com',
-          roles: ['Headteacher'],
-          status: 'inactive',
-          lastLogin: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
-          createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 90),
-        },
-      ];
-      setUsers(mockUsers);
-      setTotal(mockUsers.length);
+      setUsers([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, selectedRole, selectedStatus]);
 
   // Load users on component mount and when filters change
   useEffect(() => {
     if (hasManagePermission) {
       loadUsers();
     }
-  }, [hasManagePermission, searchTerm, selectedRole, selectedStatus]);
+  }, [hasManagePermission, loadUsers]);
 
-  const handleUserCreated = async (newUser: User) => {
+  // If user doesn't have permission, show access denied
+  if (!hasManagePermission) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-secondary-50 dark:bg-gray-900 py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center py-12">
+              <UsersIcon className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">Access Denied</h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {getSchoolAccessDeniedMessage(user as IndexUser)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  const handleUserCreated = async () => {
     // Reload users to get the latest data
     await loadUsers();
     toast.success('User created successfully!');
@@ -135,34 +87,38 @@ const UserManagementPage: React.FC = () => {
     try {
       switch (action) {
         case 'activate':
-          // await UserService.bulkUpdateUsers(userIds, { status: 'active' });
-          // Simulate API call
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await UserService.bulkUpdateUsers(userIds, { status: 'active' });
           setUsers(prev => prev.map(user =>
             userIds.includes(user.id) ? { ...user, status: 'active' as const } : user
           ));
           break;
         case 'deactivate':
-          // await UserService.bulkUpdateUsers(userIds, { status: 'inactive' });
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await UserService.bulkUpdateUsers(userIds, { status: 'inactive' });
           setUsers(prev => prev.map(user =>
             userIds.includes(user.id) ? { ...user, status: 'inactive' as const } : user
           ));
           break;
         case 'delete':
-          // await UserService.bulkDeleteUsers(userIds);
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await UserService.bulkDeleteUsers(userIds);
           setUsers(prev => prev.filter(user => !userIds.includes(user.id)));
           break;
-        case 'export':
+        case 'export': {
           // Export users to CSV
           const csvContent = generateUserCSV((users || []).filter(user => userIds.includes(user.id)));
           downloadCSV(csvContent, 'users.csv');
           break;
+        }
       }
     } catch (error) {
+      console.error('Bulk action failed:', error);
       throw error;
     }
+  };
+
+  const formatDate = (date: Date | string | undefined): string => {
+    if (!date) return 'Never';
+    if (date instanceof Date) return date.toLocaleDateString();
+    return new Date(date).toLocaleDateString();
   };
 
   const generateUserCSV = (usersToExport: User[]) => {
@@ -174,8 +130,8 @@ const UserManagementPage: React.FC = () => {
       user.email,
       user.roles.join('; '),
       user.status,
-      user.lastLogin ? user.lastLogin.toISOString() : 'Never',
-      user.createdAt.toISOString(),
+      formatDate(user.lastLogin),
+      formatDate(user.createdAt),
     ]);
 
     return [headers, ...rows].map(row => row.map(field => `"${field}"`).join(',')).join('\n');
@@ -217,7 +173,7 @@ const UserManagementPage: React.FC = () => {
       user.lastname.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesRole = selectedRole === 'all' || user.roles.includes(selectedRole);
+    const matchesRole = selectedRole === 'all' || user.roles.includes(selectedRole as UserRole);
     const matchesStatus = selectedStatus === 'all' || user.status === selectedStatus;
 
     return matchesSearch && matchesRole && matchesStatus;
@@ -426,9 +382,9 @@ const UserManagementPage: React.FC = () => {
                         </td>
                         <td className="w-32 px-3 py-4 whitespace-nowrap">
                           <div className="flex flex-wrap gap-1">
-                            {user.roles.slice(0, 2).map((role, index) => (
+                            {user.roles.slice(0, 2).map((role) => (
                               <span
-                                key={index}
+                                key={`${user.id}-${role}`}
                                 className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getRoleColor(role)}`}
                                 title={user.roles.join(', ')}
                               >
@@ -449,7 +405,7 @@ const UserManagementPage: React.FC = () => {
                         </td>
                         <td className="w-32 px-3 py-4 whitespace-nowrap text-sm text-secondary-500 dark:text-gray-400">
                           <span className="truncate block">
-                            {user.lastLogin ? user.lastLogin.toLocaleDateString() : 'Never'}
+                            {formatDate(user.lastLogin)}
                           </span>
                         </td>
                         <td className="w-20 px-3 py-4 whitespace-nowrap text-center text-sm font-medium">

@@ -19,6 +19,7 @@ const principalRoute = require('./route/principalRoute')
 const bursarRoute = require('./route/bursarRoute')
 const parentRoute = require('./route/parentRoute')
 const bulkStudentRoute = require('./route/bulkStudentRoute')
+const ictAdminRoute = require('./route/ictAdminRoute')
 
 // ICT Admin management routes
 const schoolManagementRoute = require('./routes/schoolRoutes')
@@ -127,6 +128,7 @@ app.use('/api/v1/principal', principalRoute)
 app.use('/api/v1/bursar', bursarRoute)
 app.use('/api/v1/parent', parentRoute)
 app.use('/api/v1/bulk-students', bulkStudentRoute)
+app.use('/api/v1/ict-admin', ictAdminRoute)
 
 // ICT Admin management routes
 app.use('/api/v1/schools', schoolManagementRoute)
@@ -181,7 +183,7 @@ app.use((req, res) => {
   })
 })
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 5000
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)

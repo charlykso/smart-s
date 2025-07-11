@@ -18,9 +18,24 @@ import {
   ProgressCard,
 } from '../widgets';
 
-import type { QuickAction, Activity } from '../widgets/QuickActionCard';
+import type { QuickAction } from '../widgets/QuickActionCard';
+import type { Activity } from '../widgets/RecentActivityCard';
 
 const HeadteacherDashboard: React.FC = () => {
+  // Get event type styling
+  const getEventTypeStyle = (type: string) => {
+    switch (type) {
+      case 'exam':
+        return 'bg-red-100 text-red-800';
+      case 'meeting':
+        return 'bg-blue-100 text-blue-800';
+      case 'event':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-purple-100 text-purple-800';
+    }
+  };
+
   // Mock data for headteacher metrics - academic focus
   const stats = [
     {
@@ -181,9 +196,9 @@ const HeadteacherDashboard: React.FC = () => {
 
       {/* Statistics Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:gap-6">
-        {stats.map((stat, index) => (
+        {stats.map((stat) => (
           <StatCard
-            key={`stat-${index}`}
+            key={stat.title}
             title={stat.title}
             value={stat.value}
             change={stat.change}
@@ -217,8 +232,8 @@ const HeadteacherDashboard: React.FC = () => {
 
       {/* Class Performance Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
-          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+        <div className="bg-white dark:bg-secondary-800 rounded-lg shadow-sm border border-secondary-200 dark:border-secondary-700 p-6">
+          <h3 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100 mb-4">
             Class Performance Summary
           </h3>
           <div className="space-y-4">
@@ -228,23 +243,23 @@ const HeadteacherDashboard: React.FC = () => {
               { class: 'JSS 2A', students: 48, average: 75, attendance: 89 },
               { class: 'JSS 2B', students: 44, average: 80, attendance: 93 },
               { class: 'JSS 3A', students: 46, average: 85, attendance: 96 },
-            ].map((classData, index) => (
-              <div key={`class-${index}`} className="flex items-center justify-between p-3 bg-secondary-50 rounded-lg">
+            ].map((classData) => (
+              <div key={classData.class} className="flex items-center justify-between p-3 bg-secondary-50 dark:bg-secondary-700 rounded-lg">
                 <div>
-                  <div className="font-medium text-secondary-900">{classData.class}</div>
-                  <div className="text-sm text-secondary-600">{classData.students} students</div>
+                  <div className="font-medium text-secondary-900 dark:text-secondary-100">{classData.class}</div>
+                  <div className="text-sm text-secondary-600 dark:text-secondary-400">{classData.students} students</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-medium text-secondary-900">{classData.average}% avg</div>
-                  <div className="text-xs text-secondary-600">{classData.attendance}% attendance</div>
+                  <div className="text-sm font-medium text-secondary-900 dark:text-secondary-100">{classData.average}% avg</div>
+                  <div className="text-xs text-secondary-600 dark:text-secondary-400">{classData.attendance}% attendance</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-secondary-200 p-6">
-          <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+        <div className="bg-white dark:bg-secondary-800 rounded-lg shadow-sm border border-secondary-200 dark:border-secondary-700 p-6">
+          <h3 className="text-lg font-semibold text-secondary-900 dark:text-secondary-100 mb-4">
             Upcoming Academic Events
           </h3>
           <div className="space-y-3">
@@ -254,18 +269,13 @@ const HeadteacherDashboard: React.FC = () => {
               { event: 'Science Fair', date: 'Dec 5, 2024', type: 'event' },
               { event: 'End of Term Exams', date: 'Dec 10-17, 2024', type: 'exam' },
               { event: 'Graduation Ceremony', date: 'Dec 20, 2024', type: 'ceremony' },
-            ].map((event, index) => (
-              <div key={`event-${index}`} className="flex items-center p-3 border border-secondary-200 rounded-lg">
+            ].map((event) => (
+              <div key={event.event} className="flex items-center p-3 border border-secondary-200 dark:border-secondary-700 rounded-lg">
                 <div className="flex-1">
-                  <div className="font-medium text-secondary-900">{event.event}</div>
-                  <div className="text-sm text-secondary-600">{event.date}</div>
+                  <div className="font-medium text-secondary-900 dark:text-secondary-100">{event.event}</div>
+                  <div className="text-sm text-secondary-600 dark:text-secondary-400">{event.date}</div>
                 </div>
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                  event.type === 'exam' ? 'bg-red-100 text-red-800' :
-                  event.type === 'meeting' ? 'bg-blue-100 text-blue-800' :
-                  event.type === 'event' ? 'bg-green-100 text-green-800' :
-                  'bg-purple-100 text-purple-800'
-                }`}>
+                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getEventTypeStyle(event.type)}`}>
                   {event.type}
                 </span>
               </div>

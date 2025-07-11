@@ -106,7 +106,8 @@ export const API_ENDPOINTS = {
     UNAPPROVED: '/fee/get-unapproved-fees',
     APPROVED_BY_TERM: '/fee/:term_id/get-approved-fees',
     UNAPPROVED_BY_TERM: '/fee/:term_id/get-unapproved-fees',
-    APPROVE: '/fee/:fee_id/approve',
+    APPROVE: '/approve/:fee_id/approve',
+    STUDENT_APPROVED_FEES: '/fee/student/approved-fees',
   },
   PAYMENTS: {
     ALL: '/payment/all',

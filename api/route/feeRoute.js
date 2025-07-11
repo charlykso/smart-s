@@ -38,34 +38,39 @@ router
     feeController.getUnapprovedFees
   ) //Bursar, principal, and ICT_administrator
 
-router.get('/:id', feeController.getFee)
+router.get('/:id', authenticateToken, filterByUserSchool, feeController.getFee)
 
 router.post(
   '/create',
   authenticateToken,
   verifyRoles(roleList.Bursar, roleList.Admin),
-  filterByUserSchool,
+  enforceSchoolBoundary,
   feeController.createFee
-) //Bursar can create fees for their school only
+) //Bursar
 
 router
   .route('/:id/update')
   .put(
     authenticateToken,
     verifyRoles(roleList.Bursar, roleList.Admin),
-    filterByUserSchool,
+    enforceSchoolBoundary,
     feeController.updateFee
-  ) //Bursar can update fees for their school only
+  ) //Bursar
 router
   .route('/:id/delete')
   .delete(
     authenticateToken,
     verifyRoles(roleList.Bursar, roleList.Admin),
-    filterByUserSchool,
+    enforceSchoolBoundary,
     feeController.deleteFee
-  ) //Bursar can delete fees for their school only
+  ) //Bursar
 
-router.get('/term/:term_id', feeController.getFeesByTerm)
+router.get(
+  '/term/:term_id',
+  authenticateToken,
+  filterByUserSchool,
+  feeController.getFeesByTerm
+)
 
 router
   .route('/:term_id/get-approved-fees')

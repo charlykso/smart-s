@@ -173,14 +173,14 @@ router
   .route('/headteachers/all')
   .get(
     authenticateToken,
-    verifyRoles(roleList.Admin),
+    verifyRoles(roleList.Admin, roleList.Principal),
     userController.getHeadteachers
   )
 router
   .route('/headteacher/:id/get')
   .get(
     authenticateToken,
-    verifyRoles(roleList.Admin, roleList.Headteacher),
+    verifyRoles(roleList.Admin, roleList.Headteacher, roleList.Principal),
     userController.getHeadteacher
   )
 router.route('/headteacher/create').post(userController.createHeadteacher)
@@ -188,14 +188,14 @@ router
   .route('/headteacher/:id/update')
   .put(
     authenticateToken,
-    verifyRoles(roleList.Admin, roleList.Headteacher),
+    verifyRoles(roleList.Admin, roleList.Headteacher, roleList.Principal),
     userController.updateHeadteacher
   )
 router
   .route('/headteacher/:id/delete')
   .delete(
     authenticateToken,
-    verifyRoles(roleList.Admin, roleList.Headteacher),
+    verifyRoles(roleList.Admin, roleList.Headteacher, roleList.Principal),
     userController.deleteHeadteacher
   )
 router
@@ -251,7 +251,8 @@ router
       roleList.Proprietor,
       roleList.Principal,
       roleList.Headteacher,
-      roleList.ICT_administrator
+      roleList.ICT_administrator,
+      roleList.Bursar
     ),
     filterByUserSchool,
     userController.getStudents
@@ -263,7 +264,8 @@ router
     verifyRoles(
       roleList.Admin,
       roleList.Proprietor,
-      roleList.ICT_administrator
+      roleList.ICT_administrator,
+      roleList.Principal
     ),
     checkSchoolAccess,
     userController.getStudentsInParticularSchool
@@ -275,7 +277,8 @@ router
     verifyRoles(
       roleList.Admin,
       roleList.Proprietor,
-      roleList.ICT_administrator
+      roleList.ICT_administrator,
+      roleList.Principal
     ),
     userController.getStudent
   )
@@ -286,7 +289,8 @@ router
     verifyRoles(
       roleList.Admin,
       roleList.Proprietor,
-      roleList.ICT_administrator
+      roleList.ICT_administrator,
+      roleList.Principal
     ),
     validateSchoolAssignment,
     userController.createStudent
@@ -298,7 +302,8 @@ router
     verifyRoles(
       roleList.Admin,
       roleList.Proprietor,
-      roleList.ICT_administrator
+      roleList.ICT_administrator,
+      roleList.Principal
     ),
     userController.updateStudent
   )
@@ -309,7 +314,8 @@ router
     verifyRoles(
       roleList.Admin,
       roleList.Proprietor,
-      roleList.ICT_administrator
+      roleList.ICT_administrator,
+      roleList.Principal
     ),
     userController.deleteStudent
   )
@@ -402,5 +408,22 @@ router.get('/staff/:school_id', userController.getStaffBySchool)
 
 // Get current user profile
 router.route('/profile').get(authenticateToken, userController.getCurrentUser)
+
+// Bulk operations
+router
+  .route('/bulk-delete')
+  .post(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.ICT_administrator),
+    userController.bulkDeleteUsers
+  )
+
+router
+  .route('/bulk-update')
+  .post(
+    authenticateToken,
+    verifyRoles(roleList.Admin, roleList.ICT_administrator),
+    userController.bulkUpdateUsers
+  )
 
 module.exports = router

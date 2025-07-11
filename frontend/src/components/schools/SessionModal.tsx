@@ -36,6 +36,7 @@ const SessionModal: React.FC<SessionModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       if (session) {
+        // Editing mode - populate form with session data
         const schoolId = typeof session.school === 'string' 
           ? session.school 
           : session.school?._id || '';
@@ -47,6 +48,7 @@ const SessionModal: React.FC<SessionModalProps> = ({
           endDate: session.endDate.split('T')[0],
         });
       } else {
+        // Creating mode - reset form
         reset({
           school_id: '',
           name: '',
@@ -60,20 +62,28 @@ const SessionModal: React.FC<SessionModalProps> = ({
   const handleFormSubmit = async (data: SessionFormData) => {
     try {
       if (session) {
+        // Update existing session
         const updateData: UpdateSessionData = {
           _id: session._id,
           ...data,
         };
         await updateSession(updateData);
+        await onSubmit(updateData);
       } else {
-        const createData: CreateSessionData = data;
+        // Create new session
+        const createData: CreateSessionData = {
+          school_id: data.school_id,
+          name: data.name,
+          startDate: data.startDate,
+          endDate: data.endDate,
+        };
         await createSession(createData);
+        await onSubmit(createData);
       }
       
-      onSubmit(data);
       onClose();
     } catch (error) {
-      // Error is handled in the store
+      console.error('Session submission error:', error);
     }
   };
 
@@ -82,36 +92,46 @@ const SessionModal: React.FC<SessionModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        {/* Background overlay */}
+        <button
+          type="button"
+          className="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 dark:bg-opacity-75 transition-opacity cursor-default"
           onClick={onClose}
+          aria-label="Close modal"
         />
 
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        {/* Modal panel */}
+        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl dark:shadow-gray-900 transform transition-all sm:my-8 sm:align-middle w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto">
+          {/* Header */}
+          <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4 transition-colors duration-200">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-gray-100">
                 {session ? 'Edit Session' : 'Create New Session'}
               </h3>
               <button
+                type="button"
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                aria-label="Close modal"
               >
                 <XMarkIcon className="h-6 w-6" />
               </button>
             </div>
           </div>
 
+          {/* Form */}
           <form onSubmit={handleSubmit(handleFormSubmit)}>
-            <div className="px-4 pb-4 sm:px-6 sm:pb-6">
-              <div className="space-y-6">
+            <div className="px-4 pb-4 sm:px-6 sm:pb-6 max-h-96 sm:max-h-[60vh] overflow-y-auto">
+              <div className="space-y-4 sm:space-y-6">
+                {/* School Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="school_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     School *
                   </label>
                   <select
+                    id="school_id"
                     {...register('school_id')}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                   >
                     <option value="">Select a school</option>
                     {schools.map((school) => (
@@ -121,69 +141,78 @@ const SessionModal: React.FC<SessionModalProps> = ({
                     ))}
                   </select>
                   {errors.school_id && (
-                    <p className="mt-1 text-sm text-red-600">{errors.school_id.message}</p>
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.school_id.message}</p>
                   )}
                 </div>
 
+                {/* Session Information */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Session Name *
                   </label>
                   <input
                     type="text"
+                    id="name"
                     {...register('name')}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
-                    placeholder="e.g., 2023/2024 Academic Session"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                    placeholder="Enter session name (e.g., 2024/2025)"
                   />
                   {errors.name && (
-                    <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name.message}</p>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Date Range */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Start Date *
                     </label>
                     <input
                       type="date"
+                      id="startDate"
                       {...register('startDate')}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                     />
                     {errors.startDate && (
-                      <p className="mt-1 text-sm text-red-600">{errors.startDate.message}</p>
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.startDate.message}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       End Date *
                     </label>
                     <input
                       type="date"
+                      id="endDate"
                       {...register('endDate')}
-                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                     />
                     {errors.endDate && (
-                      <p className="mt-1 text-sm text-red-600">{errors.endDate.message}</p>
+                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.endDate.message}</p>
                     )}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+            {/* Footer */}
+            <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 flex flex-col sm:flex-row-reverse gap-3">
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-sm font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isLoading ? 'Saving...' : session ? 'Update Session' : 'Create Session'}
+                {(() => {
+                  if (isLoading) return 'Saving...';
+                  return session ? 'Update Session' : 'Create Session';
+                })()}
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                className="w-full sm:w-auto inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
               >
                 Cancel
               </button>

@@ -54,30 +54,6 @@ const navigation: MenuItem[] = [
     icon: BuildingOfficeIcon,
     path: ROUTES.SCHOOLS,
     roles: ['Admin', 'ICT_administrator', 'Proprietor'] as UserRole[],
-  },  {
-    id: 'academic',
-    label: 'Academic',
-    icon: BuildingOfficeIcon,
-    children: [
-      {
-        id: 'sessions',
-        label: 'Sessions',
-        path: ROUTES.SESSIONS,
-        roles: ['Admin', 'ICT_administrator', 'Principal', 'Headteacher'] as UserRole[],
-      },
-      {
-        id: 'terms',
-        label: 'Terms',
-        path: ROUTES.TERMS,
-        roles: ['Admin', 'ICT_administrator', 'Principal', 'Headteacher'] as UserRole[],
-      },
-      {
-        id: 'class-arms',
-        label: 'Class Arms',
-        path: ROUTES.CLASS_ARMS,
-        roles: ['Admin', 'ICT_administrator', 'Principal', 'Headteacher'] as UserRole[],
-      },
-    ],
   },
   {
     id: 'fees',
