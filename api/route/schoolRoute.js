@@ -1,12 +1,26 @@
 const express = require('express')
 const schoolController = require('../controller/School_view')
 const authenticateToken = require('../middleware/authenticateToken')
-const { checkSchoolAccess } = require('../middleware/auth')
+const { checkSchoolAccess, filterByUserSchool } = require('../middleware/auth')
 const roleList = require('../helpers/roleList')
 const verifyRoles = require('../middleware/verifyRoles')
 const router = express.Router()
 
-router.get('/all', schoolController.getSchools)
+router.get(
+  '/all',
+  authenticateToken,
+  verifyRoles(
+    roleList.Admin,
+    roleList.ICT_administrator,
+    roleList.Proprietor,
+    roleList.Principal,
+    roleList.Bursar,
+    roleList.Teacher,
+    roleList.Student
+  ),
+  filterByUserSchool,
+  schoolController.getSchools
+)
 router
   .route('/:id')
   .get(

@@ -31,6 +31,7 @@ router
       roleList.Principal,
       roleList.Bursar
     ),
+    filterByUserSchool,
     schoolAccessController.getUsersBySchool
   )
 

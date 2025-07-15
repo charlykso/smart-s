@@ -9,6 +9,7 @@ The bulk student upload feature allows Admin and ICT_Administrator users to crea
 ## 🎯 **Feature Overview**
 
 ### **What It Does**
+
 - **Bulk Creation**: Upload Excel files to create multiple students simultaneously
 - **School-Scoped**: Admin can upload to any school, ICT_Administrator only to their assigned school
 - **Validation**: Comprehensive data validation before processing
@@ -17,6 +18,7 @@ The bulk student upload feature allows Admin and ICT_Administrator users to crea
 - **Error Handling**: Detailed error reporting for failed records
 
 ### **Who Can Use It**
+
 - **Admin**: Can upload students to any school (global access)
 - **ICT_Administrator**: Can upload students to their assigned school only (school-scoped)
 
@@ -25,6 +27,7 @@ The bulk student upload feature allows Admin and ICT_Administrator users to crea
 ## 🔗 **API Endpoints**
 
 ### **1. Download Excel Template**
+
 ```
 GET /api/v1/bulk-students/template
 Authorization: Bearer <token>
@@ -34,6 +37,7 @@ Roles: Admin, ICT_administrator
 **Response**: Excel file download with sample data and correct column headers
 
 ### **2. Bulk Upload Students**
+
 ```
 POST /api/v1/bulk-students/upload
 Authorization: Bearer <token>
@@ -46,6 +50,7 @@ Body:
 ```
 
 ### **3. Bulk Upload to Specific School**
+
 ```
 POST /api/v1/bulk-students/upload/:school_id
 Authorization: Bearer <token>
@@ -61,20 +66,22 @@ Body:
 ## 📋 **Excel File Format**
 
 ### **Required Columns**
-| Column | Type | Required | Example | Notes |
-|--------|------|----------|---------|-------|
-| `firstname` | String | ✅ | John | Student's first name |
-| `middlename` | String | ❌ | Michael | Optional middle name |
-| `lastname` | String | ✅ | Doe | Student's last name |
-| `email` | String | ✅ | john.doe@school.com | Must be unique, valid email |
-| `phone` | String | ✅ | +2348012345678 | Contact number |
-| `regNo` | String | ✅ | STU001 | Must be unique registration number |
-| `gender` | String | ✅ | Male | Must be 'Male' or 'Female' |
-| `DOB` | Date | ✅ | 2005-01-15 | Date of birth (YYYY-MM-DD) |
-| `classArm` | String | ✅ | JSS 1 | Class name (auto-created if missing) |
-| `type` | String | ✅ | day | Must be 'day' or 'boarding' |
+
+| Column       | Type   | Required | Example             | Notes                                              |
+| ------------ | ------ | -------- | ------------------- | -------------------------------------------------- |
+| `firstname`  | String | ✅       | John                | Student's first name                               |
+| `middlename` | String | ❌       | Michael             | Optional middle name                               |
+| `lastname`   | String | ✅       | Doe                 | Student's last name                                |
+| `email`      | String | ❌       | john.doe@school.com | Auto-generated if empty: regNo@student.ledgrio.com |
+| `phone`      | String | ❌       | +2348012345678      | Auto-generated if empty: +234800XXXX               |
+| `regNo`      | String | ✅       | STU001              | Must be unique registration number                 |
+| `gender`     | String | ✅       | Male                | Must be 'Male' or 'Female'                         |
+| `DOB`        | Date   | ❌       | 2005-01-15          | Date of birth (YYYY-MM-DD), defaults to 2000-01-01 |
+| `classArm`   | String | ✅       | JSS 1               | Class name (auto-created if missing)               |
+| `type`       | String | ✅       | day                 | Must be 'day' or 'boarding'                        |
 
 ### **Sample Excel Data**
+
 ```
 firstname | middlename | lastname | email              | phone          | regNo   | gender | DOB        | classArm | type
 ----------|------------|----------|-------------------|----------------|---------|--------|------------|----------|--------
@@ -87,20 +94,24 @@ Jane      | Mary       | Smith    | jane@school.com   | +2348012345679 | STU002 
 ## 🔒 **Security & Validation**
 
 ### **Access Control**
+
 - **Multi-tenant isolation**: ICT_Administrator can only upload to their school
 - **Role-based access**: Only Admin and ICT_Administrator can use this feature
 - **School verification**: System validates school exists and user has access
 
 ### **Data Validation**
-- **Required fields**: All mandatory fields must be present
-- **Email format**: Valid email address format required
-- **Unique constraints**: RegNo and email must be unique across system
+
+- **Required fields**: firstname, lastname, regNo, gender, classArm, type must be present
+- **Email format**: Valid email address format required (if provided)
+- **Auto-generation**: Email and phone auto-generated if empty
+- **Unique constraints**: RegNo must be unique across system, email unique if provided
 - **Gender values**: Must be exactly 'Male' or 'Female'
 - **Type values**: Must be exactly 'day' or 'boarding'
-- **Phone format**: Basic phone number validation
-- **Date format**: Valid date format for DOB
+- **Phone format**: Basic phone number validation (if provided)
+- **Date format**: Valid date format for DOB (if provided)
 
 ### **File Validation**
+
 - **File type**: Only .xlsx and .xls files accepted
 - **File size**: Maximum 10MB file size
 - **Content validation**: File must contain valid data rows
@@ -110,22 +121,26 @@ Jane      | Mary       | Smith    | jane@school.com   | +2348012345679 | STU002 
 ## ⚙️ **Processing Logic**
 
 ### **1. Pre-Processing Validation**
+
 - Validates all data before creating any students
 - Checks for duplicates within the file
 - Verifies all required fields are present
 - Validates data formats and constraints
 
 ### **2. Conflict Detection**
+
 - Checks for existing users with same regNo or email
 - Returns detailed conflict report if duplicates found
 - Prevents partial uploads that could cause data inconsistency
 
 ### **3. Auto-Creation Features**
+
 - **Class Arms**: Creates missing class arms automatically for the school
 - **Addresses**: Creates default address for students without specific address
 - **Profiles**: Creates empty profile for each student
 
 ### **4. Password Generation**
+
 - **Pattern**: `{firstname}{last3digitsOfRegNo}2024`
 - **Example**: John Doe with regNo "STU001" gets password "john0012024"
 - **Security**: All passwords are bcrypt hashed before storage
@@ -135,6 +150,7 @@ Jane      | Mary       | Smith    | jane@school.com   | +2348012345679 | STU002 
 ## 📊 **Response Format**
 
 ### **Success Response**
+
 ```json
 {
   "success": true,
@@ -160,6 +176,7 @@ Jane      | Mary       | Smith    | jane@school.com   | +2348012345679 | STU002 
 ```
 
 ### **Validation Error Response**
+
 ```json
 {
   "success": false,
@@ -173,6 +190,7 @@ Jane      | Mary       | Smith    | jane@school.com   | +2348012345679 | STU002 
 ```
 
 ### **Conflict Error Response**
+
 ```json
 {
   "success": false,
@@ -191,11 +209,13 @@ Jane      | Mary       | Smith    | jane@school.com   | +2348012345679 | STU002 
 ### **✅ Test Completed Successfully**
 
 **Test Data**: 3 students uploaded to Annunciation Secondary School
+
 - Alice Johnson (BULK001) - JSS 2, Female, Day
-- Bob Wilson (BULK002) - JSS 2, Male, Boarding  
+- Bob Wilson (BULK002) - JSS 2, Male, Boarding
 - Carol Davis (BULK003) - JSS 3, Female, Day
 
 **Results**:
+
 - ✅ All 3 students created successfully
 - ✅ New class arms (JSS 2, JSS 3) auto-created
 - ✅ Passwords generated correctly
@@ -203,6 +223,7 @@ Jane      | Mary       | Smith    | jane@school.com   | +2348012345679 | STU002 
 - ✅ Multi-tenant access control working
 
 ### **Login Credentials for Bulk-Uploaded Students**
+
 ```
 alice.johnson@annunciation.com / alice0012024
 bob.wilson@annunciation.com / bob0022024
@@ -214,6 +235,7 @@ carol.davis@annunciation.com / carol0032024
 ## 🚀 **Usage Instructions**
 
 ### **For Admin Users**
+
 1. Login to the system with Admin credentials
 2. Navigate to bulk upload feature
 3. Download the Excel template
@@ -223,6 +245,7 @@ carol.davis@annunciation.com / carol0032024
 7. Review results and note generated passwords
 
 ### **For ICT_Administrator Users**
+
 1. Login to the system with ICT_Administrator credentials
 2. Navigate to bulk upload feature (only your school visible)
 3. Download the Excel template
@@ -231,6 +254,7 @@ carol.davis@annunciation.com / carol0032024
 6. Review results and note generated passwords
 
 ### **Best Practices**
+
 - Always download and use the provided template
 - Validate data in Excel before uploading
 - Keep backup of Excel files for record keeping
@@ -242,12 +266,14 @@ carol.davis@annunciation.com / carol0032024
 ## 🔧 **Technical Implementation**
 
 ### **Dependencies**
+
 - `xlsx`: Excel file processing
 - `multer`: File upload handling
 - `bcryptjs`: Password hashing
 - `mongoose`: Database operations
 
 ### **File Structure**
+
 ```
 api/
 ├── controller/bulkStudentUpload.js    # Main controller logic
@@ -257,6 +283,7 @@ api/
 ```
 
 ### **Database Impact**
+
 - Creates User records with role 'Student'
 - Creates Profile records for each student
 - Creates Address records (default address used)
@@ -268,6 +295,7 @@ api/
 ## 📈 **Future Enhancements**
 
 ### **Planned Features**
+
 - CSV file support
 - Parent information bulk upload
 - Student photo bulk upload
@@ -276,6 +304,7 @@ api/
 - Bulk update existing students
 
 ### **Performance Optimizations**
+
 - Batch processing for large files
 - Progress tracking for long uploads
 - Background processing for huge datasets

@@ -24,10 +24,18 @@ exports.getGroupSchool = async (req, res) => {
 
 exports.createGroupSchool = async (req, res) => {
   try {
+    console.log('=== Creating Group School ===')
+    console.log('Request body:', req.body)
+    console.log('Request file:', req.file)
+
     const { name, description } = req.body
 
     // Validate required fields
     if (!name || !description) {
+      console.log('Missing required fields:', {
+        name: !!name,
+        description: !!description,
+      })
       return res.status(400).json({
         message: 'Name and description are required',
       })
@@ -36,6 +44,7 @@ exports.createGroupSchool = async (req, res) => {
     // Check if group school with same name already exists
     const existingByName = await GroupSchool.findOne({ name })
     if (existingByName) {
+      console.log('Group school with name already exists:', name)
       return res.status(409).json({
         message: 'A group school with this name already exists',
       })
@@ -45,10 +54,12 @@ exports.createGroupSchool = async (req, res) => {
 
     // If a file is uploaded, upload it to Cloudinary
     if (req.file) {
+      console.log('File upload detected, uploading to Cloudinary...')
       try {
         // Generate public ID from school name
         const publicId = name.replace(/\s+/g, '_').toLowerCase()
 
+        console.log('Uploading to Cloudinary with publicId:', publicId)
         // Upload to Cloudinary
         logoUrl = await uploadToCloud(
           req.file.path,
@@ -56,10 +67,13 @@ exports.createGroupSchool = async (req, res) => {
           'School_logos',
           publicId
         )
+        console.log('Cloudinary upload successful:', logoUrl)
 
         // Delete the local file after uploading to Cloudinary
         fs.unlinkSync(req.file.path)
+        console.log('Local file deleted successfully')
       } catch (uploadError) {
+        console.error('Cloudinary upload failed:', uploadError)
         // Clean up local file if upload fails
         if (req.file && req.file.path) {
           try {
@@ -75,21 +89,22 @@ exports.createGroupSchool = async (req, res) => {
       }
     }
 
+    console.log('Final logoUrl:', logoUrl)
+
     // Validate that we have a logo URL
     if (!logoUrl) {
+      console.log('No logo URL provided')
       return res.status(400).json({
         message:
           'Logo is required. Please provide either a logo file or logo URL',
       })
     }
 
-    // Check if logo URL already exists (avoid duplicate logos)
-    const existingByLogo = await GroupSchool.findOne({ logo: logoUrl })
-    if (existingByLogo) {
-      return res.status(409).json({
-        message: 'This logo is already in use by another group school',
-      })
-    }
+    console.log('Creating group school with data:', {
+      name,
+      description,
+      logoUrl,
+    })
 
     // Create new group school
     const groupSchool = new GroupSchool({
@@ -99,6 +114,7 @@ exports.createGroupSchool = async (req, res) => {
     })
 
     const newGroupSchool = await groupSchool.save()
+    console.log('Group school created successfully:', newGroupSchool._id)
 
     res.status(201).json({
       success: true,
@@ -106,6 +122,8 @@ exports.createGroupSchool = async (req, res) => {
       data: newGroupSchool,
     })
   } catch (error) {
+    console.error('Error in createGroupSchool:', error)
+    console.error('Error stack:', error.stack)
     // Clean up local file if it exists and there's an error
     if (req.file && req.file.path) {
       try {

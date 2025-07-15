@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -53,7 +54,7 @@ const paymentConfigSchema = z.object({
 type PaymentConfigFormData = z.infer<typeof paymentConfigSchema>;
 
 const PaymentConfigurationPage: React.FC = () => {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [currentProfile, setCurrentProfile] = useState<PaymentProfile | null>(null);
@@ -263,6 +264,11 @@ const PaymentConfigurationPage: React.FC = () => {
     }
     return { color: 'text-green-600', bg: 'bg-green-100', text: 'Active' };
   };
+
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   if (isLoading) {
     return (

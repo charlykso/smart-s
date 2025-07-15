@@ -68,16 +68,20 @@ const validateStudentData = (student, rowIndex) => {
 
   // Check required fields
   requiredFields.forEach((field) => {
-    if (!student[field] || student[field].toString().trim() === '') {
+    if (
+      !student[field] ||
+      (student[field] && student[field].toString().trim() === '')
+    ) {
       errors.push(`Row ${rowIndex}: ${field} is required`)
     }
   })
 
-  // Validate email format (only if provided)
+  // Validate email format (only if provided and not empty)
   if (
     student.email &&
+    typeof student.email === 'string' &&
     student.email.trim() !== '' &&
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(student.email)
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(student.email.trim())
   ) {
     errors.push(`Row ${rowIndex}: Invalid email format`)
   }
@@ -92,16 +96,55 @@ const validateStudentData = (student, rowIndex) => {
     errors.push(`Row ${rowIndex}: Type must be 'day' or 'boarding'`)
   }
 
-  // Validate phone number (only if provided)
+  // Validate phone number (only if provided and not empty)
   if (
     student.phone &&
+    typeof student.phone === 'string' &&
     student.phone.trim() !== '' &&
-    !/^\+?[\d\s\-\(\)]+$/.test(student.phone)
+    !/^\+?[\d\s\-()]+$/.test(student.phone.trim())
   ) {
     errors.push(`Row ${rowIndex}: Invalid phone number format`)
   }
 
   return errors
+}
+
+// Generate default email and phone for students
+const generateDefaultContactInfo = (student, rowIndex) => {
+  // Ensure student object exists
+  if (!student) {
+    return student
+  }
+
+  // Generate default email if not provided or empty
+  const emailEmpty =
+    !student.email ||
+    student.email === null ||
+    student.email === undefined ||
+    (typeof student.email === 'string' && student.email.trim() === '')
+
+  if (emailEmpty) {
+    const cleanRegNo = (student.regNo || '')
+      .toString()
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .toLowerCase()
+    student.email = `${cleanRegNo || 'student'}@student.ledgrio.com`
+  }
+
+  // Generate default phone if not provided or empty
+  const phoneEmpty =
+    !student.phone ||
+    student.phone === null ||
+    student.phone === undefined ||
+    (typeof student.phone === 'string' && student.phone.trim() === '')
+
+  if (phoneEmpty) {
+    // Generate a default phone number using row index to ensure uniqueness
+    const paddedIndex = String(rowIndex || 1).padStart(4, '0')
+    student.phone = `+234800${paddedIndex}`
+  }
+
+  return student
 }
 
 // Configuration for bulk upload
@@ -282,21 +325,24 @@ exports.bulkUploadStudents = async (req, res) => {
       const student = jsonData[i]
       const rowIndex = i + 2 // Excel row number (accounting for header)
 
+      // Generate default contact info if missing
+      const studentWithDefaults = generateDefaultContactInfo(student, rowIndex)
+
       // Validate student data
-      const errors = validateStudentData(student, rowIndex)
+      const errors = validateStudentData(studentWithDefaults, rowIndex)
       validationErrors.push(...errors)
 
       // Check for duplicate regNo in the file
       const duplicateInFile = processedData.find(
-        (s) => s.regNo === student.regNo
+        (s) => s.regNo === studentWithDefaults.regNo
       )
       if (duplicateInFile) {
         validationErrors.push(
-          `Row ${rowIndex}: Duplicate regNo '${student.regNo}' found in file`
+          `Row ${rowIndex}: Duplicate regNo '${studentWithDefaults.regNo}' found in file`
         )
       }
 
-      processedData.push(student)
+      processedData.push(studentWithDefaults)
     }
 
     // If there are validation errors, return them
@@ -312,11 +358,16 @@ exports.bulkUploadStudents = async (req, res) => {
 
     // Check for existing users and class arms
     const regNos = processedData.map((s) => s.regNo)
-    const emails = processedData.map((s) => s.email)
+    const emails = processedData
+      .map((s) => s.email)
+      .filter((email) => !email.includes('@student.ledgrio.com'))
     const classArmNames = [...new Set(processedData.map((s) => s.classArm))]
 
     const existingUsers = await User.find({
-      $or: [{ regNo: { $in: regNos } }, { email: { $in: emails } }],
+      $or: [
+        { regNo: { $in: regNos } },
+        ...(emails.length > 0 ? [{ email: { $in: emails } }] : []),
+      ],
     })
 
     const existingClassArms = await ClassArm.find({
@@ -324,13 +375,16 @@ exports.bulkUploadStudents = async (req, res) => {
       name: { $in: classArmNames },
     })
 
-    // Check for conflicts
+    // Check for conflicts (only for real emails, not generated ones)
     const conflicts = []
     existingUsers.forEach((user) => {
       if (regNos.includes(user.regNo)) {
         conflicts.push(`RegNo '${user.regNo}' already exists`)
       }
-      if (emails.includes(user.email)) {
+      if (
+        emails.includes(user.email) &&
+        !user.email.includes('@student.ledgrio.com')
+      ) {
         conflicts.push(`Email '${user.email}' already exists`)
       }
     })
@@ -403,10 +457,15 @@ exports.bulkUploadStudents = async (req, res) => {
           lastname: studentData.lastname.trim(),
           regNo: studentData.regNo.trim(),
           email: studentData.email.trim().toLowerCase(),
-          phone: studentData.phone.trim(),
+          phone:
+            typeof studentData.phone === 'string'
+              ? studentData.phone.trim()
+              : studentData.phone,
           address: savedDefaultAddress._id,
           profile: savedProfile._id,
-          DOB: new Date(studentData.DOB),
+          DOB: studentData.DOB
+            ? new Date(studentData.DOB)
+            : new Date('2000-01-01'),
           gender: studentData.gender,
           classArm: classArmMap[studentData.classArm],
           type: studentData.type,
@@ -502,6 +561,11 @@ exports.bulkUploadStudents = async (req, res) => {
       })
     }
   } catch (error) {
+    console.error('❌ Bulk upload error:', error)
+    console.error('Error type:', error.constructor.name)
+    console.error('Error message:', error.message)
+    console.error('Error stack:', error.stack)
+
     // Clean up uploaded file if it exists
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path)
@@ -511,6 +575,7 @@ exports.bulkUploadStudents = async (req, res) => {
       success: false,
       message: 'Internal server error during bulk upload',
       error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
     })
   }
 }
@@ -697,6 +762,15 @@ exports.downloadStudentTemplate = async (req, res) => {
     })
     currentRow++
 
+    // Add instruction row
+    const instructionRow = currentRow
+    const instructionCell = worksheet.getCell(instructionRow, 1)
+    instructionCell.value =
+      'NOTE: email and phone are optional - will be auto-generated if empty'
+    instructionCell.font = { italic: true, color: { argb: 'FF666666' } }
+    worksheet.mergeCells(`A${instructionRow}:J${instructionRow}`)
+    currentRow++
+
     // Add sample data
     const sampleData = [
       [
@@ -715,8 +789,8 @@ exports.downloadStudentTemplate = async (req, res) => {
         'Jane',
         'Mary',
         'Smith',
-        'jane.smith@example.com',
-        '+2348012345679',
+        '', // Empty email - will be auto-generated
+        '', // Empty phone - will be auto-generated
         'STU002',
         'Female',
         '2005-03-20',

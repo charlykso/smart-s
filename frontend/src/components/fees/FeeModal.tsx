@@ -8,8 +8,9 @@ import { FEE_TYPES } from '../../types/fee';
 import type { FeeModalProps, CreateFeeData, UpdateFeeData } from '../../types/fee';
 
 const feeSchema = z.object({
-  term_id: z.string().min(1, 'Term is required'),
   school_id: z.string().min(1, 'School is required'),
+  session_id: z.string().min(1, 'Session is required'),
+  term_id: z.string().min(1, 'Term is required'),
   name: z.string().min(1, 'Fee name is required'),
   decription: z.string().min(1, 'Description is required'),
   type: z.string().min(1, 'Fee type is required'),
@@ -27,6 +28,7 @@ const FeeModal: React.FC<FeeModalProps> = ({
   onClose,
   fee,
   schools,
+  sessions,
   terms,
   onSubmit,
 }) => {
@@ -43,6 +45,28 @@ const FeeModal: React.FC<FeeModalProps> = ({
   });
 
   const isInstallmentAllowed = watch('isInstallmentAllowed');
+  const selectedSchoolId = watch('school_id');
+  const selectedSessionId = watch('session_id');
+
+  // Filter sessions based on selected school
+  const filteredSessions = React.useMemo(() => {
+    if (!selectedSchoolId || !sessions) return [];
+    return sessions.filter(session =>
+      typeof session.school === 'string'
+        ? session.school === selectedSchoolId
+        : session.school._id === selectedSchoolId
+    );
+  }, [selectedSchoolId, sessions]);
+
+  // Filter terms based on selected session
+  const filteredTerms = React.useMemo(() => {
+    if (!selectedSessionId || !terms) return [];
+    return terms.filter(term =>
+      typeof term.session === 'string'
+        ? term.session === selectedSessionId
+        : term.session._id === selectedSessionId
+    );
+  }, [selectedSessionId, terms]);
 
   useEffect(() => {
     if (isOpen) {
@@ -50,9 +74,15 @@ const FeeModal: React.FC<FeeModalProps> = ({
         const schoolId = typeof fee.school === 'string' ? fee.school : fee.school?._id || '';
         const termId = typeof fee.term === 'string' ? fee.term : fee.term?._id || '';
 
+        // Get session ID from the term's session
+        const sessionId = typeof fee.term === 'object' && fee.term?.session
+          ? (typeof fee.term.session === 'string' ? fee.term.session : fee.term.session._id)
+          : '';
+
         reset({
-          term_id: termId,
           school_id: schoolId,
+          session_id: sessionId,
+          term_id: termId,
           name: fee.name,
           decription: fee.decription,
           type: fee.type,
@@ -64,8 +94,9 @@ const FeeModal: React.FC<FeeModalProps> = ({
         });
       } else {
         reset({
-          term_id: '',
           school_id: '',
+          session_id: '',
+          term_id: '',
           name: '',
           decription: '',
           type: '',
@@ -122,6 +153,7 @@ const FeeModal: React.FC<FeeModalProps> = ({
                 {fee ? 'Edit Fee' : 'Create New Fee'}
               </h3>
               <button
+                type="button"
                 onClick={onClose}
                 className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 title="Close modal"
@@ -135,8 +167,8 @@ const FeeModal: React.FC<FeeModalProps> = ({
           <form onSubmit={handleSubmit(handleFormSubmit)}>
             <div className="px-4 pb-4 sm:px-6 sm:pb-6">
               <div className="space-y-6">
-                {/* School and Term Selection */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* School, Session, and Term Selection */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label htmlFor="school_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       School *
@@ -159,16 +191,39 @@ const FeeModal: React.FC<FeeModalProps> = ({
                   </div>
 
                   <div>
+                    <label htmlFor="session_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Session *
+                    </label>
+                    <select
+                      id="session_id"
+                      {...register('session_id')}
+                      disabled={!selectedSchoolId}
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <option value="">Select a session</option>
+                      {filteredSessions.map((session) => (
+                        <option key={session._id} value={session._id}>
+                          {session.name}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.session_id && (
+                      <p className="mt-1 text-sm text-red-600">{errors.session_id.message}</p>
+                    )}
+                  </div>
+
+                  <div>
                     <label htmlFor="term_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                       Term *
                     </label>
                     <select
                       id="term_id"
                       {...register('term_id')}
-                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                      disabled={!selectedSessionId}
+                      className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <option value="">Select a term</option>
-                      {terms.map((term) => (
+                      {filteredTerms.map((term) => (
                         <option key={term._id} value={term._id}>
                           {term.name}
                         </option>

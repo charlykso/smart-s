@@ -29,6 +29,7 @@ import AuditPage from './pages/admin/AuditPage';
 import NotificationsPage from './pages/admin/NotificationsPage';
 import PaymentReminderSystem from './components/notifications/PaymentReminderSystem';
 import ThemeProvider from './components/providers/ThemeProvider';
+import DebugApiPage from './pages/DebugApiPage';
 
 // Principal Pages
 import PrincipalStudentManagementPage from './pages/principal/StudentManagementPage';
@@ -340,6 +341,16 @@ function App() {
             }
           />
           
+          <Route
+            path="/debug-api"
+            element={
+              isAuthenticated ? (
+                <DebugApiPage />
+              ) : (
+                <Navigate to={ROUTES.LOGIN} replace />
+              )
+            }
+          />
           <Route
             path="*"
             element={

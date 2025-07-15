@@ -129,6 +129,7 @@ app.use('/api/v1/bursar', bursarRoute)
 app.use('/api/v1/parent', parentRoute)
 app.use('/api/v1/bulk-students', bulkStudentRoute)
 app.use('/api/v1/ict-admin', ictAdminRoute)
+app.use('/api/v1/reports', require('./route/reportRoute'))
 
 // ICT Admin management routes
 app.use('/api/v1/schools', schoolManagementRoute)
@@ -141,6 +142,111 @@ app.get('/api/v1/communities', (req, res) => {
 
 app.get('/api/v1/social-accounts', (req, res) => {
   res.json({ success: true, data: [] })
+})
+
+// Add missing stats endpoints
+const authenticateToken = require('./middleware/authenticateToken')
+app.get('/api/v1/fee/all/stats', authenticateToken, async (req, res) => {
+  try {
+    const Fee = require('./model/Fee')
+    const totalFees = await Fee.countDocuments()
+    const approvedFees = await Fee.countDocuments({ isApproved: true })
+    const pendingFees = await Fee.countDocuments({ isApproved: false })
+
+    res.json({
+      success: true,
+      data: {
+        total: totalFees,
+        approved: approvedFees,
+        pending: pendingFees,
+      },
+    })
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: 'Error fetching fee stats' })
+  }
+})
+
+app.get('/api/v1/payment/all/stats', authenticateToken, async (req, res) => {
+  try {
+    const Payment = require('./model/Payment')
+    const totalPayments = await Payment.countDocuments()
+    const successfulPayments = await Payment.countDocuments({
+      status: 'successful',
+    })
+    const pendingPayments = await Payment.countDocuments({ status: 'pending' })
+
+    res.json({
+      success: true,
+      data: {
+        total: totalPayments,
+        successful: successfulPayments,
+        pending: pendingPayments,
+      },
+    })
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: 'Error fetching payment stats' })
+  }
+})
+
+app.get('/api/v1/students/stats', authenticateToken, async (req, res) => {
+  try {
+    const User = require('./model/User')
+    const userSchool = req.user.school?._id || req.user.school
+    const userRoles = req.user.roles || []
+
+    // Build query based on user role
+    let query = { roles: 'Student' }
+
+    // Only general Admin can access all schools - others are filtered by school
+    if (!userRoles.includes('Admin') || userSchool) {
+      if (!userSchool) {
+        return res.status(400).json({
+          success: false,
+          message: 'User not assigned to a school',
+        })
+      }
+      query.school = userSchool
+    }
+
+    const totalStudents = await User.countDocuments(query)
+    const activeStudents = await User.countDocuments({
+      ...query,
+      isActive: true,
+    })
+
+    // Get additional stats
+    const maleStudents = await User.countDocuments({
+      ...query,
+      gender: 'Male',
+    })
+
+    const femaleStudents = await User.countDocuments({
+      ...query,
+      gender: 'Female',
+    })
+
+    res.json({
+      success: true,
+      data: {
+        totalStudents,
+        activeStudents,
+        inactiveStudents: totalStudents - activeStudents,
+        maleStudents,
+        femaleStudents,
+        studentsByClass: [], // Will be populated by frontend if needed
+        recentEnrollments: [], // Will be populated by frontend if needed
+      },
+    })
+  } catch (error) {
+    console.error('Student stats error:', error)
+    res
+      .status(500)
+      .json({ success: false, message: 'Error fetching student stats' })
+  }
 })
 
 app.get('/api/v1/social-accounts/platforms/supported', (req, res) => {

@@ -40,6 +40,7 @@ exports.login = async (req, res) => {
       data: {
         user: {
           _id: user._id,
+          id: user._id, // Add id field for frontend compatibility
           email: user.email,
           firstname: user.firstname,
           middlename: user.middlename,
@@ -52,6 +53,8 @@ exports.login = async (req, res) => {
           school: user.school,
           classArm: user.classArm,
           profile: user.profile,
+          isActive: user.isActive !== false, // Default to true if not set
+          status: user.isActive !== false ? 'active' : 'inactive',
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },

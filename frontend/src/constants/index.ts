@@ -73,8 +73,8 @@ export const API_ENDPOINTS = {
   SESSIONS: {
     ALL: '/Session/all',
     CREATE: '/Session/create',
-    UPDATE: '/Session/update',
-    DELETE: '/Session/delete',
+    UPDATE: '/Session/:id/update',
+    DELETE: '/Session/:id/delete',
     BY_ID: '/Session',
     BY_SCHOOL: '/Session/by-school',
     TERMS: '/Session/sessions/term',
@@ -82,16 +82,16 @@ export const API_ENDPOINTS = {
   TERMS: {
     ALL: '/Term/all',
     CREATE: '/Term/create',
-    UPDATE: '/Term/update',
-    DELETE: '/Term/delete',
+    UPDATE: '/Term/:id/update',
+    DELETE: '/Term/:id/delete',
     BY_ID: '/Term',
     BY_SESSION: '/Term/by-session',
   },
   CLASS_ARMS: {
     ALL: '/ClassArm/all',
     CREATE: '/ClassArm/create',
-    UPDATE: '/ClassArm/update',
-    DELETE: '/ClassArm/delete',
+    UPDATE: '/ClassArm/:id/update',
+    DELETE: '/ClassArm/:id/delete',
     BY_ID: '/ClassArm',
     BY_SCHOOL: '/ClassArm/by-school',
   },
@@ -120,11 +120,17 @@ export const API_ENDPOINTS = {
     PAYSTACK_CALLBACK: '/payment/paystack_callback',
     FLUTTERWAVE_CALLBACK: '/payment/flutterwave_callback',
     AVAILABLE_METHODS: '/payment/available-methods',
+    STUDENT_PAYMENTS: '/payment/student/my-payments',
   },
   PAYMENT_PROFILES: {
     ALL: '/paymentprofile/all',
     CREATE: '/paymentprofile/create',
     UPDATE: '/paymentprofile/update',
+  },
+  STUDENT: {
+    DASHBOARD: '/student/dashboard',
+    PAYMENTS: '/student/payments',
+    OUTSTANDING_FEES: '/student/outstanding-fees',
   },
   NOTIFICATIONS: {
     ALL: '/notification/all',
@@ -369,7 +375,9 @@ export const BREAKPOINTS = {
 
 // Environment Variables
 export const ENV = {
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1',
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || (
+    import.meta.env.DEV ? '/api/v1' : 'http://localhost:3000/api/v1'
+  ),
   APP_NAME: import.meta.env.VITE_APP_NAME || 'Ledgrio School Management',
   PAYSTACK_PUBLIC_KEY: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
   CLOUDINARY_CLOUD_NAME: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || '',

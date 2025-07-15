@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -51,54 +51,17 @@ const LoginPage: React.FC = () => {
   }
 
   const onSubmit = async (data: LoginFormData) => {
-    // Clear any existing error at the start
-    setLoginError('');
-    console.log('Form submitted, cleared existing error');
-    
     try {
+      setLoginError(''); // Clear any previous errors
       await login(data as LoginCredentials);
-      // Only clear error on successful login
-      setLoginError('');
       navigate(ROUTES.DASHBOARD);
     } catch (error) {
       // Handle login error and show it to the user
-      console.error('Login error caught in component:', error);
-      
-      let errorMessage = 'Invalid email or password. Please try again.';
-      
-      // Extract error message from different error formats
-      if (error instanceof Error) {
-        errorMessage = error.message;
-        
-        // Handle specific axios error messages
-        if (error.message.includes('status code 401')) {
-          errorMessage = 'Invalid email or password. Please check your credentials.';
-        } else if (error.message.includes('status code 400')) {
-          errorMessage = 'Please check your email and password format.';
-        } else if (error.message.includes('Network Error')) {
-          errorMessage = 'Unable to connect to server. Please try again later.';
-        }
-      } else if (typeof error === 'object' && error !== null) {
-        const errorObj = error as any;
-        if (errorObj.response?.data?.message) {
-          errorMessage = errorObj.response.data.message;
-        } else if (errorObj.message) {
-          errorMessage = errorObj.message;
-        }
-      }
-      
-      console.log('Setting login error from form submission:', errorMessage);
+      console.error('Login error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Login failed. Please try again.';
       setLoginError(errorMessage);
-      
-      // Also show toast for immediate feedback
-      toast.error(errorMessage);
-      
-      // Force a re-render to ensure the error is displayed
-      setTimeout(() => {
-        console.log('Current loginError state after form error timeout:', errorMessage);
-        // Double-check error state is set
-        setLoginError(errorMessage);
-      }, 50);
+      // Don't show toast here since API interceptor should handle it
+      // but keep local error state for better UX
     }
   };
 
@@ -119,25 +82,27 @@ const LoginPage: React.FC = () => {
 
         {/* Form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          {/* Error Message - Always visible for debugging */}
-          <div className={`bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4 ${loginError ? 'block' : 'hidden'}`}>
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
-                  Login Failed
-                </h3>
-                <div className="mt-2 text-sm text-red-700 dark:text-red-300">
-                  <p>{loginError}</p>
+          {/* Error Message */}
+          {loginError && (
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                    Login Failed
+                  </h3>
+                  <div className="mt-2 text-sm text-red-700 dark:text-red-300">
+                    <p>{loginError}</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          
+          )}
+
           <div className="space-y-4">
             {/* Email Field */}
             <div>

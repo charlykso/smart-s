@@ -12,8 +12,8 @@ exports.getAdminDashboard = async (req, res) => {
   try {
     const adminId = req.user
 
-    // Get admin info
-    const admin = await User.findById(adminId)
+    // Get admin info with school information
+    const admin = await User.findById(adminId).populate('school')
 
     if (!admin) {
       return res.status(404).json({
@@ -22,46 +22,80 @@ exports.getAdminDashboard = async (req, res) => {
       })
     }
 
-    // Get system statistics
-    const totalUsers = await User.countDocuments()
-    const totalStudents = await User.countDocuments({ roles: 'Student' })
+    // Determine if this is a general admin or school-scoped admin
+    const isGeneralAdmin = admin.roles.includes('Admin') && !admin.school
+    const schoolFilter = isGeneralAdmin ? {} : { school: admin.school._id }
+
+    // Get system statistics with proper filtering
+    const totalUsers = await User.countDocuments(schoolFilter)
+    const totalStudents = await User.countDocuments({
+      ...schoolFilter,
+      roles: 'Student',
+    })
     const totalTeachers = await User.countDocuments({
+      ...schoolFilter,
       roles: { $in: ['Teacher', 'Principal', 'Headteacher'] },
     })
-    const totalSchools = await School.countDocuments()
 
-    // Get payment statistics
-    const totalPayments = await Payment.countDocuments({ status: 'success' })
+    // School count - general admin sees all, school admin sees only their school
+    const totalSchools = isGeneralAdmin ? await School.countDocuments() : 1
+
+    // Get payment statistics with school filtering
+    let paymentFilter = { status: 'success' }
+    let revenueMatchFilter = { status: 'success' }
+    let pendingFilter = { status: 'pending' }
+
+    if (!isGeneralAdmin) {
+      // For school-scoped admin, filter payments by school
+      const schoolUsers = await User.find({ school: admin.school._id }).select(
+        '_id'
+      )
+      const userIds = schoolUsers.map((user) => user._id)
+
+      paymentFilter.user = { $in: userIds }
+      revenueMatchFilter.user = { $in: userIds }
+      pendingFilter.user = { $in: userIds }
+    }
+
+    const totalPayments = await Payment.countDocuments(paymentFilter)
     const totalRevenue = await Payment.aggregate([
-      { $match: { status: 'success' } },
+      { $match: revenueMatchFilter },
       { $group: { _id: null, total: { $sum: '$amount' } } },
     ])
 
-    const pendingPayments = await Payment.countDocuments({ status: 'pending' })
+    const pendingPayments = await Payment.countDocuments(pendingFilter)
 
-    // Get recent activities
-    const recentUsers = await User.find()
+    // Get recent activities with school filtering
+    const recentUsers = await User.find(schoolFilter)
       .sort({ createdAt: -1 })
       .limit(5)
       .select('firstname lastname email roles createdAt')
 
-    const recentPayments = await Payment.find({ status: 'success' })
+    const recentPayments = await Payment.find(paymentFilter)
       .sort({ trans_date: -1 })
       .limit(5)
       .populate('user', 'firstname lastname email')
       .populate('fee', 'name amount')
 
-    // Get monthly revenue data (last 6 months)
+    // Get monthly revenue data (last 6 months) with school filtering
     const sixMonthsAgo = new Date()
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
 
+    const monthlyRevenueMatch = {
+      status: 'success',
+      trans_date: { $gte: sixMonthsAgo },
+    }
+
+    if (!isGeneralAdmin) {
+      const schoolUsers = await User.find({ school: admin.school._id }).select(
+        '_id'
+      )
+      const userIds = schoolUsers.map((user) => user._id)
+      monthlyRevenueMatch.user = { $in: userIds }
+    }
+
     const monthlyRevenue = await Payment.aggregate([
-      {
-        $match: {
-          status: 'success',
-          trans_date: { $gte: sixMonthsAgo },
-        },
-      },
+      { $match: monthlyRevenueMatch },
       {
         $group: {
           _id: {
@@ -75,8 +109,10 @@ exports.getAdminDashboard = async (req, res) => {
       { $sort: { '_id.year': 1, '_id.month': 1 } },
     ])
 
-    // Get user distribution by role
+    // Get user distribution by role with school filtering
+    const usersByRoleMatch = isGeneralAdmin ? {} : { school: admin.school._id }
     const usersByRole = await User.aggregate([
+      { $match: usersByRoleMatch },
       { $unwind: '$roles' },
       { $group: { _id: '$roles', count: { $sum: 1 } } },
       { $sort: { count: -1 } },

@@ -19,27 +19,41 @@ const {
 exports.getAllPayments = async (req, res) => {
   try {
     // Apply school filtering if user is not Admin
-    let query = {}
     if (req.schoolFilter) {
-      // Need to populate user to filter by school
-      const payments = await Payment.find()
-        .populate({
-          path: 'user',
-          select: 'email regNo school',
-          match: req.schoolFilter,
-        })
-        .populate('fee', 'name amount')
+      // First get users that match the school filter
+      const User = require('../model/User')
+      const schoolUsers = await User.find(req.schoolFilter).select('_id')
+      const userIds = schoolUsers.map((user) => user._id)
 
-      // Filter out payments where user is null (doesn't match school filter)
-      const filteredPayments = payments.filter(
-        (payment) => payment.user !== null
-      )
-      return res.status(200).json(filteredPayments)
+      // Then find payments for those users
+      const payments = await Payment.find({ user: { $in: userIds } })
+        .populate('user', 'email regNo school')
+        .populate({
+          path: 'fee',
+          select: 'name amount school',
+          populate: {
+            path: 'school',
+            select: 'name',
+          },
+        })
+        .sort({ createdAt: -1 })
+
+      return res.status(200).json(payments)
     }
 
-    const payments = await Payment.find(query)
-      .populate('user', 'email regNo')
-      .populate('fee', 'name amount')
+    // Admin users get all payments
+    const payments = await Payment.find()
+      .populate('user', 'email regNo school')
+      .populate({
+        path: 'fee',
+        select: 'name amount school',
+        populate: {
+          path: 'school',
+          select: 'name',
+        },
+      })
+      .sort({ createdAt: -1 })
+
     res.status(200).json(payments)
   } catch (error) {
     res

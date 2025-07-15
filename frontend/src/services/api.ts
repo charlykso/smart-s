@@ -19,8 +19,7 @@ const api: AxiosInstance = axios.create({
 api.interceptors.request.use(
   (config) => {
     // Don't make requests if page is being unloaded
-    const isPageReloading = document.visibilityState === 'hidden';
-    if (isPageReloading) {
+    if (document.visibilityState === 'hidden' && performance.navigation?.type === 1) {
       return Promise.reject(new Error('Page is being unloaded'));
     }
 
@@ -84,16 +83,15 @@ api.interceptors.response.use(
       const { status, data } = error.response;
 
       // Don't show toast errors if page is hidden
-      if (document.visibilityState === 'visible') {
+      if (document.visibilityState !== 'hidden') {
         switch (status) {
           case 400:
-            toast.error(data.message ?? 'Bad request');
+            toast.error(data.message || 'Bad request');
             break;
           case 401:
             // For login failures, show the specific error message
             if (originalRequest.url?.includes('/auth/login')) {
-              // Show toast but don't prevent local error handling
-              toast.error(data.message ?? 'Invalid email or password');
+              toast.error(data.message || 'Invalid email or password');
             } else {
               toast.error('Session expired. Please login again.');
             }
@@ -102,26 +100,25 @@ api.interceptors.response.use(
             toast.error('You are not authorized to perform this action');
             break;
           case 404:
-            // Don't show 404 errors for notification endpoints or stats endpoints
-            if (!originalRequest.url?.includes('/notification/') && 
-                !originalRequest.url?.includes('/stats')) {
+            // Don't show 404 errors for notification endpoints
+            if (!originalRequest.url?.includes('/notification/')) {
               toast.error('Resource not found');
             }
             break;
           case 422:
-            toast.error(data.message ?? 'Validation error');
+            toast.error(data.message || 'Validation error');
             break;
           case 500:
             toast.error('Internal server error. Please try again later.');
             break;
           default:
-            toast.error(data.message ?? 'An unexpected error occurred');
+            toast.error(data.message || 'An unexpected error occurred');
         }
       }
-    } else if (error.request && document.visibilityState === 'visible') {
+    } else if (error.request && document.visibilityState !== 'hidden') {
       // Only show network errors if page is visible
       toast.error('Network error. Please check your connection.');
-    } else if (document.visibilityState === 'visible') {
+    } else if (document.visibilityState !== 'hidden') {
       toast.error('An unexpected error occurred');
     }
 

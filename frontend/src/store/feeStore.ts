@@ -346,15 +346,17 @@ export const useFeeStore = create<FeeStore>()(
         } catch (error: unknown) {
           // If stats endpoint doesn't exist, calculate from existing fees
           const { fees } = get();
-          if (fees.length > 0) {
+          const validFees = Array.isArray(fees) ? fees.filter(fee => fee && typeof fee.amount === 'number') : [];
+
+          if (validFees.length > 0) {
             const calculatedStats = {
-              totalFees: fees.length,
-              approvedFees: fees.filter(fee => fee.isApproved).length,
-              pendingApproval: fees.filter(fee => !fee.isApproved).length,
-              activeFees: fees.filter(fee => fee.isActive).length,
-              totalAmount: fees.reduce((sum, fee) => sum + fee.amount, 0),
-              approvedAmount: fees.filter(fee => fee.isApproved).reduce((sum, fee) => sum + fee.amount, 0),
-              pendingAmount: fees.filter(fee => !fee.isApproved).reduce((sum, fee) => sum + fee.amount, 0),
+              totalFees: validFees.length,
+              approvedFees: validFees.filter(fee => fee.isApproved).length,
+              pendingApproval: validFees.filter(fee => !fee.isApproved).length,
+              activeFees: validFees.filter(fee => fee.isActive).length,
+              totalAmount: validFees.reduce((sum, fee) => sum + (fee.amount || 0), 0),
+              approvedAmount: validFees.filter(fee => fee.isApproved).reduce((sum, fee) => sum + (fee.amount || 0), 0),
+              pendingAmount: validFees.filter(fee => !fee.isApproved).reduce((sum, fee) => sum + (fee.amount || 0), 0),
             };
             set({ feeStats: calculatedStats });
           }
@@ -370,22 +372,24 @@ export const useFeeStore = create<FeeStore>()(
         } catch (error: unknown) {
           // If stats endpoint doesn't exist, calculate from existing payments
           const { payments } = get();
-          if (payments.length > 0) {
+          const validPayments = Array.isArray(payments) ? payments.filter(payment => payment && typeof payment.amount === 'number') : [];
+
+          if (validPayments.length > 0) {
             const calculatedStats = {
-              totalPayments: payments.length,
-              successfulPayments: payments.filter(payment => payment.status === 'success').length,
-              pendingPayments: payments.filter(payment => payment.status === 'pending').length,
-              failedPayments: payments.filter(payment => payment.status === 'failed').length,
-              totalAmount: payments.reduce((sum, payment) => sum + payment.amount, 0),
-              successfulAmount: payments.filter(payment => payment.status === 'success').reduce((sum, payment) => sum + payment.amount, 0),
-              pendingAmount: payments.filter(payment => payment.status === 'pending').reduce((sum, payment) => sum + payment.amount, 0),
+              totalPayments: validPayments.length,
+              successfulPayments: validPayments.filter(payment => payment.status === 'success').length,
+              pendingPayments: validPayments.filter(payment => payment.status === 'pending').length,
+              failedPayments: validPayments.filter(payment => payment.status === 'failed').length,
+              totalAmount: validPayments.reduce((sum, payment) => sum + (payment.amount || 0), 0),
+              successfulAmount: validPayments.filter(payment => payment.status === 'success').reduce((sum, payment) => sum + (payment.amount || 0), 0),
+              pendingAmount: validPayments.filter(payment => payment.status === 'pending').reduce((sum, payment) => sum + (payment.amount || 0), 0),
               paymentsByMethod: {
-                paystack: payments.filter(p => p.mode_of_payment === 'paystack').length,
-                flutterwave: payments.filter(p => p.mode_of_payment === 'flutterwave').length,
-                bank_transfer: payments.filter(p => p.mode_of_payment === 'bank_transfer').length,
-                cash: payments.filter(p => p.mode_of_payment === 'cash').length,
+                paystack: validPayments.filter(p => p.mode_of_payment === 'paystack').length,
+                flutterwave: validPayments.filter(p => p.mode_of_payment === 'flutterwave').length,
+                bank_transfer: validPayments.filter(p => p.mode_of_payment === 'bank_transfer').length,
+                cash: validPayments.filter(p => p.mode_of_payment === 'cash').length,
               },
-              recentPayments: payments.slice(-5), // Add recent payments to match interface
+              recentPayments: validPayments.slice(-5), // Add recent payments to match interface
             };
             set({ paymentStats: calculatedStats });
           }

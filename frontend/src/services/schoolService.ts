@@ -290,36 +290,30 @@ export class SchoolService {
   }
 
   static async createSession(data: CreateSessionData): Promise<Session> {
-    const response = await ApiService.post<ApiResponse<Session>>(
+    const response = await ApiService.post<Session>(
       API_ENDPOINTS.SESSIONS.CREATE,
       data
     );
-    
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to create session');
-    }
-    
-    return response.data!;
+
+    // Backend returns the session directly, not wrapped in ApiResponse
+    return response;
   }
 
   static async updateSession(data: UpdateSessionData): Promise<Session> {
-    const response = await ApiService.put<ApiResponse<Session>>(
-      `${API_ENDPOINTS.SESSIONS.UPDATE}/${data._id}`,
+    const response = await ApiService.put<Session>(
+      API_ENDPOINTS.SESSIONS.UPDATE.replace(':id', data._id),
       data
     );
-    
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to update session');
-    }
-    
-    return response.data!;
+
+    // Backend returns the session directly, not wrapped in ApiResponse
+    return response;
   }
 
   static async deleteSession(id: string): Promise<void> {
     const response = await ApiService.delete<ApiResponse>(
-      `${API_ENDPOINTS.SESSIONS.DELETE}/${id}`
+      API_ENDPOINTS.SESSIONS.DELETE.replace(':id', id)
     );
-    
+
     if (!response.success) {
       throw new Error(response.message || 'Failed to delete session');
     }
@@ -359,36 +353,30 @@ export class SchoolService {
   }
 
   static async createTerm(data: CreateTermData): Promise<Term> {
-    const response = await ApiService.post<ApiResponse<Term>>(
+    const response = await ApiService.post<Term>(
       API_ENDPOINTS.TERMS.CREATE,
       data
     );
-    
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to create term');
-    }
-    
-    return response.data!;
+
+    // Backend returns the term directly, not wrapped in ApiResponse
+    return response;
   }
 
   static async updateTerm(data: UpdateTermData): Promise<Term> {
-    const response = await ApiService.put<ApiResponse<Term>>(
-      `${API_ENDPOINTS.TERMS.UPDATE}/${data._id}`,
+    const response = await ApiService.put<Term>(
+      API_ENDPOINTS.TERMS.UPDATE.replace(':id', data._id),
       data
     );
-    
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to update term');
-    }
-    
-    return response.data!;
+
+    // Backend returns the term directly, not wrapped in ApiResponse
+    return response;
   }
 
   static async deleteTerm(id: string): Promise<void> {
     const response = await ApiService.delete<ApiResponse>(
-      `${API_ENDPOINTS.TERMS.DELETE}/${id}`
+      API_ENDPOINTS.TERMS.DELETE.replace(':id', id)
     );
-    
+
     if (!response.success) {
       throw new Error(response.message || 'Failed to delete term');
     }
@@ -428,36 +416,30 @@ export class SchoolService {
   }
 
   static async createClassArm(data: CreateClassArmData): Promise<ClassArm> {
-    const response = await ApiService.post<ApiResponse<ClassArm>>(
+    const response = await ApiService.post<ClassArm>(
       API_ENDPOINTS.CLASS_ARMS.CREATE,
       data
     );
-    
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to create class arm');
-    }
-    
-    return response.data!;
+
+    // Backend returns the class arm directly, not wrapped in ApiResponse
+    return response;
   }
 
   static async updateClassArm(data: UpdateClassArmData): Promise<ClassArm> {
-    const response = await ApiService.put<ApiResponse<ClassArm>>(
-      `${API_ENDPOINTS.CLASS_ARMS.UPDATE}/${data._id}`,
+    const response = await ApiService.put<ClassArm>(
+      API_ENDPOINTS.CLASS_ARMS.UPDATE.replace(':id', data._id),
       data
     );
-    
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to update class arm');
-    }
-    
-    return response.data!;
+
+    // Backend returns the class arm directly, not wrapped in ApiResponse
+    return response;
   }
 
   static async deleteClassArm(id: string): Promise<void> {
     const response = await ApiService.delete<ApiResponse>(
-      `${API_ENDPOINTS.CLASS_ARMS.DELETE}/${id}`
+      API_ENDPOINTS.CLASS_ARMS.DELETE.replace(':id', id)
     );
-    
+
     if (!response.success) {
       throw new Error(response.message || 'Failed to delete class arm');
     }

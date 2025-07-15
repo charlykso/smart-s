@@ -4,11 +4,40 @@ const Address = require('../model/Address')
 
 exports.getSchools = async (req, res) => {
   try {
-    const school = await School.find()
+    let filter = {}
+
+    // Check if user is a general admin (no school assignment)
+    const userSchool = req.user.school?._id || req.user.school
+    const isGeneralAdmin = req.user.roles.includes('Admin') && !userSchool
+
+    if (!isGeneralAdmin) {
+      // School-scoped users can only see their own school
+      if (!userSchool) {
+        return res.status(403).json({
+          message: 'User must belong to a school to access schools',
+        })
+      }
+      filter = { _id: userSchool }
+    }
+    // General admins see all schools (no filter)
+
+    console.log('getSchools debug:', {
+      userEmail: req.user?.email,
+      userRoles: req.user?.roles,
+      userSchool,
+      isGeneralAdmin,
+      filter,
+    })
+
+    const school = await School.find(filter)
       .populate('address', 'country state zip_code town street street_no')
       .populate('groupSchool', 'name logo')
+
+    console.log('Schools found:', school.length)
+
     res.status(200).json(school)
   } catch (error) {
+    console.error('getSchools error:', error)
     res.status(500).json({ message: error.message })
   }
 }

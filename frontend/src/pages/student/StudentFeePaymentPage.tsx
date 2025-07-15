@@ -69,8 +69,8 @@ const StudentFeePaymentPage: React.FC = () => {
       // Load approved fees, outstanding fees, and payments in parallel
       const [approvedData, outstandingData, paymentsData] = await Promise.all([
         makeApiCall('/fee/student/approved-fees'),
-        makeApiCall('/student/outstanding-fees'),
-        makeApiCall('/student/payments')
+        makeApiCall('/student/outstanding-fees'), // This endpoint exists and returns outstanding fees
+        makeApiCall('/payment/student/my-payments')
       ]);
       
       // Set approved fees
@@ -80,13 +80,15 @@ const StudentFeePaymentPage: React.FC = () => {
         setApprovedFees([]);
       }
       
-      // Set outstanding fees
+      // Set outstanding fees (from student outstanding-fees endpoint)
       if (outstandingData.success && outstandingData.data) {
-        setOutstandingFees(outstandingData.data);
+        // Extract outstanding fees from student data
+        const fees = outstandingData.data.outstandingFees || [];
+        setOutstandingFees(fees);
       } else {
         setOutstandingFees([]);
       }
-      
+
       // Set payments
       if (paymentsData.success && paymentsData.data) {
         setPayments(paymentsData.data);
@@ -136,6 +138,7 @@ const StudentFeePaymentPage: React.FC = () => {
             <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Fees</h3>
             <p className="text-gray-500 mb-4">{error}</p>
             <button
+              type="button"
               onClick={loadData}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >

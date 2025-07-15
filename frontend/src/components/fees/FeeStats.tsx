@@ -13,13 +13,16 @@ const FeeStats: React.FC = () => {
 
   // Calculate stats from current fees if feeStats is not available
   const calculateStats = () => {
-    const totalFees = fees.length;
-    const approvedFees = fees.filter(fee => fee.isApproved).length;
-    const pendingApproval = fees.filter(fee => !fee.isApproved).length;
-    const activeFees = fees.filter(fee => fee.isActive).length;
-    const totalAmount = fees.reduce((sum, fee) => sum + fee.amount, 0);
-    const approvedAmount = fees.filter(fee => fee.isApproved).reduce((sum, fee) => sum + fee.amount, 0);
-    const pendingAmount = fees.filter(fee => !fee.isApproved).reduce((sum, fee) => sum + fee.amount, 0);
+    // Ensure fees is an array and handle null/undefined values
+    const validFees = Array.isArray(fees) ? fees.filter(fee => fee && typeof fee.amount === 'number') : [];
+
+    const totalFees = validFees.length;
+    const approvedFees = validFees.filter(fee => fee.isApproved).length;
+    const pendingApproval = validFees.filter(fee => !fee.isApproved).length;
+    const activeFees = validFees.filter(fee => fee.isActive).length;
+    const totalAmount = validFees.reduce((sum, fee) => sum + (fee.amount || 0), 0);
+    const approvedAmount = validFees.filter(fee => fee.isApproved).reduce((sum, fee) => sum + (fee.amount || 0), 0);
+    const pendingAmount = validFees.filter(fee => !fee.isApproved).reduce((sum, fee) => sum + (fee.amount || 0), 0);
 
     return {
       totalFees,

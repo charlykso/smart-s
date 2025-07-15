@@ -6,31 +6,41 @@ const getAuthToken = (user) => {
     throw new Error('Invalid user data')
   }
 
-  return jwt.sign(
-    {
-      id: user._id,
-      roles: user.roles,
-      iat: Math.floor(Date.now() / 1000),
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: '10h',
-    }
-  )
+  // Include school information in token for better access control
+  const tokenPayload = {
+    id: user._id,
+    roles: user.roles,
+    iat: Math.floor(Date.now() / 1000),
+  }
+
+  // Add school information if user has a school assigned
+  if (user.school) {
+    tokenPayload.school = user.school._id || user.school
+    tokenPayload.schoolName = user.school.name || 'Unknown School'
+  }
+
+  return jwt.sign(tokenPayload, process.env.JWT_SECRET, {
+    expiresIn: '10h',
+  })
 }
 
 const getRefreshToken = (user) => {
-  return jwt.sign(
-    {
-      id: user._id,
-      roles: user.roles,
-      iat: Math.floor(Date.now() / 1000),
-    },
-    process.env.JWT_REFRESH_SECRET,
-    {
-      expiresIn: '5d',
-    }
-  )
+  // Include school information in refresh token as well
+  const tokenPayload = {
+    id: user._id,
+    roles: user.roles,
+    iat: Math.floor(Date.now() / 1000),
+  }
+
+  // Add school information if user has a school assigned
+  if (user.school) {
+    tokenPayload.school = user.school._id || user.school
+    tokenPayload.schoolName = user.school.name || 'Unknown School'
+  }
+
+  return jwt.sign(tokenPayload, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: '5d',
+  })
 }
 
 const generateToken = (user) => {

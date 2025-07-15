@@ -1,6 +1,6 @@
 // Fee Management Types
 
-import type { School, Term, User } from './index';
+import type { School, Session, Term, User } from './index';
 
 // Core Fee Types
 export interface Fee {
@@ -74,8 +74,9 @@ export interface PaymentMethodConfig {
 
 // Form Data Types
 export interface CreateFeeData {
-  term_id: string;
   school_id: string;
+  session_id: string;
+  term_id: string;
   name: string;
   decription: string; // Note: Backend has typo
   type: string;
@@ -252,6 +253,7 @@ export interface FeeModalProps {
   onClose: () => void;
   fee?: Fee;
   schools: School[];
+  sessions: Session[];
   terms: Term[];
   onSubmit: (data: CreateFeeData | UpdateFeeData) => Promise<void>;
 }

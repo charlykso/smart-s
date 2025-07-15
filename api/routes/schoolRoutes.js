@@ -45,6 +45,41 @@ router.get(
   }
 )
 
+// Get school count for ICT Admin (compatible with frontend expectations)
+router.get(
+  '/all',
+  authenticate,
+  authorize(['ICT_administrator']), // ICT Admin only
+  async (req, res) => {
+    try {
+      const user = await User.findById(req.user.id).populate('school')
+
+      // ICT Admin - must be associated with a group school
+      if (!user.school || !user.school.groupSchool) {
+        return res.status(400).json({
+          message: 'ICT Admin not associated with a group school',
+        })
+      }
+
+      // Find all schools under the same group school
+      const schools = await School.find({
+        groupSchool: user.school.groupSchool,
+      }).populate('groupSchool')
+
+      // Return in format expected by frontend
+      res.json({
+        success: true,
+        data: schools,
+      })
+    } catch (error) {
+      console.error('Error fetching schools:', error)
+      res
+        .status(500)
+        .json({ success: false, message: 'Server error', error: error.message })
+    }
+  }
+)
+
 // Create a new school under the same group school
 router.post(
   '/',

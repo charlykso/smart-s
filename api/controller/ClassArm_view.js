@@ -4,12 +4,35 @@ const User = require('../model/User')
 
 exports.getAllClassArms = async (req, res) => {
   try {
-    const classArms = await ClassArm.find().populate(
+    // Use school filter from middleware (req.schoolFilter) if user is restricted to a school
+    // Only general Admin (not assigned to a school) can see all class arms
+    const filter = req.schoolFilter || {}
+
+    console.log('getAllClassArms debug:', {
+      userEmail: req.user?.email,
+      userRoles: req.user?.roles,
+      schoolFilter: req.schoolFilter,
+      filter,
+    })
+
+    const classArms = await ClassArm.find(filter).populate(
       'school',
       'name email phoneNumber'
     )
+
+    console.log('ClassArms found:', classArms.length)
+    console.log(
+      'ClassArm schools:',
+      classArms.map((c) => ({
+        className: c.name,
+        schoolName: c.school?.name,
+        schoolId: c.school?._id,
+      }))
+    )
+
     res.status(200).json(classArms)
   } catch (error) {
+    console.error('getAllClassArms error:', error)
     res.status(500).json({ message: error.message })
   }
 }

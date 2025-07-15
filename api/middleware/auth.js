@@ -186,13 +186,23 @@ const filterByUserSchool = (req, res, next) => {
     const userSchool = req.user.school?._id || req.user.school
     const userRoles = req.user.roles || []
 
+    console.log('filterByUserSchool debug:', {
+      userEmail: req.user.email,
+      userRoles,
+      userSchool,
+      userSchoolType: typeof userSchool,
+      fullSchoolObject: req.user.school,
+    })
+
     // Only general Admin can access all schools - no filtering needed
     if (userRoles.includes('Admin') && !userSchool) {
+      console.log('General Admin access - no filtering applied')
       return next()
     }
 
     // All users (including Admin assigned to a school) must have school filtering
     if (!userSchool) {
+      console.log('No school assigned - access denied')
       return res.status(403).json({
         success: false,
         message: 'User must belong to a school to access this resource',
@@ -203,8 +213,11 @@ const filterByUserSchool = (req, res, next) => {
     req.schoolFilter = { school: userSchool }
     req.userSchool = userSchool // Store for additional checks
 
+    console.log('School filter applied:', req.schoolFilter)
+
     next()
   } catch (error) {
+    console.error('filterByUserSchool error:', error)
     return res.status(500).json({
       success: false,
       message: 'School filtering failed',
@@ -370,6 +383,57 @@ const restrictGeneralAdminAccess = (req, res, next) => {
   }
 }
 
+// Middleware to validate school access for data modification operations
+const validateSchoolDataAccess = (req, res, next) => {
+  try {
+    const userSchool = req.user.school?._id || req.user.school
+    const userRoles = req.user.roles || []
+
+    // Only general Admin can access all schools
+    if (userRoles.includes('Admin') && !userSchool) {
+      return next()
+    }
+
+    // All other users must have school assignment
+    if (!userSchool) {
+      return res.status(403).json({
+        success: false,
+        message: 'User must belong to a school to perform this operation',
+      })
+    }
+
+    // Check if request body contains school field and validate it
+    if (req.body && req.body.school) {
+      const requestSchool = req.body.school
+      if (requestSchool !== userSchool.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: 'Cannot perform operations on data from other schools',
+        })
+      }
+    }
+
+    // Check if URL parameters contain school_id and validate it
+    if (req.params && req.params.school_id) {
+      const paramSchool = req.params.school_id
+      if (paramSchool !== userSchool.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: 'Cannot access data from other schools',
+        })
+      }
+    }
+
+    next()
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'School data access validation failed',
+      error: error.message,
+    })
+  }
+}
+
 module.exports = {
   authenticateToken,
   authorizeRoles,
@@ -385,4 +449,5 @@ module.exports = {
   logUserAction,
   validateSchoolAssignment,
   restrictGeneralAdminAccess,
+  validateSchoolDataAccess,
 }
