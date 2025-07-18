@@ -7,6 +7,20 @@ export interface ICTAdminDashboardData {
     lastname: string;
     email: string;
     roles: string[];
+    isActive?: boolean;
+    lastLogin?: string;
+    createdAt?: string;
+  };
+  school: {
+    _id: string;
+    name: string;
+    email: string;
+    phoneNumber?: string;
+    address?: string;
+    totalStudents: number;
+    totalTeachers: number;
+    totalClasses: number;
+    establishedYear?: number;
   };
   systemMetrics: {
     serverUptime: number;
@@ -132,20 +146,35 @@ export interface EmailStats {
 class ICTAdminService {
   /**
    * Get ICT Admin dashboard data
-   * Since there's no dedicated endpoint, we'll aggregate data from available endpoints
    */
   async getDashboardData(): Promise<ICTAdminDashboardData> {
     try {
-      // For now, we'll create a comprehensive mock dashboard
-      // In a real implementation, this would aggregate data from multiple system endpoints
-      
-      const mockData: ICTAdminDashboardData = {
+      // Call the real ICT admin dashboard endpoint
+      const response = await apiService.get('/ict-admin/dashboard');
+      const data = response.data;
+
+      // Transform backend data to match frontend interface
+      const transformedData: ICTAdminDashboardData = {
         ictAdmin: {
-          _id: 'current-ict-admin',
-          firstname: 'System',
-          lastname: 'Administrator',
-          email: 'ictadmin@smart-s.com',
-          roles: ['ICT_administrator']
+          _id: data.ictAdmin?._id || 'current-ict-admin',
+          firstname: data.ictAdmin?.firstname || 'ICT',
+          lastname: data.ictAdmin?.lastname || 'Administrator',
+          email: data.ictAdmin?.email || 'ictadmin@school.com',
+          roles: data.ictAdmin?.roles || ['ICT_administrator'],
+          isActive: data.ictAdmin?.isActive !== false,
+          lastLogin: data.ictAdmin?.lastLogin || new Date().toISOString(),
+          createdAt: data.ictAdmin?.createdAt || new Date().toISOString()
+        },
+        school: {
+          _id: data.school?._id || 'school-1',
+          name: data.school?.name || 'School',
+          email: data.school?.email || 'admin@school.edu',
+          phoneNumber: data.school?.phoneNumber || '',
+          address: data.school?.address || '',
+          totalStudents: data.stats?.totalStudents || 0,
+          totalTeachers: data.stats?.totalTeachers || 0,
+          totalClasses: data.stats?.totalClasses || 0,
+          establishedYear: data.school?.establishedYear || new Date().getFullYear()
         },
         systemMetrics: {
           serverUptime: 99.9,
@@ -172,7 +201,7 @@ class ICTAdminService {
           backupStatus: 'success'
         },
         technicalStats: {
-          totalSchools: 12,
+          totalSchools: data.stats?.totalSchools || 1,
           totalPaymentProfiles: 45,
           totalEmailsSent: 15678,
           systemErrors: 3,
@@ -216,7 +245,7 @@ class ICTAdminService {
         }
       };
 
-      return mockData;
+      return transformedData;
     } catch (error) {
       console.error('Error fetching ICT Admin dashboard data:', error);
       throw error;

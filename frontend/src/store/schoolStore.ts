@@ -34,7 +34,7 @@ interface SchoolStore extends SchoolManagementState, SchoolManagementActions {
   
   // Role-based loading
   loadDataByUserRole: (userRoles: string[]) => Promise<void>;
-  
+
   // Utility actions
   clearError: () => void;
   setLoading: (loading: boolean) => void;
@@ -512,11 +512,11 @@ export const useSchoolStore = create<SchoolStore>()(
           promises.push(get().loadGroupSchools());
           promises.push(get().loadSchools());
         } else if (userRoles.includes('ICT_administrator')) {
-          // ICT administrators should only see their assigned schools
-          // Don't load group schools or all schools - they'll use their own endpoints
-          console.log('ICT Administrator detected - skipping full school/group school loading');
-        } else if (userRoles.some(role => ['Principal', 'Bursar', 'Teacher'].includes(role))) {
+          // ICT administrators should see their own school
+          promises.push(get().loadSchools());
+        } else if (userRoles.some(role => ['Principal', 'Teacher', 'Bursar'].includes(role))) {
           // School-level users - only load schools (they should see their school)
+          // Bursar needs schools data for fee management
           promises.push(get().loadSchools());
         }
 

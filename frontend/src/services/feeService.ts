@@ -74,13 +74,10 @@ export class FeeService {
 
   static async updateFee(data: UpdateFeeData): Promise<Fee> {
     const endpoint = API_ENDPOINTS.FEES.UPDATE.replace(':id', data._id);
-    const response = await ApiService.put<ApiResponse<Fee>>(endpoint, data);
-    
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to update fee');
-    }
-    
-    return response.data!;
+    const response = await ApiService.put<Fee>(endpoint, data);
+
+    // Backend returns the fee directly, not wrapped in ApiResponse
+    return response;
   }
 
   static async deleteFee(id: string): Promise<void> {
@@ -186,8 +183,23 @@ export class FeeService {
 
   // Payment Profile Management
   static async getPaymentProfiles(): Promise<PaymentProfile[]> {
-    const response = await ApiService.get<PaymentProfile[]>(API_ENDPOINTS.PAYMENT_PROFILES.ALL);
-    return response || [];
+    const response = await ApiService.get<ApiResponse<PaymentProfile[]>>(API_ENDPOINTS.PAYMENT_PROFILES.ALL);
+
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to get payment profiles');
+    }
+
+    return response.data || [];
+  }
+
+  static async getPaymentProfilesForSchool(schoolId: string): Promise<PaymentProfile[]> {
+    const response = await ApiService.get<ApiResponse<PaymentProfile[]>>(`/paymentProfile/all/${schoolId}`);
+
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to get payment profiles for school');
+    }
+
+    return response.data || [];
   }
 
   static async createPaymentProfile(data: CreatePaymentProfileData): Promise<PaymentProfile> {
@@ -250,7 +262,15 @@ export class FeeService {
   }
 
   // Utility Methods
-  static formatAmount(amount: number): string {
+  static formatAmount(amount: number | undefined | null): string {
+    // Handle null, undefined, or NaN values
+    if (amount == null || isNaN(amount)) {
+      return new Intl.NumberFormat('en-NG', {
+        style: 'currency',
+        currency: 'NGN',
+      }).format(0);
+    }
+
     return new Intl.NumberFormat('en-NG', {
       style: 'currency',
       currency: 'NGN',
@@ -332,16 +352,16 @@ export class FeeService {
 
   // Get payments for the current authenticated user (student)
   static async getStudentPayments(): Promise<Payment[]> {
-    const response = await ApiService.get<Payment[]>(
-      API_ENDPOINTS.PAYMENTS.ALL
+    const response = await ApiService.get<ApiResponse<Payment[]>>(
+      API_ENDPOINTS.PAYMENTS.STUDENT_PAYMENTS
     );
 
-    if (!response) {
+    if (!response || !response.success) {
       return [];
     }
 
-    // The payment endpoint returns an array directly (not wrapped in success/data)
-    return Array.isArray(response) ? response : [];
+    // The student payment endpoint returns wrapped in success/data
+    return response.data || [];
   }
 
   // Get approved fees by school (overloaded method) - remove duplicate

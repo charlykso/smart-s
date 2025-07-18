@@ -3,35 +3,60 @@ const PaymentProfile = require('../model/PaymentProfile')
 exports.getAllPaymentProfiles = async (req, res) => {
   try {
     const profiles = await PaymentProfile.find().populate('school')
-    res.status(200).json(profiles)
+    res.status(200).json({
+      success: true,
+      message: 'Payment profiles retrieved successfully',
+      data: profiles,
+    })
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: 'Internal server error', details: error.message })
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    })
   }
 }
 
 exports.getPaymentProfile = async (req, res) => {
   try {
-    const profile = await PaymentProfile.findById(req.body.id).populate('name')
-    if (!profile) return res.status(404).json({ error: 'Profile not found' })
-    res.status(200).json(profile)
+    const profile = await PaymentProfile.findById(req.params.id).populate(
+      'school'
+    )
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: 'Profile not found',
+      })
+    }
+    res.status(200).json({
+      success: true,
+      message: 'Payment profile retrieved successfully',
+      data: profile,
+    })
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: 'Internal server error', details: error.message })
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    })
   }
 }
 
 exports.getAllPaymentProfilesForSchool = async (req, res) => {
   try {
-    const { school_id } = req.params.school_id
+    const { school_id } = req.params
     const profiles = await PaymentProfile.find({ school: school_id })
-    res.status(200).json(profiles)
+    res.status(200).json({
+      success: true,
+      message: 'Payment profiles retrieved successfully',
+      data: profiles,
+    })
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: 'Internal server error', details: error.message })
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    })
   }
 }
 
@@ -53,9 +78,10 @@ exports.createPaymentProfile = async (req, res) => {
       ps_secret_key,
     })
     if (existingProfile) {
-      return res
-        .status(400)
-        .json({ error: 'Profile for this school already exists.' })
+      return res.status(400).json({
+        success: false,
+        message: 'Profile for this school already exists.',
+      })
     }
     const newProfile = await PaymentProfile.create({
       school: school_id,
@@ -69,13 +95,17 @@ exports.createPaymentProfile = async (req, res) => {
       ps_public_key,
       activate_ps: !!req.body.ps_secret_key,
     })
-    res
-      .status(201)
-      .json({ message: 'Payment profile created', profile: newProfile })
+    res.status(201).json({
+      success: true,
+      message: 'Payment profile created successfully',
+      data: newProfile,
+    })
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: 'Internal server error', details: error.message })
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    })
   }
 }
 
@@ -83,7 +113,12 @@ exports.updatePaymentProfile = async (req, res) => {
   try {
     const { id } = req.params
     const profile = await PaymentProfile.findById(id)
-    if (!profile) return res.status(404).json({ error: 'Profile not found' })
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: 'Profile not found',
+      })
+    }
 
     const {
       school_id,
@@ -111,22 +146,38 @@ exports.updatePaymentProfile = async (req, res) => {
     if (bank_name !== undefined) profile.bank_name = bank_name
 
     await profile.save()
-    res.status(200).json({ message: 'Payment profile updated', profile })
+    res.status(200).json({
+      success: true,
+      message: 'Payment profile updated successfully',
+      data: profile,
+    })
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: 'Internal server error', details: error.message })
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    })
   }
 }
 exports.deletePaymentProfile = async (req, res) => {
   try {
-    const profile = await PaymentProfile.findById(req.body.id)
-    if (!profile) return res.status(404).json({ error: 'Profile not found' })
-    await PaymentProfile.findByIdAndDelete(req.body.id)
-    res.status(200).json({ message: 'Payment profile deleted' })
+    const profile = await PaymentProfile.findById(req.params.id)
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        message: 'Profile not found',
+      })
+    }
+    await PaymentProfile.findByIdAndDelete(req.params.id)
+    res.status(200).json({
+      success: true,
+      message: 'Payment profile deleted successfully',
+    })
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: 'Internal server error', details: error.message })
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message,
+    })
   }
 }

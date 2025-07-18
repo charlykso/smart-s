@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   DocumentTextIcon,
   ChartBarIcon,
@@ -11,7 +11,11 @@ import {
   FunnelIcon,
 } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
+import { ApiService } from '../../services/api';
 import MainLayout from '../../components/layout/MainLayout';
+import CenteredLoader from '../../components/common/CenteredLoader';
+import toast from 'react-hot-toast';
 
 interface ReportType {
   id: string;
@@ -34,9 +38,19 @@ interface ReportFilter {
 
 const ReportsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuthStore();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [filters, setFilters] = useState<ReportFilter>({});
   const [showFilters, setShowFilters] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Check authentication
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      navigate('/login');
+      return;
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const reportTypes: ReportType[] = [
     {
@@ -101,17 +115,54 @@ const ReportsPage: React.FC = () => {
     selectedCategory === 'all' || report.category === selectedCategory
   );
 
-  const handleGenerateReport = (reportId: string) => {
-    // Mock report generation
-    console.log('Generating report:', reportId, 'with filters:', filters);
-    alert(`Generating ${reportTypes.find(r => r.id === reportId)?.name}...`);
+  const handleGenerateReport = async (reportId: string) => {
+    setIsLoading(true);
+    try {
+      let endpoint = '';
+      switch (reportId) {
+        case 'financial-summary':
+          endpoint = '/reports/financial-summary';
+          break;
+        case 'payment-analysis':
+          endpoint = '/reports/payment-analysis';
+          break;
+        case 'student-enrollment':
+          endpoint = '/reports/student-enrollment';
+          break;
+        default:
+          toast.error('Report type not implemented yet');
+          return;
+      }
+
+      const response = await ApiService.get(endpoint);
+      if (response.success) {
+        // For now, show the data in console and alert
+        console.log('Report data:', response.data);
+        toast.success(`${reportTypes.find(r => r.id === reportId)?.name} generated successfully!`);
+
+        // In a real implementation, you would open a modal or navigate to a report view
+        alert(`Report generated successfully! Check console for data.`);
+      } else {
+        toast.error(response.message || 'Failed to generate report');
+      }
+    } catch (error) {
+      console.error('Report generation error:', error);
+      toast.error('Failed to generate report');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleExportReport = (reportId: string, format: 'pdf' | 'excel' | 'csv') => {
-    // Mock export functionality
+    // Mock export functionality - to be implemented
     console.log('Exporting report:', reportId, 'as', format);
-    alert(`Exporting ${reportTypes.find(r => r.id === reportId)?.name} as ${format.toUpperCase()}...`);
+    toast.success(`Export functionality will be implemented soon`);
   };
+
+  // Show loading state if not authenticated
+  if (!isAuthenticated || !user) {
+    return <CenteredLoader />;
+  }
 
   return (
     <MainLayout>
@@ -171,10 +222,21 @@ const ReportsPage: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     School
                   </label>
-                  <select className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                    <option value="">All Schools</option>
-                    <option value="school1">Green Valley High School</option>
-                    <option value="school2">Sunshine Academy</option>
+                  <select
+                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    value={filters.school || ''}
+                    onChange={(e) => setFilters({ ...filters, school: e.target.value })}
+                    disabled={!user?.roles?.includes('Admin') || !!user?.school}
+                  >
+                    <option value="">
+                      {user?.roles?.includes('Admin') && !user?.school ? 'All Schools' : 'Current School'}
+                    </option>
+                    {/* School options will be populated based on user's access level */}
+                    {user?.school && (
+                      <option value={typeof user.school === 'object' ? user.school._id : user.school}>
+                        {typeof user.school === 'object' ? user.school.name : 'Current School'}
+                      </option>
+                    )}
                   </select>
                 </div>
                 <div>

@@ -16,6 +16,8 @@ export class AuthService {
         throw new Error(response.message || 'Login failed');
       }
 
+      // The backend returns data nested under response.data
+      // ApiService already extracts response.data, so response.data contains the auth data
       return response.data;
     } catch (error) {
       // Extract meaningful error message from various error formats

@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const authenticateToken = require('../middleware/authenticateToken')
+const { filterByUserSchool } = require('../middleware/auth')
 const roleList = require('../helpers/roleList')
 const verifyRoles = require('../middleware/verifyRoles')
 const classArmController = require('../controller/ClassArm_view')
@@ -13,8 +14,11 @@ router
       roleList.Admin,
       roleList.ICT_administrator,
       roleList.Proprietor,
-      roleList.Principal
+      roleList.Principal,
+      roleList.Teacher,
+      roleList.Student
     ),
+    filterByUserSchool,
     classArmController.getAllClassArms
   )
 router

@@ -10,7 +10,7 @@ import {
   ChartBarIcon,
   HomeIcon,
 } from '@heroicons/react/24/outline';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useStudentManagementStore } from '../../store/studentManagementStore';
 import { useSchoolStore } from '../../store/schoolStore';
 import { useAuthStore } from '../../store/authStore';
@@ -26,7 +26,8 @@ import Pagination from '../../components/common/Pagination';
 
 const StudentManagementPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
+
   const {
     students,
     selectedStudent,
@@ -54,10 +55,19 @@ const StudentManagementPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'list' | 'stats'>('list');
 
   useEffect(() => {
-    loadStudents();
-    loadStudentStats();
-    loadSchools();
-  }, []);
+    if (isAuthenticated && user && canManageStudents(user)) {
+      loadStudents();
+      loadSchools();
+    }
+  }, [isAuthenticated, user, loadStudents, loadSchools]);
+
+  // Load statistics when stats tab is active
+  useEffect(() => {
+    if (activeTab === 'stats' && isAuthenticated && user && canManageStudents(user)) {
+      const userSchoolId = getUserSchoolId(user);
+      loadStudentStats(userSchoolId);
+    }
+  }, [activeTab, isAuthenticated, user, loadStudentStats]);
 
   useEffect(() => {
     if (error) {
@@ -67,6 +77,11 @@ const StudentManagementPage: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [error, clearError]);
+
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -185,19 +200,19 @@ const StudentManagementPage: React.FC = () => {
     <MainLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-secondary-200 dark:border-gray-700 p-6 transition-colors duration-200">
-          <div className="flex items-center justify-between">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-secondary-200 dark:border-gray-700 p-4 sm:p-6 transition-colors duration-200">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
             <div className="flex items-center">
-              <UserGroupIcon className="h-8 w-8 text-primary-600 dark:text-primary-400 mr-3" />
+              <UserGroupIcon className="h-6 w-6 sm:h-8 sm:w-8 text-primary-600 dark:text-primary-400 mr-3" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Student Management</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">Student Management</h1>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   Manage student records and academic information
                 </p>
               </div>
             </div>
 
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-wrap items-center gap-2 sm:space-x-4 sm:gap-0">
                 <button
                   type="button"
                   onClick={() => setIsFiltersOpen(!isFiltersOpen)}

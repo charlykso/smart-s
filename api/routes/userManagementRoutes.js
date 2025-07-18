@@ -93,20 +93,24 @@ router.post(
         school: schoolId,
       } = req.body
 
-      // Validate required fields
-      if (
-        !firstname ||
-        !lastname ||
-        !email ||
-        !phone ||
-        !roles ||
-        !gender ||
-        !regNo ||
-        !schoolId
-      ) {
+      // Validate required fields (base fields for all users)
+      if (!firstname || !lastname || !email || !phone || !roles || !schoolId) {
         return res.status(400).json({
-          message: 'All required fields must be provided',
+          message:
+            'Required fields must be provided: firstname, lastname, email, phone, roles, school',
         })
+      }
+
+      // Additional validation for students
+      const isStudent = Array.isArray(roles)
+        ? roles.includes('Student')
+        : roles === 'Student'
+      if (isStudent) {
+        if (!gender || !regNo) {
+          return res.status(400).json({
+            message: 'Students require gender and registration number',
+          })
+        }
       }
 
       // Verify the school belongs to the same group school
@@ -125,7 +129,7 @@ router.post(
       const allowedRoles = [
         'Principal',
         'Bursar',
-        'Teacher',
+        'Headteacher',
         'Student',
         'Parent',
       ]
@@ -145,34 +149,40 @@ router.post(
         })
       }
 
-      // Check if user with registration number already exists in the same school
-      const existingRegNo = await User.findOne({ regNo, school: schoolId })
-      if (existingRegNo) {
-        return res.status(400).json({
-          message:
-            'User with this registration number already exists in this school',
-        })
+      // Check if user with registration number already exists in the same school (only for students)
+      if (isStudent && regNo) {
+        const existingRegNo = await User.findOne({ regNo, school: schoolId })
+        if (existingRegNo) {
+          return res.status(400).json({
+            message:
+              'User with this registration number already exists in this school',
+          })
+        }
       }
 
       // Generate default password
       const defaultPassword = 'password123'
       const hashedPassword = await bcrypt.hash(defaultPassword, 10)
 
-      // Create new user
-      const newUser = new User({
+      // Create new user with conditional fields
+      const userData = {
         firstname,
         lastname,
         email,
         phone,
         password: hashedPassword,
         roles: Array.isArray(roles) ? roles : [roles],
-        type: type || 'day',
-        gender,
-        regNo,
         school: schoolId,
         status: 'active',
         isActive: true,
-      })
+      }
+
+      // Add optional fields if provided
+      if (type) userData.type = type
+      if (gender) userData.gender = gender
+      if (regNo) userData.regNo = regNo
+
+      const newUser = new User(userData)
 
       await newUser.save()
 

@@ -74,7 +74,6 @@ router.post(
   authenticateToken,
   verifyRoles(roleList.Admin, roleList.ICT_administrator, roleList.Proprietor),
   upload.single('file'),
-  validateSchoolAssignment,
   bulkUploadController.bulkUploadStudents
 )
 

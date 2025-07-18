@@ -22,6 +22,28 @@ const authenticateToken = async (req, res, next) => {
       return res.status(403).json({ message: 'User not found' })
     }
 
+    // Enhanced school validation: ensure token school matches database school
+    const tokenSchool = decoded.school
+    const userSchool = user.school?._id || user.school
+
+    // For users with school assignments, validate consistency
+    if (tokenSchool || userSchool) {
+      const tokenSchoolId = tokenSchool ? tokenSchool.toString() : null
+      const userSchoolId = userSchool ? userSchool.toString() : null
+
+      if (tokenSchoolId !== userSchoolId) {
+        console.warn('School mismatch detected:', {
+          userId: user._id,
+          email: user.email,
+          tokenSchool: tokenSchoolId,
+          userSchool: userSchoolId,
+        })
+        return res.status(403).json({
+          message: 'School assignment mismatch. Please login again.',
+        })
+      }
+    }
+
     req.roles = decoded.roles
     req.user = user
     next()

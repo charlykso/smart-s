@@ -12,8 +12,13 @@ export interface CreateUserRequest {
   firstname: string;
   lastname: string;
   email: string;
+  phone?: string;
   roles: string[];
-  password: string;
+  password?: string;
+  type?: string;
+  gender?: string;
+  regNo?: string;
+  school?: string;
 }
 
 export interface UpdateUserRequest {
@@ -123,9 +128,10 @@ export class UserService {
     }
   }
 
-  // Create new user
+  // Create new user (uses ICT admin endpoint for school-scoped creation)
   static async createUser(userData: CreateUserRequest): Promise<User> {
-    return ApiService.post<User>(API_ENDPOINTS.USERS.CREATE, userData);
+    // Use the ICT admin user management endpoint which handles school-scoped user creation
+    return ApiService.post<User>('/users', userData);
   }
 
   // Update user

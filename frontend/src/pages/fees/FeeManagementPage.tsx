@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import {
   CurrencyDollarIcon,
   CreditCardIcon,
@@ -18,10 +19,16 @@ import FeeModal from '../../components/fees/FeeModal';
 import FeeApprovalModal from '../../components/fees/FeeApprovalModal';
 import FeeStats from '../../components/fees/FeeStats';
 import PaymentStats from '../../components/fees/PaymentStats';
+import { ROUTES } from '../../constants';
 import type { Fee } from '../../types/fee';
 
 const FeeManagementPage: React.FC = () => {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
+
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    return <Navigate to={ROUTES.LOGIN} replace />;
+  }
   const {
     fees,
     payments,
@@ -37,8 +44,10 @@ const FeeManagementPage: React.FC = () => {
 
   const {
     schools,
+    sessions,
     terms,
     loadSchools,
+    loadSessions,
     loadTerms,
   } = useSchoolStore();
 
@@ -63,14 +72,18 @@ const FeeManagementPage: React.FC = () => {
 
   useEffect(() => {
     // Load initial data
-    loadSchools();
-    loadTerms();
+    // Load schools, sessions, and terms for users who need them for fee creation
+    if (user?.roles?.some(role => ['Admin', 'ICT_administrator', 'Principal', 'Bursar'].includes(role))) {
+      loadSchools();
+      loadSessions();
+      loadTerms();
+    }
     loadFees();
     loadPayments();
     loadUnapprovedFees();
     loadFeeStats();
     loadPaymentStats();
-  }, [loadSchools, loadTerms, loadFees, loadPayments, loadUnapprovedFees, loadFeeStats, loadPaymentStats]);
+  }, [user?.roles, loadSchools, loadSessions, loadTerms, loadFees, loadPayments, loadUnapprovedFees, loadFeeStats, loadPaymentStats]);
 
   // Check user permissions
   const canManageFees = user?.roles?.some(role => 
@@ -437,6 +450,8 @@ const FeeManagementPage: React.FC = () => {
         fee={editingFee}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         schools={schools as unknown as any[]}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        sessions={sessions as unknown as any[]}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         terms={terms as unknown as any[]}
         onSubmit={async () => {

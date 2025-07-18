@@ -1866,6 +1866,52 @@ const bulkUpdateUsers = async (req, res) => {
       })
     }
 
+    // Get users to be updated for validation
+    const usersToUpdate = await User.find({ _id: { $in: userIds } }).populate(
+      'school',
+      'name groupSchool'
+    )
+
+    if (usersToUpdate.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No users found with provided IDs',
+      })
+    }
+
+    // Validate permissions based on user role
+    if (
+      currentUser.roles.includes('ICT_administrator') &&
+      !currentUser.roles.includes('Admin')
+    ) {
+      // ICT Admin can only update users in their group school
+      const currentUserSchool = await User.findById(req.user.id).populate(
+        'school'
+      )
+
+      if (!currentUserSchool.school || !currentUserSchool.school.groupSchool) {
+        return res.status(403).json({
+          success: false,
+          message: 'ICT Administrator not associated with a group school',
+        })
+      }
+
+      // Check if all users to update are in the same group school
+      const unauthorizedUsers = usersToUpdate.filter(
+        (user) =>
+          !user.school ||
+          String(user.school.groupSchool) !==
+            String(currentUserSchool.school.groupSchool)
+      )
+
+      if (unauthorizedUsers.length > 0) {
+        return res.status(403).json({
+          success: false,
+          message: 'Cannot update users outside your group school',
+        })
+      }
+    }
+
     // Clean updates object - remove sensitive fields
     const allowedUpdates = { ...updates }
     delete allowedUpdates.password

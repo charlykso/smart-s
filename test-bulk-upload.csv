@@ -1,0 +1,6 @@
+firstname,middlename,lastname,email,phone,regNo,gender,DOB,classArm,type
+John,Michael,Doe,john.doe@example.com,+2348012345678,STU001,Male,2005-01-15,JSS 1,day
+Jane,Mary,Smith,,,STU002,Female,2005-03-20,JSS 1,boarding
+David,,Johnson,david.j@test.com,,STU003,Male,,JSS 2,day
+Sarah,Ann,Williams,,,STU004,Female,2004-12-10,JSS 2,boarding
+Michael,,Brown,,,STU005,Male,,JSS 1,day

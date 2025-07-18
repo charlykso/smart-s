@@ -99,7 +99,7 @@ const navigation: MenuItem[] = [
     id: 'settings',
     label: 'Settings',
     icon: Cog6ToothIcon,
-    roles: ['Admin', 'ICT_administrator', 'Principal', 'Headteacher'] as UserRole[],
+    roles: ['Admin', 'ICT_administrator', 'Principal', 'Headteacher', 'Bursar'] as UserRole[],
     children: [
       {
         id: 'general-settings',
@@ -117,7 +117,7 @@ const navigation: MenuItem[] = [
         id: 'payment-config',
         label: 'Payment Configuration',
         path: ROUTES.PAYMENT_CONFIG,
-        roles: ['Admin', 'ICT_administrator'] as UserRole[],
+        roles: ['Admin', 'ICT_administrator', 'Bursar'] as UserRole[],
       },
       {
         id: 'student-management',

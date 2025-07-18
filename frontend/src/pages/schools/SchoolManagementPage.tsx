@@ -133,6 +133,16 @@ const SchoolManagementPage: React.FC = () => {
     setIsTermModalOpen(true);
   };
 
+  const handleDeleteTerm = (term: Term) => {
+    // The delete is handled in the TermCard component
+    console.log('Term deleted:', term.name);
+  };
+
+  const handleDeleteSession = (session: Session) => {
+    // The delete is handled in the SessionCard component
+    console.log('Session deleted:', session.name);
+  };
+
   const handleCreateClassArm = () => {
     setEditingClassArm(null);
     setIsClassArmModalOpen(true);
@@ -368,6 +378,7 @@ const SchoolManagementPage: React.FC = () => {
                   <SessionCard
                     session={session}
                     onEdit={canManageSessions ? handleEditSession : undefined}
+                    onDelete={canManageSessions ? handleDeleteSession : undefined}
                     onSelect={setSelectedSession}
                     isSelected={selectedSession?._id === session._id}
                   />
@@ -398,6 +409,7 @@ const SchoolManagementPage: React.FC = () => {
                   key={term._id}
                   term={term}
                   onEdit={handleEditTerm}
+                  onDelete={canManageSessions ? handleDeleteTerm : undefined}
                   onSelect={setSelectedTerm}
                   isSelected={selectedTerm?._id === term._id}
                 />

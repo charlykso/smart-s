@@ -27,10 +27,11 @@ import type { QuickAction } from '../widgets/QuickActionCard';
 import type { Activity } from '../widgets/RecentActivityCard';
 import { useSchoolStore } from '../../../store/schoolStore';
 import { useAuthStore } from '../../../store/authStore';
-import type { 
-  CreateSchoolData, 
-  UpdateSchoolData, 
-  CreateSessionData, 
+import { ictAdminService, ICTAdminDashboardData } from '../../../services/ictAdminService';
+import type {
+  CreateSchoolData,
+  UpdateSchoolData,
+  CreateSessionData,
   UpdateSessionData,
   CreateTermData,
   UpdateTermData,
@@ -57,6 +58,10 @@ const ICTAdminSchoolManagement: React.FC = () => {
     loadSessions,
     loadClassArms,
   } = useSchoolStore();
+
+  // ICT Admin dashboard data
+  const [dashboardData, setDashboardData] = useState<ICTAdminDashboardData | null>(null);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
 
   // Modal states
   const [isSchoolModalOpen, setIsSchoolModalOpen] = useState(false);
@@ -170,6 +175,11 @@ const ICTAdminSchoolManagement: React.FC = () => {
       formData.append('file', selectedFile);
       formData.append('school_id', selectedSchoolId);
 
+      console.log('🔧 Making bulk upload request...');
+      console.log('URL: /api/v1/bulk-students/upload');
+      console.log('School ID:', selectedSchoolId);
+      console.log('File:', selectedFile?.name);
+
       const response = await fetch('/api/v1/bulk-students/upload', {
         method: 'POST',
         headers: {
@@ -178,9 +188,15 @@ const ICTAdminSchoolManagement: React.FC = () => {
         body: formData,
       });
 
+      console.log('📥 Response received:');
+      console.log('Status:', response.status);
+      console.log('Status Text:', response.statusText);
+      console.log('Headers:', Object.fromEntries(response.headers.entries()));
+
       // Check response type and handle accordingly
       const contentType = response.headers.get('content-type');
-      
+      console.log('Content-Type:', contentType);
+
       if (!response.ok) {
         // For error responses, expect JSON
         let result;
@@ -218,30 +234,39 @@ const ICTAdminSchoolManagement: React.FC = () => {
 
       // For successful responses, check if it's a PDF (student credentials) or JSON
       if (contentType?.includes('application/pdf')) {
+        console.log('✅ PDF response detected, processing download...');
+
         // Handle PDF response - download the student credentials
         const blob = await response.blob();
+        console.log('Blob size:', blob.size, 'bytes');
+        console.log('Blob type:', blob.type);
+
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        
+
         // Get filename from response headers or use default
         const contentDisposition = response.headers.get('content-disposition');
         let filename = 'student_credentials.pdf';
         if (contentDisposition) {
+          console.log('Content-Disposition header:', contentDisposition);
           const regex = /filename="(.+)"/;
           const filenameMatch = regex.exec(contentDisposition);
           if (filenameMatch) {
             filename = filenameMatch[1];
           }
         }
-        
+
+        console.log('Download filename:', filename);
+
         a.download = filename;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        
+
+        console.log('✅ PDF download initiated');
         toast.success('Students uploaded successfully! Student credentials PDF downloaded.');
       } else if (contentType?.includes('application/json')) {
         // Handle JSON response (fallback case)
@@ -264,14 +289,22 @@ const ICTAdminSchoolManagement: React.FC = () => {
       }
       
     } catch (error) {
-      console.error('Bulk upload error:', error);
-      
+      console.error('❌ Bulk upload error:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error constructor:', error?.constructor?.name);
+
       // If we have detailed error information, log it for developers
       if (error instanceof Error && error.message.includes('duplicate records found')) {
         console.error('Detailed conflict information available in server response');
       }
-      
-      toast.error(error instanceof Error ? error.message : 'Upload failed');
+
+      // Log the full error for debugging
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
+
+      toast.error(error instanceof Error ? error.message : 'Internal server error during bulk upload');
     } finally {
       setIsUploading(false);
     }
@@ -281,32 +314,48 @@ const ICTAdminSchoolManagement: React.FC = () => {
     // Fetch school-related data on component mount for ICT Admin
     const loadData = async () => {
       try {
+        setDashboardLoading(true);
+
+        // Load ICT admin dashboard data
+        console.log('Starting to load ICT admin dashboard data...');
+        const dashboardPromise = ictAdminService.getDashboardData()
+          .then(data => {
+            console.log('ICT Admin dashboard data loaded successfully:', data);
+            setDashboardData(data);
+          })
+          .catch(error => {
+            console.error('Failed to load ICT admin dashboard data:', error);
+            console.error('Error details:', error.response?.data || error.message);
+          });
+
         // For ICT administrators, only load the data they have access to
-        const promises = [];
-        
+        const promises = [dashboardPromise];
+
         // Always try to load these
         promises.push(loadSessions());
         promises.push(loadClassArms());
-        
+
         // Try to load schools, but handle gracefully if access is restricted
         promises.push(
           loadSchools().catch(() => {
             console.warn('Could not load all schools - this may be expected for ICT admins');
           })
         );
-        
+
         await Promise.all(promises);
-        
+
         // If schools array is empty but user is ICT admin, this is expected
         if (schools.length === 0 && user?.roles?.includes('ICT_administrator')) {
           console.info('ICT admin showing role-specific dashboard');
         }
-        
+
       } catch (error) {
         console.warn('Some data failed to load, but this may be expected for ICT admins:', error);
+      } finally {
+        setDashboardLoading(false);
       }
     };
-    
+
     loadData();
   }, [loadSchools, loadSessions, loadClassArms, schools.length, user?.roles]);
 
@@ -459,11 +508,11 @@ const ICTAdminSchoolManagement: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard
           title={user?.roles?.includes('ICT_administrator') ? "Accessible Schools" : "Total Schools"}
-          value={schools.length}
+          value={dashboardData?.technicalStats?.totalSchools || 1}
           icon={AcademicCapIcon}
           iconColor="text-green-600"
           changeType="increase"
-          loading={isLoading}
+          loading={dashboardLoading}
         />
         <StatCard
           title="Active Sessions"

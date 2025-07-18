@@ -45,6 +45,7 @@ router
       roleList.Proprietor,
       roleList.ICT_administrator
     ),
+    checkSchoolAccess,
     userController.getICT_administrator
   )
 router
@@ -60,6 +61,7 @@ router
   .put(
     authenticateToken,
     verifyRoles(roleList.Admin, roleList.ICT_administrator),
+    checkSchoolAccess,
     userController.updateICT_administrator
   )
 router
@@ -96,6 +98,7 @@ router
   .put(
     authenticateToken,
     verifyRoles(roleList.Admin, roleList.Proprietor, roleList.Auditor),
+    checkSchoolAccess,
     userController.updateAuditor
   )
 router
@@ -125,6 +128,7 @@ router
   .put(
     authenticateToken,
     verifyRoles(roleList.Admin, roleList.Proprietor),
+    checkSchoolAccess,
     userController.updateProprietor
   )
 router
@@ -160,6 +164,7 @@ router
   .put(
     authenticateToken,
     verifyRoles(roleList.Admin, roleList.Principal),
+    checkSchoolAccess,
     userController.updatePrincipal
   )
 router
@@ -280,6 +285,7 @@ router
       roleList.ICT_administrator,
       roleList.Principal
     ),
+    checkSchoolAccess,
     userController.getStudent
   )
 router
@@ -305,6 +311,7 @@ router
       roleList.ICT_administrator,
       roleList.Principal
     ),
+    checkSchoolAccess,
     userController.updateStudent
   )
 router
@@ -359,6 +366,7 @@ router
       roleList.ICT_administrator,
       roleList.Parent
     ),
+    checkSchoolAccess,
     userController.getParent
   )
 router
@@ -404,7 +412,18 @@ router
     ),
     userController.deleteParent
   )
-router.get('/staff/:school_id', userController.getStaffBySchool)
+router.get(
+  '/staff/:school_id',
+  authenticateToken,
+  verifyRoles(
+    roleList.Admin,
+    roleList.Proprietor,
+    roleList.Principal,
+    roleList.ICT_administrator
+  ),
+  checkSchoolAccess,
+  userController.getStaffBySchool
+)
 
 // Get current user profile
 router.route('/profile').get(authenticateToken, userController.getCurrentUser)

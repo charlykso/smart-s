@@ -18,6 +18,13 @@ router.get(
     try {
       const userSchoolId = req.user.school?._id || req.user.school
 
+      if (!userSchoolId) {
+        return res.status(400).json({
+          success: false,
+          message: 'ICT Administrator not assigned to a school',
+        })
+      }
+
       // Get school information
       const school = await School.findById(userSchoolId).populate(
         'groupSchool',
@@ -52,6 +59,7 @@ router.get(
         totalFees,
         totalSessions,
         totalTerms,
+        totalSchools: 1, // ICT admin manages only their own school
       }
 
       // Get recent students
