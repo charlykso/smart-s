@@ -156,14 +156,17 @@ exports.getPrincipalDashboard = async (req, res) => {
         .populate('fee', 'name amount')
 
       recentPayments.forEach((payment) => {
-        recentActivities.push({
-          id: `payment-${payment._id}`,
-          title: 'Payment Received',
-          description: `${payment.user.firstname} ${payment.user.lastname} paid ${payment.fee.name}`,
-          timestamp: payment.trans_date,
-          type: 'payment',
-          user: 'Payment System',
-        })
+        // Check if user and fee exist before accessing their properties
+        if (payment.user && payment.fee) {
+          recentActivities.push({
+            id: `payment-${payment._id}`,
+            title: 'Payment Received',
+            description: `${payment.user.firstname} ${payment.user.lastname} paid ${payment.fee.name}`,
+            timestamp: payment.trans_date,
+            type: 'payment',
+            user: 'Payment System',
+          })
+        }
       })
     }
 

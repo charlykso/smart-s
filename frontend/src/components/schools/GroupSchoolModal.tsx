@@ -82,9 +82,19 @@ const GroupSchoolModal: React.FC<GroupSchoolModalProps> = ({
       // Create preview URL
       const reader = new FileReader();
       reader.onload = (e) => {
-        setPreviewUrl(e.target?.result as string);
+        const result = e.target?.result as string;
+        console.log('File preview loaded:', result ? 'Success' : 'Failed');
+        setPreviewUrl(result);
+      };
+      reader.onerror = (e) => {
+        console.error('FileReader error:', e);
+        alert('Error reading file');
       };
       reader.readAsDataURL(file);
+    } else {
+      // Clear preview when no file is selected
+      setSelectedFile(null);
+      setPreviewUrl('');
     }
   };
 
@@ -198,23 +208,38 @@ const GroupSchoolModal: React.FC<GroupSchoolModalProps> = ({
 
                   {/* Upload Method Toggle */}
                   <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mb-4">
-                    <label className="flex items-center">
+                    <label className="flex items-center cursor-pointer">
                       <input
                         type="radio"
                         value="file"
                         checked={uploadMethod === 'file'}
-                        onChange={(e) => setUploadMethod(e.target.value as 'file' | 'url')}
+                        onChange={(e) => {
+                          console.log('Upload method changed to:', e.target.value);
+                          setUploadMethod(e.target.value as 'file' | 'url');
+                          // Clear preview when switching methods
+                          if (e.target.value === 'file') {
+                            setPreviewUrl('');
+                          }
+                        }}
                         className="mr-2"
                       />
                       <CloudArrowUpIcon className="h-4 w-4 mr-1" />
                       <span className="text-gray-700 dark:text-gray-300">Upload File</span>
                     </label>
-                    <label className="flex items-center">
+                    <label className="flex items-center cursor-pointer">
                       <input
                         type="radio"
                         value="url"
                         checked={uploadMethod === 'url'}
-                        onChange={(e) => setUploadMethod(e.target.value as 'file' | 'url')}
+                        onChange={(e) => {
+                          console.log('Upload method changed to:', e.target.value);
+                          setUploadMethod(e.target.value as 'file' | 'url');
+                          // Clear file selection when switching to URL
+                          if (e.target.value === 'url') {
+                            setSelectedFile(null);
+                            setPreviewUrl('');
+                          }
+                        }}
                         className="mr-2"
                       />
                       <PhotoIcon className="h-4 w-4 mr-1" />
@@ -232,16 +257,26 @@ const GroupSchoolModal: React.FC<GroupSchoolModalProps> = ({
                               <img
                                 src={previewUrl}
                                 alt="Logo preview"
-                                className="mx-auto h-32 w-32 object-cover rounded-lg"
+                                className="mx-auto h-32 w-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
+                                onLoad={() => console.log('File preview loaded successfully')}
+                                onError={(e) => {
+                                  console.error('File preview failed to load');
+                                  e.currentTarget.style.display = 'none';
+                                }}
                               />
                               <button
                                 type="button"
                                 onClick={handleRemoveFile}
                                 aria-label="Remove uploaded image"
-                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
                               >
                                 <XMarkIcon className="h-4 w-4" />
                               </button>
+                              {selectedFile && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+                                  {selectedFile.name}
+                                </p>
+                              )}
                             </div>
                           ) : (
                             <>
@@ -282,19 +317,34 @@ const GroupSchoolModal: React.FC<GroupSchoolModalProps> = ({
                         {...register('logo')}
                         className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-primary-500 focus:border-primary-500"
                         placeholder="https://example.com/logo.png"
-                        onChange={(e) => setPreviewUrl(e.target.value)}
+                        onChange={(e) => {
+                          const url = e.target.value.trim();
+                          console.log('URL changed:', url);
+                          setPreviewUrl(url);
+                        }}
                       />
                       {errors.logo && (
                         <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.logo.message}</p>
                       )}
                       {previewUrl && (
                         <div className="mt-3">
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Preview:</p>
                           <img
                             src={previewUrl}
                             alt="Logo preview"
-                            className="h-20 w-20 object-cover rounded-lg"
-                            onError={() => setPreviewUrl('')}
+                            className="h-20 w-20 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
+                            onLoad={() => console.log('URL preview loaded successfully')}
+                            onError={(e) => {
+                              console.error('URL preview failed to load:', previewUrl);
+                              // Don't clear the preview URL immediately, let user see the broken image
+                              e.currentTarget.style.display = 'none';
+                            }}
                           />
+                          {previewUrl && (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 break-all">
+                              {previewUrl}
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>

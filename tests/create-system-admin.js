@@ -1,5 +1,6 @@
 // Load environment variables from API directory
-require('../api/node_modules/dotenv').config({ path: '../api/.env' })
+const path = require('path')
+require('../api/node_modules/dotenv').config({ path: path.join(__dirname, '../api/.env') })
 
 const bcrypt = require('../api/node_modules/bcryptjs')
 const User = require('../api/model/User')

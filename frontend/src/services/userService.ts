@@ -128,10 +128,35 @@ export class UserService {
     }
   }
 
-  // Create new user (uses ICT admin endpoint for school-scoped creation)
+  // Create new user (uses appropriate endpoint based on role and current user permissions)
   static async createUser(userData: CreateUserRequest): Promise<User> {
-    // Use the ICT admin user management endpoint which handles school-scoped user creation
-    return ApiService.post<User>('/users', userData);
+    const roles = userData.roles || [];
+    const primaryRole = roles[0];
+
+    // System Admin creating ICT Admin - use admin endpoint
+    if (primaryRole === 'ICT_administrator') {
+      const ictAdminData = {
+        firstname: userData.firstname,
+        lastname: userData.lastname,
+        email: userData.email,
+        phone: userData.phone,
+        schoolId: userData.school, // Admin endpoint expects schoolId
+        gender: userData.gender,
+        type: userData.type,
+        regNo: userData.regNo,
+      };
+
+      const response = await ApiService.post<any>('/admin/ict-administrators', ictAdminData);
+      return response.user; // Admin endpoint returns { success, message, user, defaultPassword }
+    }
+
+    // For other roles, use the ICT admin user management endpoint
+    const userManagementData = {
+      ...userData,
+      school: userData.school, // User management endpoint expects school
+    };
+
+    return ApiService.post<User>('/users', userManagementData);
   }
 
   // Update user

@@ -1,5 +1,5 @@
-const axios = require('axios')
-const FormData = require('form-data')
+const axios = require('../api/node_modules/axios/dist/node/axios.cjs')
+const FormData = require('../api/node_modules/form-data')
 const fs = require('fs')
 const path = require('path')
 
@@ -13,7 +13,7 @@ const ICT_ADMIN_CREDENTIALS = {
   password: 'password123',
 }
 
-const BASE_URL = 'http://localhost:3001/api/v1'
+const BASE_URL = 'http://localhost:3000/api/v1'
 
 async function testICTAdminSystem() {
   try {

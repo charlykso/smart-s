@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { UserService } from '../../services/userService';
+import { SchoolService } from '../../services/schoolService';
 import { useAuthStore } from '../../store/authStore';
+import type { School } from '../../types/school';
 
 // Base validation schema
 const baseUserSchema = z.object({
@@ -21,6 +23,7 @@ const studentSchema = baseUserSchema.extend({
   gender: z.enum(['Male', 'Female'], { required_error: 'Please select a gender' }),
   type: z.enum(['day', 'boarding'], { required_error: 'Please select a type' }),
   regNo: z.string().min(1, 'Registration number is required'),
+  school: z.string().optional(), // Optional for System Admin
 });
 
 // Schema for non-students (optional student fields)
@@ -28,6 +31,7 @@ const nonStudentSchema = baseUserSchema.extend({
   gender: z.enum(['Male', 'Female']).optional(),
   type: z.enum(['day', 'boarding']).optional(),
   regNo: z.string().optional(),
+  school: z.string().optional(), // Optional for System Admin
 });
 
 type CreateUserFormData = z.infer<typeof studentSchema>; // Use the most complete schema for typing
@@ -45,10 +49,16 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [availableSchools, setAvailableSchools] = useState<School[]>([]);
+  const [selectedSchool, setSelectedSchool] = useState<string>('');
+  const [isLoadingSchools, setIsLoadingSchools] = useState(false);
   const { user: currentUser } = useAuthStore();
 
   // Determine if we're creating a student
   const isCreatingStudent = selectedRoles.includes('Student');
+
+  // Determine if current user is System Admin (can select schools)
+  const isSystemAdmin = currentUser?.roles?.includes('Admin') || false;
 
   // Use appropriate schema based on role
   const currentSchema = isCreatingStudent ? studentSchema : nonStudentSchema;
@@ -63,13 +73,86 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
     resolver: zodResolver(currentSchema),
   });
 
-  const availableRoles = [
-    { value: 'Principal', label: 'Principal', description: 'School management' },
-    { value: 'Bursar', label: 'Bursar', description: 'Financial management' },
-    { value: 'Headteacher', label: 'Head Teacher', description: 'Academic oversight' },
-    { value: 'Student', label: 'Student', description: 'Student account' },
-    { value: 'Parent', label: 'Parent', description: 'Parent/Guardian account' },
-  ];
+  // Define available roles based on current user's role
+  const getAvailableRoles = () => {
+    const currentUserRoles = currentUser?.roles || [];
+
+    // System Admin can create all roles except other Admins
+    if (currentUserRoles.includes('Admin')) {
+      return [
+        { value: 'ICT_administrator', label: 'ICT Administrator', description: 'Technical system management' },
+        { value: 'Auditor', label: 'Auditor', description: 'Financial auditing and oversight' },
+        { value: 'Proprietor', label: 'Proprietor', description: 'School ownership and governance' },
+        { value: 'Principal', label: 'Principal', description: 'School management' },
+        { value: 'Headteacher', label: 'Head Teacher', description: 'Academic oversight' },
+        { value: 'Bursar', label: 'Bursar', description: 'Financial management' },
+        { value: 'Student', label: 'Student', description: 'Student account' },
+        { value: 'Parent', label: 'Parent', description: 'Parent/Guardian account' },
+      ];
+    }
+
+    // ICT Administrator can create school-level roles
+    if (currentUserRoles.includes('ICT_administrator')) {
+      return [
+        { value: 'Principal', label: 'Principal', description: 'School management' },
+        { value: 'Headteacher', label: 'Head Teacher', description: 'Academic oversight' },
+        { value: 'Bursar', label: 'Bursar', description: 'Financial management' },
+        { value: 'Student', label: 'Student', description: 'Student account' },
+        { value: 'Parent', label: 'Parent', description: 'Parent/Guardian account' },
+      ];
+    }
+
+    // Principal can create school staff and students
+    if (currentUserRoles.includes('Principal')) {
+      return [
+        { value: 'Headteacher', label: 'Head Teacher', description: 'Academic oversight' },
+        { value: 'Bursar', label: 'Bursar', description: 'Financial management' },
+        { value: 'Student', label: 'Student', description: 'Student account' },
+        { value: 'Parent', label: 'Parent', description: 'Parent/Guardian account' },
+      ];
+    }
+
+    // Default roles for other users
+    return [
+      { value: 'Student', label: 'Student', description: 'Student account' },
+      { value: 'Parent', label: 'Parent', description: 'Parent/Guardian account' },
+    ];
+  };
+
+  const availableRoles = getAvailableRoles();
+
+  // Load schools when modal opens (only for System Admin)
+  useEffect(() => {
+    const loadSchools = async () => {
+      if (isOpen && isSystemAdmin) {
+        setIsLoadingSchools(true);
+        try {
+          const schools = await SchoolService.getSchools();
+          setAvailableSchools(schools);
+
+          // Set default school to current user's school if they have one
+          if (currentUser?.school?._id) {
+            setSelectedSchool(currentUser.school._id);
+            setValue('school', currentUser.school._id);
+          }
+        } catch (error) {
+          console.error('Failed to load schools:', error);
+          toast.error('Failed to load schools');
+        } finally {
+          setIsLoadingSchools(false);
+        }
+      } else if (isOpen && !isSystemAdmin) {
+        // For non-system admin, use their current school
+        const userSchoolId = currentUser?.school?._id || currentUser?.school;
+        if (userSchoolId) {
+          setSelectedSchool(userSchoolId);
+          setValue('school', userSchoolId);
+        }
+      }
+    };
+
+    loadSchools();
+  }, [isOpen, isSystemAdmin, currentUser, setValue]);
 
   const handleRoleToggle = (roleValue: string) => {
     const newRoles = selectedRoles.includes(roleValue)
@@ -84,12 +167,23 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      // Use current user's school
-      const userSchoolId = currentUser?.school?._id || currentUser?.school;
+      // Determine school ID to use
+      let userSchoolId: string;
 
-      if (!userSchoolId) {
-        toast.error('Unable to determine school. Please contact administrator.');
-        return;
+      if (isSystemAdmin) {
+        // System Admin can select school or use form data
+        userSchoolId = data.school || selectedSchool;
+        if (!userSchoolId) {
+          toast.error('Please select a school for the user.');
+          return;
+        }
+      } else {
+        // Other users use their current school
+        userSchoolId = currentUser?.school?._id || currentUser?.school;
+        if (!userSchoolId) {
+          toast.error('Unable to determine school. Please contact administrator.');
+          return;
+        }
       }
 
       // Call the actual API to create user
@@ -126,6 +220,8 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
   const handleClose = () => {
     reset();
     setSelectedRoles([]);
+    setSelectedSchool('');
+    setAvailableSchools([]);
     onClose();
   };
 
@@ -281,18 +377,51 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({
                 </>
               )}
 
-              {/* School Information (read-only) */}
-              <div className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-3">
-                <label className="block text-sm font-medium text-secondary-700 dark:text-gray-300 mb-1">
-                  School
-                </label>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {currentUser?.school?.name || 'Current School'}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                  Users will be created for your school automatically
-                </p>
-              </div>
+              {/* School Selection */}
+              {isSystemAdmin ? (
+                <div>
+                  <label className="block text-sm font-medium text-secondary-700 dark:text-gray-300 mb-1">
+                    School *
+                  </label>
+                  {isLoadingSchools ? (
+                    <div className="w-full px-3 py-2 border border-secondary-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
+                      Loading schools...
+                    </div>
+                  ) : (
+                    <select
+                      {...register('school')}
+                      value={selectedSchool}
+                      onChange={(e) => {
+                        setSelectedSchool(e.target.value);
+                        setValue('school', e.target.value);
+                      }}
+                      className="w-full px-3 py-2 border border-secondary-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors"
+                    >
+                      <option value="">Select a school</option>
+                      {availableSchools.map((school) => (
+                        <option key={school._id} value={school._id}>
+                          {school.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {!selectedSchool && (
+                    <p className="text-red-600 dark:text-red-400 text-sm mt-1">Please select a school</p>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-3">
+                  <label className="block text-sm font-medium text-secondary-700 dark:text-gray-300 mb-1">
+                    School
+                  </label>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {currentUser?.school?.name || 'Current School'}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                    Users will be created for your school automatically
+                  </p>
+                </div>
+              )}
 
               {/* Roles */}
               <div>
