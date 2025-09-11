@@ -7,6 +7,7 @@ import {
   EllipsisVerticalIcon,
 } from '@heroicons/react/24/outline';
 import MainLayout from '../../components/layout/MainLayout';
+import { Badge } from '../../components/ui';
 import { useAuthStore } from '../../store/authStore';
 import { canManageUsers, getSchoolAccessDeniedMessage } from '../../utils/schoolAccess';
 import CreateUserModal from '../../components/users/CreateUserModal';
@@ -383,25 +384,24 @@ const UserManagementPage: React.FC = () => {
                         <td className="w-32 px-3 py-4 whitespace-nowrap">
                           <div className="flex flex-wrap gap-1">
                             {user.roles.slice(0, 2).map((role) => (
-                              <span
+                              <Badge
                                 key={`${user.id}-${role}`}
-                                className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getRoleColor(role)}`}
+                                className={`uppercase ${getRoleColor(role)}`}
+                                size="sm"
                                 title={user.roles.join(', ')}
                               >
                                 {role}
-                              </span>
+                              </Badge>
                             ))}
                             {user.roles.length > 2 && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                                +{user.roles.length - 2}
-                              </span>
+                              <Badge variant="secondary" size="sm">+{user.roles.length - 2}</Badge>
                             )}
                           </div>
                         </td>
                         <td className="w-24 px-3 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
+                          <Badge className={`uppercase ${getStatusColor(user.status)}`} size="sm">
                             {user.status}
-                          </span>
+                          </Badge>
                         </td>
                         <td className="w-32 px-3 py-4 whitespace-nowrap text-sm text-secondary-500 dark:text-gray-400">
                           <span className="truncate block">

@@ -95,9 +95,10 @@ const SchoolManagementPage: React.FC = () => {
     );
   }
 
+  const isAdmin = user?.roles?.includes('Admin');
   const tabs = [
     { id: 'overview', name: 'Overview', icon: ChartBarIcon },
-    { id: 'schools', name: 'Schools', icon: BuildingOfficeIcon },
+    ...(isAdmin ? [{ id: 'schools', name: 'Schools', icon: BuildingOfficeIcon }] : []),
     { id: 'sessions', name: 'Sessions', icon: CalendarDaysIcon },
     { id: 'terms', name: 'Terms', icon: AcademicCapIcon },
     { id: 'classes', name: 'Classes', icon: UsersIcon },
@@ -176,7 +177,7 @@ const SchoolManagementPage: React.FC = () => {
               </div>
             </div>
 
-            {canManageSchools && (
+            {canManageSchools && isAdmin && (
               <div className="flex space-x-3">
                 {canManageGroupSchools && (
                   <button
@@ -188,6 +189,7 @@ const SchoolManagementPage: React.FC = () => {
                     Group School
                   </button>
                 )}
+                {isAdmin && (
                 <button
                   type="button"
                   onClick={handleCreateSchool}
@@ -196,38 +198,13 @@ const SchoolManagementPage: React.FC = () => {
                   <PlusIcon className="h-4 w-4 mr-2" />
                   New School
                 </button>
+                )}
               </div>
             )}
           </div>
         </div>
 
-        {/* ICT Administrator Notice */}
-        {isICTAdmin && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                  ICT Administrator Notice
-                </h3>
-                <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
-                  <p>
-                    As an ICT Administrator, you have access to a dedicated management interface. 
-                    While you can view sessions and academic data here, for school and user management tasks, 
-                    consider using your{' '}
-                    <a href="/ict-admin" className="font-medium underline hover:no-underline">
-                      ICT Administrator Dashboard
-                    </a>.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* ICT Administrator notice removed */}
 
         {/* Tab Navigation */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-900 border border-secondary-200 dark:border-gray-700 p-4 lg:p-6 transition-colors duration-200">
@@ -325,7 +302,7 @@ const SchoolManagementPage: React.FC = () => {
         )}
 
         {/* Schools Tab */}
-        {activeTab === 'schools' && (
+        {isAdmin && activeTab === 'schools' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Schools ({schools.length})</h2>
@@ -342,7 +319,10 @@ const SchoolManagementPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-              {schools.map((school) => (
+              {(isAdmin ? schools : schools.filter((s) => {
+                const userSchoolId = typeof user?.school === 'object' ? (user?.school as any)?._id : (user as any)?.school;
+                return s._id === userSchoolId;
+              })).map((school) => (
                 <SchoolCard
                   key={school._id}
                   school={school}

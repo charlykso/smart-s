@@ -81,14 +81,17 @@ const FeeManagementPage: React.FC = () => {
     loadFees();
     loadPayments();
     loadUnapprovedFees();
-    loadFeeStats();
-    loadPaymentStats();
-  }, [user?.roles, loadSchools, loadSessions, loadTerms, loadFees, loadPayments, loadUnapprovedFees, loadFeeStats, loadPaymentStats]);
+    // Scope stats to user's school unless Admin
+    const isAdmin = user?.roles?.includes('Admin');
+    const userSchoolId = typeof user?.school === 'object' ? (user?.school as any)?._id : (user as any)?.school;
+    const scopedSchoolId = isAdmin ? undefined : userSchoolId;
+    loadFeeStats(scopedSchoolId);
+    loadPaymentStats(scopedSchoolId);
+  }, [user?.roles, user?.school, loadSchools, loadSessions, loadTerms, loadFees, loadPayments, loadUnapprovedFees, loadFeeStats, loadPaymentStats]);
 
   // Check user permissions
-  const canManageFees = user?.roles?.some(role => 
-    ['Admin', 'ICT_administrator', 'Bursar'].includes(role)
-  );
+  // Only Bursar can create/add fees
+  const canManageFees = user?.roles?.includes('Bursar') || false;
 
   const canApproveFees = user?.roles?.some(role => 
     ['Admin', 'ICT_administrator', 'Principal', 'Bursar'].includes(role)
@@ -314,7 +317,10 @@ const FeeManagementPage: React.FC = () => {
                     className="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md px-3 py-2 text-sm"
                   >
                     <option value="">All Schools</option>
-                    {schools.map(school => (
+                    {(user?.roles?.includes('Admin') ? schools : schools.filter(s => {
+                      const userSchoolId = typeof user?.school === 'object' ? (user?.school as any)?._id : (user as any)?.school;
+                      return s._id === userSchoolId;
+                    })).map(school => (
                       <option key={school._id} value={school._id}>{school.name}</option>
                     ))}
                   </select>
@@ -449,7 +455,15 @@ const FeeManagementPage: React.FC = () => {
         onClose={() => setIsFeeModalOpen(false)}
         fee={editingFee}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        schools={schools as unknown as any[]}
+        schools={(
+          // Bursar should only see their assigned school in the selector
+          (canManageFees && user?.school)
+            ? (schools.filter((s) => {
+                const userSchoolId = typeof user.school === 'object' ? (user.school as any)?._id : (user as any).school;
+                return s._id === userSchoolId;
+              }))
+            : schools
+        ) as unknown as any[]}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sessions={sessions as unknown as any[]}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -375,13 +375,22 @@ export const BREAKPOINTS = {
 
 // Environment Variables
 export const ENV = {
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || (
-    import.meta.env.DEV ? '/api/v1' : 'http://localhost:3000/api/v1'
-  ),
-  APP_NAME: import.meta.env.VITE_APP_NAME || 'Ledgrio School Management',
-  PAYSTACK_PUBLIC_KEY: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '',
-  CLOUDINARY_CLOUD_NAME: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || '',
-  CLOUDINARY_UPLOAD_PRESET: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || '',
-  APP_VERSION: import.meta.env.VITE_APP_VERSION || '1.0.0',
-  APP_ENVIRONMENT: import.meta.env.VITE_APP_ENVIRONMENT || 'development',
+  API_BASE_URL: (() => {
+    // Handle both Vite environment and fallback
+    if (typeof import.meta !== 'undefined' && import.meta.env) {
+      return import.meta.env.VITE_API_BASE_URL || 
+             (import.meta.env.VITE_BACKEND_URL ? import.meta.env.VITE_BACKEND_URL + '/api/v1' : null) ||
+             (import.meta.env.DEV ? '/api/v1' : 'http://localhost:3000/api/v1');
+    }
+    // Fallback for Node.js or when import.meta is not available
+    return process.env.VITE_API_BASE_URL || 
+           (process.env.VITE_BACKEND_URL ? process.env.VITE_BACKEND_URL + '/api/v1' : null) ||
+           '/api/v1';
+  })(),
+  APP_NAME: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_APP_NAME) || 'Ledgrio School Management',
+  PAYSTACK_PUBLIC_KEY: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY) || '',
+  CLOUDINARY_CLOUD_NAME: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CLOUDINARY_CLOUD_NAME) || '',
+  CLOUDINARY_UPLOAD_PRESET: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CLOUDINARY_UPLOAD_PRESET) || '',
+  APP_VERSION: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_APP_VERSION) || '1.0.0',
+  APP_ENVIRONMENT: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_APP_ENVIRONMENT) || 'development',
 };

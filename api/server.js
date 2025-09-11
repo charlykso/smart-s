@@ -99,27 +99,8 @@ app.use('/api/v1/approve', approveRoute)
 app.use('/api/v1/auth', authRoute)
 app.use('/api/v1/payment', require('./route/paymentRoute'))
 app.use('/api/v1/school-access', require('./route/schoolAccessRoute'))
-// Simple notification endpoints directly in server.js
-app.get('/api/v1/notification/unread-count', (req, res) => {
-  res.json({ count: 0 })
-})
-
-app.get('/api/v1/notification/all', (req, res) => {
-  console.log('All notifications endpoint hit')
-  res.json([])
-})
-
-app.post('/api/v1/notification/mark-all-read', (req, res) => {
-  res.json({ message: 'All notifications marked as read' })
-})
-
-app.post('/api/v1/notification/:id/mark-read', (req, res) => {
-  res.json({ message: 'Notification marked as read' })
-})
-
-app.delete('/api/v1/notification/:id', (req, res) => {
-  res.json({ message: 'Notification deleted' })
-})
+// Use dedicated notification routes with auth and controller logic
+app.use('/api/v1/notification', require('./route/notificationRoute'))
 app.use('/api/v1/email', require('./routes/emailRoutesSimple'))
 app.use('/api/v1/audit', auditRoute)
 app.use('/api/v1/student', studentRoute)
@@ -149,16 +130,54 @@ const authenticateToken = require('./middleware/authenticateToken')
 app.get('/api/v1/fee/all/stats', authenticateToken, async (req, res) => {
   try {
     const Fee = require('./model/Fee')
-    const totalFees = await Fee.countDocuments()
-    const approvedFees = await Fee.countDocuments({ isApproved: true })
-    const pendingFees = await Fee.countDocuments({ isApproved: false })
 
+    // Determine school scope: Admin can see all unless a school_id is provided.
+    const roles = (req.user?.roles || []).map(String)
+    const isAdmin = roles.includes('Admin')
+    const requestedSchoolId = req.query.school_id
+    const userSchoolId = req.user?.school?._id || req.user?.school
+    const scopeSchoolId = requestedSchoolId || (isAdmin ? undefined : userSchoolId)
+
+    // Pull fees within scope for richer stats (counts + amounts)
+    const fees = await Fee.find(scopeSchoolId ? { school: scopeSchoolId } : {})
+
+    const totalFees = fees.length
+    const approvedFees = fees.filter((f) => f.isApproved).length
+    const pendingFees = totalFees - approvedFees
+    const activeFees = fees.filter((f) => f.isActive).length
+
+    const toAmount = (val) => {
+      if (val == null) return 0
+      if (typeof val === 'number') return isNaN(val) ? 0 : val
+      if (typeof val === 'string') return parseFloat(val) || 0
+      if (typeof val === 'object') {
+        // Handle BSON Double/Decimal128 and Mongoose Number types
+        if (val._bsontype === 'Double' || val._bsontype === 'Decimal128') {
+          return parseFloat(val.toString()) || 0
+        }
+        const primitive = typeof val.valueOf === 'function' ? val.valueOf() : val
+        const num = typeof primitive === 'number' ? primitive : parseFloat(String(primitive))
+        return isNaN(num) ? 0 : num
+      }
+      return 0
+    }
+    const sum = (arr) => arr.reduce((s, v) => s + toAmount(v?.amount), 0)
+
+    const totalAmount = sum(fees)
+    const approvedAmount = sum(fees.filter((f) => f.isApproved))
+    const pendingAmount = sum(fees.filter((f) => !f.isApproved))
+
+    // Return a structure that the frontend can map easily
     res.json({
       success: true,
       data: {
-        total: totalFees,
-        approved: approvedFees,
-        pending: pendingFees,
+        totalFees,
+        approvedFees,
+        pendingApproval: pendingFees,
+        activeFees,
+        totalAmount,
+        approvedAmount,
+        pendingAmount,
       },
     })
   } catch (error) {
@@ -171,18 +190,71 @@ app.get('/api/v1/fee/all/stats', authenticateToken, async (req, res) => {
 app.get('/api/v1/payment/all/stats', authenticateToken, async (req, res) => {
   try {
     const Payment = require('./model/Payment')
-    const totalPayments = await Payment.countDocuments()
-    const successfulPayments = await Payment.countDocuments({
-      status: 'successful',
-    })
-    const pendingPayments = await Payment.countDocuments({ status: 'pending' })
 
+    // Determine school scope via fee.school; Admin can see all unless school_id provided
+    const roles = (req.user?.roles || []).map(String)
+    const isAdmin = roles.includes('Admin')
+    const requestedSchoolId = req.query.school_id
+    const userSchoolId = req.user?.school?._id || req.user?.school
+    const scopeSchoolId = requestedSchoolId || (isAdmin ? undefined : userSchoolId)
+
+    // Populate fee to filter by school when scoping is required
+    let payments = await Payment.find().populate('fee', 'school')
+    if (scopeSchoolId) {
+      payments = payments.filter((p) => {
+        const feeSchool = p.fee && (p.fee.school?._id || p.fee.school)
+        return String(feeSchool) === String(scopeSchoolId)
+      })
+    }
+
+    const totalPayments = payments.length
+    const successfulPayments = payments.filter((p) => p.status === 'success')
+      .length
+    const pendingPayments = payments.filter((p) => p.status === 'pending').length
+    const failedPayments = payments.filter((p) => p.status === 'failed').length
+
+    const toAmount = (val) => {
+      if (val == null) return 0
+      if (typeof val === 'number') return isNaN(val) ? 0 : val
+      if (typeof val === 'string') return parseFloat(val) || 0
+      if (typeof val === 'object') {
+        if (val._bsontype === 'Double' || val._bsontype === 'Decimal128') {
+          return parseFloat(val.toString()) || 0
+        }
+        const primitive = typeof val.valueOf === 'function' ? val.valueOf() : val
+        const num = typeof primitive === 'number' ? primitive : parseFloat(String(primitive))
+        return isNaN(num) ? 0 : num
+      }
+      return 0
+    }
+    const sum = (arr) => arr.reduce((s, v) => s + toAmount(v?.amount), 0)
+
+    const totalAmount = sum(payments)
+    const successfulAmount = sum(payments.filter((p) => p.status === 'success'))
+    const pendingAmount = sum(payments.filter((p) => p.status === 'pending'))
+
+    const paymentsByMethod = {
+      paystack: payments.filter((p) => p.mode_of_payment === 'paystack').length,
+      flutterwave: payments.filter((p) => p.mode_of_payment === 'flutterwave')
+        .length,
+      bank_transfer: payments.filter((p) => p.mode_of_payment === 'bank_transfer')
+        .length,
+      cash: payments.filter((p) => p.mode_of_payment === 'cash').length,
+    }
+
+    // Return normalized structure
     res.json({
       success: true,
       data: {
-        total: totalPayments,
-        successful: successfulPayments,
-        pending: pendingPayments,
+        totalPayments,
+        successfulPayments,
+        pendingPayments,
+        failedPayments,
+        totalAmount,
+        successfulAmount,
+        pendingAmount,
+        paymentsByMethod,
+        recentPayments: payments.slice(-5),
       },
     })
   } catch (error) {

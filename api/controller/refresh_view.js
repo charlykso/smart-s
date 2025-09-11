@@ -37,14 +37,26 @@ const handleRefreshToken = async (req, res) => {
           })
         }
 
+        const tokenPayload = {
+          id: user._id,
+          roles: user.roles,
+          // include school details to keep parity with initial login tokens
+          ...(user.school
+            ? {
+                school: user.school._id || user.school,
+                schoolName: user.school.name || 'Unknown School',
+              }
+            : {}),
+        }
+
         const newAccessToken = jwt.sign(
-          { id: user._id, roles: user.roles },
+          tokenPayload,
           process.env.JWT_SECRET,
           { expiresIn: '1h' }
         )
 
         const newRefreshToken = jwt.sign(
-          { id: user._id },
+          tokenPayload,
           process.env.JWT_REFRESH_SECRET,
           { expiresIn: '7d' }
         )

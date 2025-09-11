@@ -62,24 +62,7 @@ const ParentDashboard: React.FC = () => {
       icon: CurrencyDollarIcon,
       iconColor: dashboardData.overallSummary.totalOutstanding > 0 ? 'text-red-600' : 'text-green-600',
     },
-    {
-      title: 'Average Performance',
-      value: `${Math.round(dashboardData.overallSummary.averagePerformance)}%`,
-      change: dashboardData.overallSummary.averagePerformance >= 75 ? 'Excellent' : 'Good',
-      changeType: dashboardData.overallSummary.averagePerformance >= 75 ? 'positive' as const : 'neutral' as const,
-      icon: AcademicCapIcon,
-      iconColor: parentService.getPerformanceColor(dashboardData.overallSummary.averagePerformance),
-      description: 'Across all children',
-    },
-    {
-      title: 'Attendance Rate',
-      value: `${Math.round(dashboardData.overallSummary.averageAttendance)}%`,
-      change: dashboardData.overallSummary.averageAttendance >= 90 ? 'Excellent' : 'Good',
-      changeType: dashboardData.overallSummary.averageAttendance >= 90 ? 'positive' as const : 'neutral' as const,
-      icon: CalendarIcon,
-      iconColor: parentService.getAttendanceColor(dashboardData.overallSummary.averageAttendance),
-      description: 'This term',
-    },
+    // Removed performance and attendance per request
   ] : [];
 
   const quickActions: QuickAction[] = [
