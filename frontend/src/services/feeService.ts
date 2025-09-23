@@ -233,16 +233,31 @@ export class FeeService {
     const params = new URLSearchParams();
     if (schoolId) params.append('school_id', schoolId);
     if (termId) params.append('term_id', termId);
-    
-    const response = await ApiService.get<FeeStats>(
+
+    // Backend returns { success, data: { ...stats } }
+    const response = await ApiService.get<{ success: boolean; data: any }>(
       `${API_ENDPOINTS.FEES.ALL}/stats?${params.toString()}`
     );
-    
-    if (!response) {
+
+    const payload = (response as any)?.data || response;
+
+    if (!payload) {
       throw new Error('Failed to fetch fee statistics');
     }
-    
-    return response;
+
+    // Normalize to FeeStats shape expected by the store/components
+    const normalized: FeeStats = {
+      totalFees: payload.totalFees ?? payload.total ?? 0,
+      approvedFees: payload.approvedFees ?? payload.approved ?? 0,
+      pendingApproval:
+        payload.pendingApproval ?? payload.pendingFees ?? payload.pending ?? 0,
+      activeFees: payload.activeFees ?? 0,
+      totalAmount: payload.totalAmount ?? 0,
+      approvedAmount: payload.approvedAmount ?? 0,
+      pendingAmount: payload.pendingAmount ?? 0,
+    };
+
+    return normalized;
   }
 
   static async getPaymentStats(schoolId?: string, termId?: string): Promise<PaymentStats> {
@@ -250,15 +265,29 @@ export class FeeService {
     if (schoolId) params.append('school_id', schoolId);
     if (termId) params.append('term_id', termId);
     
-    const response = await ApiService.get<PaymentStats>(
+    const response = await ApiService.get<{ success: boolean; data: any }>(
       `${API_ENDPOINTS.PAYMENTS.ALL}/stats?${params.toString()}`
     );
-    
-    if (!response) {
+
+    const payload = (response as any)?.data || response;
+
+    if (!payload) {
       throw new Error('Failed to fetch payment statistics');
     }
-    
-    return response;
+
+    const normalized: PaymentStats = {
+      totalPayments: payload.totalPayments ?? payload.total ?? 0,
+      successfulPayments: payload.successfulPayments ?? payload.successful ?? 0,
+      pendingPayments: payload.pendingPayments ?? payload.pending ?? 0,
+      failedPayments: payload.failedPayments ?? payload.failed ?? 0,
+      totalAmount: payload.totalAmount ?? 0,
+      successfulAmount: payload.successfulAmount ?? 0,
+      pendingAmount: payload.pendingAmount ?? 0,
+      paymentsByMethod: payload.paymentsByMethod ?? { paystack: 0, flutterwave: 0, bank_transfer: 0, cash: 0 },
+      recentPayments: payload.recentPayments ?? [],
+    };
+
+    return normalized;
   }
 
   // Utility Methods

@@ -30,6 +30,8 @@ import NotificationsPage from './pages/admin/NotificationsPage';
 import PaymentReminderSystem from './components/notifications/PaymentReminderSystem';
 import ThemeProvider from './components/providers/ThemeProvider';
 import DebugApiPage from './pages/DebugApiPage';
+import ApiTest from './components/debug/ApiTest';
+import ConfigDebug from './components/debug/ConfigDebug';
 
 // Principal Pages
 import PrincipalStudentManagementPage from './pages/principal/StudentManagementPage';
@@ -197,11 +199,9 @@ function App() {
           <Route
             path="/bursar/cash-payments"
             element={
-              isAuthenticated ? (
+              <ProtectedRoute requiredRoles={['Bursar', 'Admin']}>
                 <CashPaymentPage />
-              ) : (
-                <Navigate to={ROUTES.LOGIN} replace />
-              )
+              </ProtectedRoute>
             }
           />
           <Route
@@ -295,11 +295,9 @@ function App() {
           <Route
             path={ROUTES.SETTINGS}
             element={
-              isAuthenticated ? (
+              <ProtectedRoute requiredRoles={['Admin']}>
                 <SettingsPage />
-              ) : (
-                <Navigate to={ROUTES.LOGIN} replace />
-              )
+              </ProtectedRoute>
             }
           />
           <Route
@@ -350,6 +348,14 @@ function App() {
                 <Navigate to={ROUTES.LOGIN} replace />
               )
             }
+          />
+          <Route
+            path="/api-test"
+            element={<ApiTest />}
+          />
+          <Route
+            path="/config-debug"
+            element={<ConfigDebug />}
           />
           <Route
             path="*"
