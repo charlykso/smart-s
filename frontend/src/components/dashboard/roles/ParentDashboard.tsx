@@ -11,6 +11,7 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 import {
   WelcomeCard,
@@ -237,7 +238,30 @@ const ParentDashboard: React.FC = () => {
             </div>
 
             <div className="mt-4 flex space-x-2">
-              <button className="flex-1 px-3 py-2 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+              <button
+                className="flex-1 px-3 py-2 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+                onClick={async () => {
+                  try {
+                    // Pick the first outstanding fee for quick payment
+                    const outstanding = (dashboardData?.financialSummary.find(f => f.childId === child.id)?.recentPayments || []).find(p => p.status !== 'success');
+                    const anyOutstandingFee = (dashboardData?.financialSummary.find(f => f.childId === child.id) as any);
+                    const feeId = anyOutstandingFee?.outstandingFees?.[0]?._id;
+                    const amount = anyOutstandingFee?.outstandingFees?.[0]?.amount;
+                    if (!feeId) {
+                      toast.error('No outstanding fees found for this child');
+                      return;
+                    }
+                    const res = await parentService.payForChild({ child_id: child.id, fee_id: feeId, amount });
+                    if (res.paymentUrl) {
+                      window.open(res.paymentUrl, '_blank');
+                    } else {
+                      toast.success('Payment initiated');
+                    }
+                  } catch (e: any) {
+                    toast.error(e?.response?.data?.message || e.message || 'Failed to initiate payment');
+                  }
+                }}
+              >
                 Pay Fees
               </button>
               <button className="flex-1 px-3 py-2 text-sm bg-secondary-100 text-secondary-700 rounded-lg hover:bg-secondary-200">

@@ -22,6 +22,7 @@ export interface ParentDashboardData {
     totalOutstanding: number;
     totalPaid: number;
     recentPayments: Array<{
+      status: string;
       _id: string;
       amount: number;
       fee: {
@@ -168,6 +169,17 @@ class ParentService {
       return response.data;
     } catch (error) {
       console.error('Error fetching payment history:', error);
+      throw error;
+    }
+  }
+
+  /** Parent initiates a payment for a child */
+  async payForChild(data: { child_id: string; fee_id: string; amount?: number; method?: 'paystack' | 'flutterwave' | 'bank_transfer' | 'cash' }): Promise<{ paymentId: string; reference: string; paymentUrl?: string; amount: number; method: string; }> {
+    try {
+      const response = await apiService.post('/parent/pay', data);
+      return response.data;
+    } catch (error) {
+      console.error('Error initiating parent payment:', error);
       throw error;
     }
   }

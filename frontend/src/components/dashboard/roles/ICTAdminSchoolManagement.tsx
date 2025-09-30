@@ -539,10 +539,10 @@ const ICTAdminSchoolManagement: React.FC = () => {
       />
 
       {/* Recent Activities */}
-      <RecentActivityCard
+      {/* <RecentActivityCard
         title="Recent ICT Administration Activities"
         activities={recentActivities}
-      />
+      /> */}
 
       {/* Modals */}
       <SchoolModal

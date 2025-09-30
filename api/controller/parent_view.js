@@ -3,6 +3,7 @@ const Payment = require('../model/Payment');
 const Fee = require('../model/Fee');
 const School = require('../model/School');
 const Term = require('../model/Term');
+const { v4: uuidv4 } = require('uuid');
 
 // Get parent dashboard data
 exports.getParentDashboard = async (req, res) => {
@@ -366,5 +367,62 @@ exports.getPaymentHistory = async (req, res) => {
       success: false,
       message: 'Internal server error'
     });
+  }
+};
+
+// Parent-initiated payment for a child
+exports.initiateChildPayment = async (req, res) => {
+  try {
+    const parentId = req.user.id;
+    const { child_id, fee_id, amount, method = 'paystack' } = req.body || {};
+
+    if (!child_id || !fee_id) {
+      return res.status(400).json({ success: false, message: 'child_id and fee_id are required' });
+    }
+
+    // Verify child belongs to the same school as parent (basic boundary)
+    const parent = await User.findById(parentId);
+    const child = await User.findById(child_id);
+    if (!child) return res.status(404).json({ success: false, message: 'Child not found' });
+
+    const parentSchool = parent?.school?._id || parent?.school;
+    const childSchool = child?.school?._id || child?.school;
+    if (String(parentSchool) !== String(childSchool)) {
+      return res.status(403).json({ success: false, message: 'You cannot pay for a student outside your school' });
+    }
+
+    const fee = await Fee.findById(fee_id);
+    if (!fee) return res.status(404).json({ success: false, message: 'Fee not found' });
+
+    const payAmount = typeof amount === 'number' && amount > 0 ? amount : fee.amount;
+
+    // Create a pending payment record (simulate initiation)
+    const pendingPayment = await Payment.create({
+      user: child._id,
+      fee: fee._id,
+      amount: payAmount,
+      status: 'pending',
+      mode_of_payment: method,
+      trx_ref: `PRN-${uuidv4()}`,
+      trans_date: new Date(),
+    });
+
+    // For demo, return a mock payment URL when using online methods
+    const paymentUrl = method !== 'cash' ? `https://payments.demo/checkout/${pendingPayment.trx_ref}` : undefined;
+
+    return res.status(200).json({
+      success: true,
+      message: 'Payment initiated',
+      data: {
+        paymentId: pendingPayment._id,
+        reference: pendingPayment.trx_ref,
+        amount: pendingPayment.amount,
+        method,
+        paymentUrl,
+      },
+    });
+  } catch (error) {
+    console.error('Parent initiate payment error:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };

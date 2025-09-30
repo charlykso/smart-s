@@ -62,11 +62,11 @@ const StudentManagementPage: React.FC = () => {
         </div>
 
         {/* Error Alert */}
-        {error && (
+        {/* {error && (
           <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
             <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
           </div>
-        )}
+        )} */}
 
         {/* Tabs */}
         <div className="border-b border-gray-200 dark:border-gray-700">

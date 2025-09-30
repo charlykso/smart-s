@@ -38,15 +38,24 @@ exports.getStudentDashboard = async (req, res) => {
       // Continue without population
     }
 
-    // Get current term fees (only if student has a school)
+    // Get current session/term for student's school
     let currentTerm = null
     let allApprovedFees = []
 
     if (student.school) {
-      currentTerm = await Term.findOne({
-        school: student.school,
-        isActive: true,
-      }).populate('session')
+      try {
+        const currentSession = await Session.findOne({ school: student.school })
+          .sort({ endDate: -1 })
+          .exec()
+        if (currentSession) {
+          currentTerm = await Term.findOne({ session: currentSession._id })
+            .sort({ endDate: -1 })
+            .populate('session')
+            .exec()
+        }
+      } catch (e) {
+        console.warn('Current term lookup warning:', e?.message)
+      }
 
       // Get ALL approved fees for the student's school, not just current term
       allApprovedFees = await Fee.find({

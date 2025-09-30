@@ -89,7 +89,7 @@ export const API_ENDPOINTS = {
   },
   CLASS_ARMS: {
     ALL: '/ClassArm/all',
-    CREATE: '/ClassArm/create',
+    CREATE: '/ClassArm',
     UPDATE: '/ClassArm/:id/update',
     DELETE: '/ClassArm/:id/delete',
     BY_ID: '/ClassArm',

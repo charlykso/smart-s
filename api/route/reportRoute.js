@@ -17,7 +17,8 @@ router.get('/financial-summary',
     roleList.Admin,
     roleList.ICT_administrator,
     roleList.Principal,
-    roleList.Bursar
+    roleList.Bursar,
+    roleList.Auditor
   ),
   filterByUserSchool,
   async (req, res) => {
@@ -113,7 +114,8 @@ router.get('/payment-analysis',
     roleList.Admin,
     roleList.ICT_administrator,
     roleList.Principal,
-    roleList.Bursar
+    roleList.Bursar,
+    roleList.Auditor
   ),
   filterByUserSchool,
   async (req, res) => {
@@ -198,7 +200,8 @@ router.get('/student-enrollment',
     roleList.Admin,
     roleList.ICT_administrator,
     roleList.Principal,
-    roleList.Teacher
+    roleList.Teacher,
+    roleList.Auditor
   ),
   filterByUserSchool,
   async (req, res) => {
