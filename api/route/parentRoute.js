@@ -27,4 +27,11 @@ router.get('/payment-history',
   parentController.getPaymentHistory
 );
 
+// Initiate payment for a child (parent-initiated)
+router.post('/pay',
+  authenticateToken,
+  verifyRoles(roleList.Parent),
+  parentController.initiateChildPayment
+);
+
 module.exports = router;

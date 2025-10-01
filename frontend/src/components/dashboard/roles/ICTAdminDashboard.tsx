@@ -229,13 +229,13 @@ const ICTAdminDashboard: React.FC = () => {
         </div>
 
         {/* Recent Activities */}
-        <div className="lg:col-span-2">
+        {/* <div className="lg:col-span-2">
           <RecentActivityCard
             title="Recent Technical Activities"
             activities={recentActivities}
             onViewAll={() => console.log('View all activities')}
           />
-        </div>
+        </div> */}
       </div>
     </div>
   );

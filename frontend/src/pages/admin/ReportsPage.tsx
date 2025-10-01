@@ -17,6 +17,13 @@ import MainLayout from '../../components/layout/MainLayout';
 import CenteredLoader from '../../components/common/CenteredLoader';
 import toast from 'react-hot-toast';
 
+interface GeneratedReport {
+  id: string;
+  title: string;
+  createdAt: string;
+  payload: unknown;
+}
+
 interface ReportType {
   id: string;
   name: string;
@@ -43,6 +50,146 @@ const ReportsPage: React.FC = () => {
   const [filters, setFilters] = useState<ReportFilter>({});
   const [showFilters, setShowFilters] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [generatedReport, setGeneratedReport] = useState<GeneratedReport | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Helpers to render a readable report view from arbitrary data
+  const isPlainObject = (val: unknown): val is Record<string, any> =>
+    !!val && typeof val === 'object' && !Array.isArray(val);
+
+  const numberFormatter = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 });
+
+  const prettifyKey = (key: string) => key
+    .replace(/_/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/^./, (s) => s.toUpperCase());
+
+  const formatValue = (val: any) => {
+    if (typeof val === 'number') return numberFormatter.format(val);
+    if (typeof val === 'boolean') return val ? 'Yes' : 'No';
+    if (typeof val === 'string') return val;
+    return String(val);
+  };
+
+  const renderKeyStats = (data: any) => {
+    if (!isPlainObject(data)) return null;
+    const statEntries = Object.entries(data)
+      .filter(([_, v]) => typeof v === 'number')
+      .slice(0, 6);
+    if (statEntries.length === 0) return null;
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        {statEntries.map(([k, v]) => (
+          <div key={k} className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-900">
+            <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">{prettifyKey(k)}</div>
+            <div className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{formatValue(v)}</div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const pickTableColumns = (rows: any[]): string[] => {
+    const sample = rows.find((r) => isPlainObject(r));
+    if (!sample) return [];
+    return Object.keys(sample).slice(0, 6); // limit columns for readability
+  };
+
+  const renderArrayTable = (title: string, rows: any[]) => {
+    if (!Array.isArray(rows) || rows.length === 0) return null;
+    const columns = pickTableColumns(rows);
+    if (columns.length === 0) return null;
+    return (
+      <div className="mb-6">
+        <div className="text-sm font-medium text-gray-900 dark:text-white mb-2">{title}</div>
+        <div className="overflow-auto rounded-lg border border-gray-200 dark:border-gray-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                {columns.map((col) => (
+                  <th key={col} className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wider text-gray-600 dark:text-gray-300">{prettifyKey(col)}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-gray-900">
+              {rows.slice(0, 100).map((row, idx) => (
+                <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  {columns.map((col) => (
+                    <td key={col} className="px-3 py-2 text-sm text-gray-800 dark:text-gray-200">
+                      {formatValue((row as any)[col])}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {rows.length > 100 && (
+          <div className="mt-2 text-xs text-gray-500">Showing first 100 rows</div>
+        )}
+      </div>
+    );
+  };
+
+  const renderObjectDetails = (data: Record<string, any>) => {
+    const entries = Object.entries(data).filter(([_, v]) => typeof v !== 'object');
+    if (entries.length === 0) return null;
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+        {entries.map(([k, v]) => (
+          <div key={k} className="rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-3">
+            <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">{prettifyKey(k)}</div>
+            <div className="text-sm font-medium text-gray-900 dark:text-white">{formatValue(v)}</div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const ReportContent: React.FC<{ data: any }> = ({ data }) => {
+    if (!data) return <div className="text-sm text-gray-500">No data</div>;
+    const sections: JSX.Element[] = [];
+
+    // Top-level key stats
+    const keyStats = renderKeyStats(data);
+    if (keyStats) sections.push(keyStats);
+
+    // If array at top level, render as table
+    if (Array.isArray(data)) {
+      sections.push(renderArrayTable('Items', data) as unknown as JSX.Element);
+    }
+
+    // For objects: render simple fields and attempt to render arrays/objects within
+    if (isPlainObject(data)) {
+      const obj = data as Record<string, any>;
+      const simple = renderObjectDetails(obj);
+      if (simple) sections.push(simple);
+
+      Object.entries(obj).forEach(([k, v]) => {
+        if (Array.isArray(v)) {
+          const table = renderArrayTable(prettifyKey(k), v);
+          if (table) sections.push(table as unknown as JSX.Element);
+        } else if (isPlainObject(v)) {
+          const innerStats = renderKeyStats(v);
+          const innerDetails = renderObjectDetails(v);
+          if (innerStats) sections.push((
+            <div key={`stats-${k}`}>
+              <div className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">{prettifyKey(k)}</div>
+              {innerStats}
+            </div>
+          ));
+          if (innerDetails) sections.push((
+            <div key={`details-${k}`}>
+              <div className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">{prettifyKey(k)}</div>
+              {innerDetails}
+            </div>
+          ));
+        }
+      });
+    }
+
+    return <>{sections}</>;
+  };
 
   // Check authentication
   useEffect(() => {
@@ -136,12 +283,16 @@ const ReportsPage: React.FC = () => {
 
       const response = await ApiService.get(endpoint);
       if (response.success) {
-        // For now, show the data in console and alert
-        console.log('Report data:', response.data);
-        toast.success(`${reportTypes.find(r => r.id === reportId)?.name} generated successfully!`);
-
-        // In a real implementation, you would open a modal or navigate to a report view
-        alert(`Report generated successfully! Check console for data.`);
+        const title = reportTypes.find(r => r.id === reportId)?.name || 'Generated Report';
+        const report: GeneratedReport = {
+          id: `${reportId}-${Date.now()}`,
+          title,
+          createdAt: new Date().toISOString(),
+          payload: response.data,
+        };
+        setGeneratedReport(report);
+        setIsModalOpen(true);
+        toast.success(`${title} generated successfully!`);
       } else {
         toast.error(response.message || 'Failed to generate report');
       }
@@ -154,9 +305,45 @@ const ReportsPage: React.FC = () => {
   };
 
   const handleExportReport = (reportId: string, format: 'pdf' | 'excel' | 'csv') => {
-    // Mock export functionality - to be implemented
-    console.log('Exporting report:', reportId, 'as', format);
-    toast.success(`Export functionality will be implemented soon`);
+    try {
+      const title = reportTypes.find(r => r.id === reportId)?.name || 'report';
+      const data = generatedReport?.payload;
+      const filenameBase = `${title.replace(/\s+/g, '_').toLowerCase()}_${new Date().toISOString().slice(0,10)}`;
+
+      if (format === 'csv' || format === 'excel') {
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${filenameBase}.${format === 'csv' ? 'csv' : 'xlsx'}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        return;
+      }
+
+      if (format === 'pdf') {
+        const printable = document.getElementById('report-printable');
+        if (!printable) {
+          toast.error('No report to export. Generate a report first.');
+          return;
+        }
+        const win = window.open('', 'PRINT', 'height=650,width=900,top=100,left=150');
+        if (win) {
+          win.document.write(`<html><head><title>${title}</title>`);
+          win.document.write('</head><body >');
+          win.document.write(printable.innerHTML);
+          win.document.write('</body></html>');
+          win.document.close();
+          win.focus();
+          win.print();
+          win.close();
+        }
+      }
+    } catch (e) {
+      console.error('Export error:', e);
+      toast.error('Failed to export report');
+    }
   };
 
   // Show loading state if not authenticated
@@ -359,6 +546,52 @@ const ReportsPage: React.FC = () => {
             );
           })}
         </div>
+
+        {/* Report Preview Modal */}
+        {isModalOpen && generatedReport && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="fixed inset-0 bg-black/40" onClick={() => setIsModalOpen(false)} />
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl mx-4 border border-gray-200 dark:border-gray-700">
+              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{generatedReport.title}</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Generated {new Date(generatedReport.createdAt).toLocaleString()}</p>
+                </div>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="px-6 py-4 overflow-y-auto max-h-[60vh]" id="report-printable">
+                <ReportContent data={generatedReport.payload} />
+              </div>
+              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end gap-2">
+                <button
+                  onClick={() => handleExportReport(generatedReport.id.split('-')[0], 'pdf')}
+                  className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
+                >
+                  <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
+                  Export PDF
+                </button>
+                <button
+                  onClick={() => handleExportReport(generatedReport.id.split('-')[0], 'excel')}
+                  className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
+                >
+                  Export Excel
+                </button>
+                <button
+                  onClick={() => handleExportReport(generatedReport.id.split('-')[0], 'csv')}
+                  className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
+                >
+                  Export CSV
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Empty State */}
         {filteredReports.length === 0 && (

@@ -368,8 +368,10 @@ function App() {
           />
         </Routes>
 
-        {/* Payment Reminder System - runs in background for students */}
-        {isAuthenticated && <PaymentReminderSystem />}
+        {/* Payment Reminder System - only for students */}
+        {isAuthenticated && useAuthStore.getState().user?.roles?.includes('Student') && (
+          <PaymentReminderSystem />
+        )}
 
         {/* Global Toast Notifications */}
         <Toaster

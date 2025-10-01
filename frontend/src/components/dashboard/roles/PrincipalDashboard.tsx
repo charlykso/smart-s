@@ -137,7 +137,7 @@ const PrincipalDashboard: React.FC = () => {
       title: 'School Reports',
       description: 'View comprehensive school reports',
       icon: ChartBarIcon,
-      onClick: () => console.log('View reports'),
+      onClick: () => navigate('/reports'),
       color: 'secondary',
     },
   ];
@@ -236,7 +236,7 @@ const PrincipalDashboard: React.FC = () => {
         <div className="lg:col-span-2">
           <RecentActivityCard
             title="Recent School Activities"
-            activities={recentActivities}
+            activities={[]}
             onViewAll={() => console.log('View all activities')}
           />
         </div>
