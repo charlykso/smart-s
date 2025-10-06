@@ -115,8 +115,8 @@ const ICTAdminSchoolManagement: React.FC = () => {
 
       const schoolParam = selectedSchoolId ? `?school_id=${selectedSchoolId}` : '';
       const baseUrl = ENV.API_BASE_URL || '/api/v1';
-      const url = `${baseUrl}/bulk-students/template${schoolParam}`;
-      const response = await fetch(url, {
+      const templateUrl = `${baseUrl}/bulk-students/template${schoolParam}`;
+      const response = await fetch(templateUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

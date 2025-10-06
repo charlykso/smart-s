@@ -10,8 +10,12 @@ import {
 } from '@heroicons/react/24/outline';
 import MainLayout from '../../components/layout/MainLayout';
 import { useStudentManagementStore } from '../../store/studentManagementStore';
+import { useAuthStore } from '../../store/authStore';
+import { ENV } from '../../constants';
+import toast from 'react-hot-toast';
 
 const StudentManagementPage: React.FC = () => {
+  const { user } = useAuthStore();
   const {
     students,
     isLoading,
@@ -42,6 +46,52 @@ const StudentManagementPage: React.FC = () => {
 
   const handleBulkUpload = () => {
     setIsUploadModalOpen(true);
+  };
+
+  const downloadTemplate = async () => {
+    try {
+      const authStore = useAuthStore.getState();
+      const token = authStore.token;
+      
+      if (!token) {
+        toast.error('Please log in to download template');
+        return;
+      }
+
+      const baseUrl = ENV.API_BASE_URL || '/api/v1';
+      const templateUrl = `${baseUrl}/bulk-students/template`;
+      const response = await fetch(templateUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const contentType = response.headers.get('content-type');
+        if (contentType?.includes('application/json')) {
+          const errorData = await response.json();
+          throw new Error(errorData.message ?? 'Failed to download template');
+        } else {
+          throw new Error(`Failed to download template (${response.status})`);
+        }
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = 'student_template.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success('Template downloaded successfully');
+    } catch (error) {
+      console.error('Template download error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to download template');
+    }
   };
 
   const filteredStudents = students.filter(student =>
@@ -157,7 +207,7 @@ const StudentManagementPage: React.FC = () => {
               </div>
 
               {/* Quick Actions */}
-              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+              {/* <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Quick Actions</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <button
@@ -193,7 +243,7 @@ const StudentManagementPage: React.FC = () => {
                     </div>
                   </button>
                 </div>
-              </div>
+              </div> */}
 
               {/* Recent Students */}
               <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
@@ -304,7 +354,10 @@ const StudentManagementPage: React.FC = () => {
                     Upload File
                   </button>
                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                    <button className="text-primary-600 hover:text-primary-500">
+                    <button 
+                      onClick={downloadTemplate}
+                      className="text-primary-600 hover:text-primary-500"
+                    >
                       <DocumentArrowDownIcon className="inline h-4 w-4 mr-1" />
                       Download Template
                     </button>
