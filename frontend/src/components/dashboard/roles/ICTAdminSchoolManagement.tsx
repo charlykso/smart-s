@@ -28,6 +28,7 @@ import type { Activity } from '../widgets/RecentActivityCard';
 import { useSchoolStore } from '../../../store/schoolStore';
 import { useAuthStore } from '../../../store/authStore';
 import { ictAdminService, ICTAdminDashboardData } from '../../../services/ictAdminService';
+import { ENV } from '@/constants';
 import type {
   CreateSchoolData,
   UpdateSchoolData,
@@ -113,7 +114,9 @@ const ICTAdminSchoolManagement: React.FC = () => {
       }
 
       const schoolParam = selectedSchoolId ? `?school_id=${selectedSchoolId}` : '';
-      const response = await fetch(`/api/v1/bulk-students/template${schoolParam}`, {
+      const baseUrl = ENV.API_BASE_URL || '/api/v1';
+      const templateUrl = `${baseUrl}/bulk-students/template${schoolParam}`;
+      const response = await fetch(templateUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -175,12 +178,14 @@ const ICTAdminSchoolManagement: React.FC = () => {
       formData.append('file', selectedFile);
       formData.append('school_id', selectedSchoolId);
 
+      const baseUrl = ENV.API_BASE_URL || '/api/v1';
+      const uploadUrl = `${baseUrl}/bulk-students/upload`;
       console.log('🔧 Making bulk upload request...');
-      console.log('URL: /api/v1/bulk-students/upload');
+      console.log('URL:', uploadUrl);
       console.log('School ID:', selectedSchoolId);
       console.log('File:', selectedFile?.name);
 
-      const response = await fetch('/api/v1/bulk-students/upload', {
+      const response = await fetch(uploadUrl, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

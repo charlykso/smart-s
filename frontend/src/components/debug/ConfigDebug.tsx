@@ -38,7 +38,8 @@ const ConfigDebug: React.FC = () => {
             <button 
               onClick={async () => {
                 try {
-                  const response = await fetch('/api/v1/health');
+                  const baseUrl = ENV.API_BASE_URL || '/api/v1';
+                  const response = await fetch(`${baseUrl}/health`);
                   const data = await response.json();
                   alert('API Test Result: ' + JSON.stringify(data, null, 2));
                 } catch (error) {
