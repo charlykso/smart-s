@@ -1,5 +1,7 @@
 import type { UserRole } from '../types/roles';
 
+const metaEnv = typeof import.meta !== 'undefined' ? import.meta.env : undefined;
+
 // User Roles
 export const USER_ROLES: Record<UserRole, string> = {
   Admin: 'Administrator',
@@ -127,6 +129,24 @@ export const API_ENDPOINTS = {
     CREATE: '/paymentprofile/create',
     UPDATE: '/paymentprofile/update',
   },
+  EXPENSES: {
+    ALL: '/expenses',
+    SUMMARY: '/expenses/summary',
+    EXPORT: '/expenses/export/pdf',
+    CREATE: '/expenses',
+    UPDATE: '/expenses/:id',
+    DELETE: '/expenses/:id',
+    APPROVE: '/expenses/:id/approve',
+    REJECT: '/expenses/:id/reject',
+    BY_ID: '/expenses/:id',
+  },
+  EXPENSE_PAYMENTS: {
+    ALL: '/expense-payments',
+    BY_EXPENSE: '/expense-payments/expense/:expenseId',
+    CREATE: '/expense-payments/expense/:expenseId',
+    UPDATE: '/expense-payments/:id',
+    DELETE: '/expense-payments/:id',
+  },
   STUDENT: {
     DASHBOARD: '/student/dashboard',
     PAYMENTS: '/student/payments',
@@ -252,6 +272,7 @@ export const ROUTES = {
   CLASS_ARMS: '/class-arms',
   FEES: '/fees',
   PAYMENTS: '/payments',
+  EXPENSES: '/expenses',
   STUDENT_FEES: '/student/fees',
   STUDENT_MANAGEMENT: '/admin/students',
   BURSAR_CASH_PAYMENTS: '/bursar/cash-payments',
@@ -377,20 +398,20 @@ export const BREAKPOINTS = {
 export const ENV = {
   API_BASE_URL: (() => {
     // Handle both Vite environment and fallback
-    if (typeof import.meta !== 'undefined' && import.meta.env) {
-      return import.meta.env.VITE_API_BASE_URL || 
-             (import.meta.env.VITE_BACKEND_URL ? import.meta.env.VITE_BACKEND_URL + '/api/v1' : null) ||
-             (import.meta.env.DEV ? '/api/v1' : 'http://localhost:3000/api/v1');
+    if (metaEnv) {
+      return metaEnv.VITE_API_BASE_URL || 
+             (metaEnv.VITE_BACKEND_URL ? metaEnv.VITE_BACKEND_URL + '/api/v1' : null) ||
+             (metaEnv.DEV ? '/api/v1' : 'http://localhost:3000/api/v1');
     }
     // Fallback for Node.js or when import.meta is not available
     return process.env.VITE_API_BASE_URL || 
            (process.env.VITE_BACKEND_URL ? process.env.VITE_BACKEND_URL + '/api/v1' : null) ||
            '/api/v1';
   })(),
-  APP_NAME: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_APP_NAME) || 'Ledgrio School Management',
-  PAYSTACK_PUBLIC_KEY: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_PAYSTACK_PUBLIC_KEY) || '',
-  CLOUDINARY_CLOUD_NAME: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CLOUDINARY_CLOUD_NAME) || '',
-  CLOUDINARY_UPLOAD_PRESET: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_CLOUDINARY_UPLOAD_PRESET) || '',
-  APP_VERSION: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_APP_VERSION) || '1.0.0',
-  APP_ENVIRONMENT: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_APP_ENVIRONMENT) || 'development',
+  APP_NAME: metaEnv?.VITE_APP_NAME || 'Ledgrio School Management',
+  PAYSTACK_PUBLIC_KEY: metaEnv?.VITE_PAYSTACK_PUBLIC_KEY || '',
+  CLOUDINARY_CLOUD_NAME: metaEnv?.VITE_CLOUDINARY_CLOUD_NAME || '',
+  CLOUDINARY_UPLOAD_PRESET: metaEnv?.VITE_CLOUDINARY_UPLOAD_PRESET || '',
+  APP_VERSION: metaEnv?.VITE_APP_VERSION || '1.0.0',
+  APP_ENVIRONMENT: metaEnv?.VITE_APP_ENVIRONMENT || 'development',
 };

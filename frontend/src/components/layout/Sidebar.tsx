@@ -22,7 +22,7 @@ type UserRole = 'Admin' | 'ICT_administrator' | 'Auditor' | 'Proprietor' | 'Prin
 interface MenuItem {
   id: string;
   label: string;
-  icon?: React.ComponentType<any>;
+  icon?: React.ComponentType<Record<string, unknown>>;
   path?: string;
   children?: MenuItem[];
   roles?: UserRole[];
@@ -66,6 +66,12 @@ const navigation: MenuItem[] = [
         label: 'Fee Administration',
         path: ROUTES.FEES,
         roles: ['Admin', 'ICT_administrator', 'Principal', 'Headteacher', 'Bursar'] as UserRole[],
+      },
+      {
+        id: 'expense-management',
+        label: 'Expense Management',
+        path: ROUTES.EXPENSES,
+        roles: ['Admin', 'Bursar', 'Principal', 'Proprietor', 'Auditor'] as UserRole[],
       },
       {
         id: 'student-payments',
