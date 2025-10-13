@@ -32,6 +32,7 @@ import ThemeProvider from './components/providers/ThemeProvider';
 import DebugApiPage from './pages/DebugApiPage';
 import ApiTest from './components/debug/ApiTest';
 import ConfigDebug from './components/debug/ConfigDebug';
+import ExpenseManagementPage from './pages/expenses/ExpenseManagementPage';
 
 // Principal Pages
 import PrincipalStudentManagementPage from './pages/principal/StudentManagementPage';
@@ -184,6 +185,14 @@ function App() {
               ) : (
                 <Navigate to={ROUTES.LOGIN} replace />
               )
+            }
+          />
+          <Route
+            path={ROUTES.EXPENSES}
+            element={
+              <ProtectedRoute requiredRoles={['Admin', 'Bursar', 'Principal', 'Proprietor', 'Auditor']}>
+                <ExpenseManagementPage />
+              </ProtectedRoute>
             }
           />
           <Route

@@ -24,11 +24,21 @@ const ClassArm = require('../model/ClassArm')
 const User = require('../model/User')
 const Fee = require('../model/Fee')
 const PaymentProfile = require('../model/PaymentProfile')
+const Expense = require('../model/Expense')
+const ExpensePayment = require('../model/ExpensePayment')
 let Payment
-try { Payment = require('../model/Payment') } catch { Payment = null }
+try {
+  Payment = require('../model/Payment')
+} catch {
+  Payment = null
+}
 
 async function connectDB() {
-  const uri = process.env.MONGO_URI || process.env.MONGODB_URI || process.env.DATABASE_URI || 'mongodb://127.0.0.1:27017/smart_s'
+  const uri =
+    process.env.MONGO_URI ||
+    process.env.MONGODB_URI ||
+    process.env.DATABASE_URI ||
+    'mongodb://127.0.0.1:27017/smart_s'
   await mongoose.connect(uri)
 }
 
@@ -43,6 +53,8 @@ async function resetAndSeed() {
 
   // Purge order (respect refs)
   const collections = [
+    'expensepayments',
+    'expenses',
     'payments',
     'fees',
     'users',
@@ -115,22 +127,112 @@ async function resetAndSeed() {
   const hash = (p) => bcrypt.hash(p, 12)
 
   const usersData = [
-    { email: 'admin@ledgrio.com', password: await hash('KGnd#%$ld'), firstname: 'System', lastname: 'Administrator', phone: '+1234567890', roles: ['Admin'], isActive: true },
-    { email: 'ictadmin@smart-s.com', password: await hash('password123'), firstname: 'ICT', lastname: 'Administrator', phone: '+1234567892', roles: ['ICT_administrator'], school: school._id, isActive: true },
-    { email: 'principal@smart-s.com', password: await hash('password123'), firstname: 'School', lastname: 'Principal', phone: '+1234567893', roles: ['Principal'], school: school._id, isActive: true },
-    { email: 'bursar@smart-s.com', password: await hash('password123'), firstname: 'School', lastname: 'Bursar', phone: '+1234567894', roles: ['Bursar'], school: school._id, isActive: true },
-    { email: 'auditor@smart-s.com', password: await hash('password123'), firstname: 'System', lastname: 'Auditor', phone: '+1234567896', roles: ['Auditor'], school: school._id, isActive: true },
-    { email: 'student@smart-s.com', password: await hash('password123'), firstname: 'Test', lastname: 'Student', phone: '+1234567895', roles: ['Student'], school: school._id, classArm: classArms[0]._id, isActive: true, regNo: 'STU001', gender: 'Female', type: 'day' },
-    { email: 'parent@smart-s.com', password: await hash('password123'), firstname: 'Jane', lastname: 'Doe', phone: '+1234567897', roles: ['Parent'], school: school._id, isActive: true },
+    {
+      email: 'admin@ledgrio.com',
+      password: await hash('KGnd#%$ld'),
+      firstname: 'System',
+      lastname: 'Administrator',
+      phone: '+1234567890',
+      roles: ['Admin'],
+      isActive: true,
+    },
+    {
+      email: 'ictadmin@smart-s.com',
+      password: await hash('password123'),
+      firstname: 'ICT',
+      lastname: 'Administrator',
+      phone: '+1234567892',
+      roles: ['ICT_administrator'],
+      school: school._id,
+      isActive: true,
+    },
+    {
+      email: 'principal@smart-s.com',
+      password: await hash('password123'),
+      firstname: 'School',
+      lastname: 'Principal',
+      phone: '+1234567893',
+      roles: ['Principal'],
+      school: school._id,
+      isActive: true,
+    },
+    {
+      email: 'bursar@smart-s.com',
+      password: await hash('password123'),
+      firstname: 'School',
+      lastname: 'Bursar',
+      phone: '+1234567894',
+      roles: ['Bursar'],
+      school: school._id,
+      isActive: true,
+    },
+    {
+      email: 'auditor@smart-s.com',
+      password: await hash('password123'),
+      firstname: 'System',
+      lastname: 'Auditor',
+      phone: '+1234567896',
+      roles: ['Auditor'],
+      school: school._id,
+      isActive: true,
+    },
+    {
+      email: 'student@smart-s.com',
+      password: await hash('password123'),
+      firstname: 'Test',
+      lastname: 'Student',
+      phone: '+1234567895',
+      roles: ['Student'],
+      school: school._id,
+      classArm: classArms[0]._id,
+      isActive: true,
+      regNo: 'STU001',
+      gender: 'Female',
+      type: 'day',
+    },
+    {
+      email: 'parent@smart-s.com',
+      password: await hash('password123'),
+      firstname: 'Jane',
+      lastname: 'Doe',
+      phone: '+1234567897',
+      roles: ['Parent'],
+      school: school._id,
+      isActive: true,
+    },
   ]
 
   const users = await User.insertMany(usersData)
-  const studentUser = users.find(u => u.roles.includes('Student'))
+  const studentUser = users.find((u) => u.roles.includes('Student'))
+  const bursarUser = users.find((u) => u.roles.includes('Bursar'))
+  const principalUser = users.find((u) => u.roles.includes('Principal'))
 
   // Fees for term
   const fees = await Fee.insertMany([
-    { term: term1._id, school: school._id, name: 'Tuition', decription: 'Tuition fee for term', type: 'tuition', isActive: true, isInstallmentAllowed: false, no_ofInstallments: 1, amount: 50000, isApproved: true },
-    { term: term1._id, school: school._id, name: 'PTA', decription: 'PTA levy', type: 'levy', isActive: true, isInstallmentAllowed: false, no_ofInstallments: 1, amount: 5000, isApproved: true },
+    {
+      term: term1._id,
+      school: school._id,
+      name: 'Tuition',
+      decription: 'Tuition fee for term',
+      type: 'tuition',
+      isActive: true,
+      isInstallmentAllowed: false,
+      no_ofInstallments: 1,
+      amount: 50000,
+      isApproved: true,
+    },
+    {
+      term: term1._id,
+      school: school._id,
+      name: 'PTA',
+      decription: 'PTA levy',
+      type: 'levy',
+      isActive: true,
+      isInstallmentAllowed: false,
+      no_ofInstallments: 1,
+      amount: 5000,
+      isApproved: true,
+    },
   ])
 
   // Payment profile (disabled by default)
@@ -160,14 +262,62 @@ async function resetAndSeed() {
     })
   }
 
+  // Sample expense and payment workflow
+  const currentMonth = `${now.getFullYear()}-${String(
+    now.getMonth() + 1
+  ).padStart(2, '0')}`
+
+  const maintenanceExpense = await Expense.create({
+    school: school._id,
+    session: session._id,
+    term: term1._id,
+    title: 'Generator Maintenance',
+    description: 'Routine servicing and fuel purchase',
+    type: 'FacilitiesMaintenance',
+    amount: 200000,
+    currency: 'NGN',
+    month: currentMonth,
+    expenseDate: now,
+    status: 'approved',
+    notes: 'Approved for October operations',
+    createdBy: (bursarUser || users[0])._id,
+    approvedBy: (principalUser || users[0])._id,
+    approvedAt: new Date(),
+  })
+
+  await ExpensePayment.create({
+    expense: maintenanceExpense._id,
+    school: school._id,
+    payeeType: 'Vendor',
+    payeeName: 'PowerFix Services',
+    paymentDate: now,
+    amountPaid: 120000,
+    currency: 'NGN',
+    paymentMethod: 'bank_transfer',
+    transactionReference: 'EXP-REF-001',
+    periodCovered: currentMonth,
+    receiptUrl: 'https://res.cloudinary.com/demo/image/upload/sample.jpg',
+    notes: 'Initial deposit for maintenance',
+    breakdown: {
+      allowances: 0,
+      deductions: 0,
+    },
+    recordedBy: (bursarUser || users[0])._id,
+  })
+
+  // Ensure expense status reflects payment
+  maintenanceExpense.status = 'partially_paid'
+  await maintenanceExpense.save({ validateBeforeSave: false })
+
   return {
     groupSchoolId: groupSchool._id,
     schoolId: school._id,
     sessionId: session._id,
     termId: term1._id,
-    classArmIds: classArms.map(c => c._id),
-    userIds: users.map(u => u._id),
-    feeIds: fees.map(f => f._id),
+    classArmIds: classArms.map((c) => c._id),
+    userIds: users.map((u) => u._id),
+    feeIds: fees.map((f) => f._id),
+    expenseIds: [maintenanceExpense._id],
   }
 }
 
@@ -201,5 +351,3 @@ if (require.main === module) {
 }
 
 module.exports = { resetAndSeed }
-
-

@@ -20,6 +20,8 @@ const bursarRoute = require('./route/bursarRoute')
 const parentRoute = require('./route/parentRoute')
 const bulkStudentRoute = require('./route/bulkStudentRoute')
 const ictAdminRoute = require('./route/ictAdminRoute')
+const expenseRoute = require('./route/expenseRoute')
+const expensePaymentRoute = require('./route/expensePaymentRoute')
 
 // ICT Admin management routes
 const schoolManagementRoute = require('./routes/schoolRoutes')
@@ -111,6 +113,8 @@ app.use('/api/v1/parent', parentRoute)
 app.use('/api/v1/bulk-students', bulkStudentRoute)
 app.use('/api/v1/ict-admin', ictAdminRoute)
 app.use('/api/v1/reports', require('./route/reportRoute'))
+app.use('/api/v1/expenses', expenseRoute)
+app.use('/api/v1/expense-payments', expensePaymentRoute)
 
 // ICT Admin management routes
 app.use('/api/v1/schools', schoolManagementRoute)
@@ -136,7 +140,8 @@ app.get('/api/v1/fee/all/stats', authenticateToken, async (req, res) => {
     const isAdmin = roles.includes('Admin')
     const requestedSchoolId = req.query.school_id
     const userSchoolId = req.user?.school?._id || req.user?.school
-    const scopeSchoolId = requestedSchoolId || (isAdmin ? undefined : userSchoolId)
+    const scopeSchoolId =
+      requestedSchoolId || (isAdmin ? undefined : userSchoolId)
 
     // Pull fees within scope for richer stats (counts + amounts)
     const fees = await Fee.find(scopeSchoolId ? { school: scopeSchoolId } : {})
@@ -155,8 +160,12 @@ app.get('/api/v1/fee/all/stats', authenticateToken, async (req, res) => {
         if (val._bsontype === 'Double' || val._bsontype === 'Decimal128') {
           return parseFloat(val.toString()) || 0
         }
-        const primitive = typeof val.valueOf === 'function' ? val.valueOf() : val
-        const num = typeof primitive === 'number' ? primitive : parseFloat(String(primitive))
+        const primitive =
+          typeof val.valueOf === 'function' ? val.valueOf() : val
+        const num =
+          typeof primitive === 'number'
+            ? primitive
+            : parseFloat(String(primitive))
         return isNaN(num) ? 0 : num
       }
       return 0
@@ -196,7 +205,8 @@ app.get('/api/v1/payment/all/stats', authenticateToken, async (req, res) => {
     const isAdmin = roles.includes('Admin')
     const requestedSchoolId = req.query.school_id
     const userSchoolId = req.user?.school?._id || req.user?.school
-    const scopeSchoolId = requestedSchoolId || (isAdmin ? undefined : userSchoolId)
+    const scopeSchoolId =
+      requestedSchoolId || (isAdmin ? undefined : userSchoolId)
 
     // Populate fee to filter by school when scoping is required
     let payments = await Payment.find().populate('fee', 'school')
@@ -208,9 +218,12 @@ app.get('/api/v1/payment/all/stats', authenticateToken, async (req, res) => {
     }
 
     const totalPayments = payments.length
-    const successfulPayments = payments.filter((p) => p.status === 'success')
-      .length
-    const pendingPayments = payments.filter((p) => p.status === 'pending').length
+    const successfulPayments = payments.filter(
+      (p) => p.status === 'success'
+    ).length
+    const pendingPayments = payments.filter(
+      (p) => p.status === 'pending'
+    ).length
     const failedPayments = payments.filter((p) => p.status === 'failed').length
 
     const toAmount = (val) => {
@@ -221,8 +234,12 @@ app.get('/api/v1/payment/all/stats', authenticateToken, async (req, res) => {
         if (val._bsontype === 'Double' || val._bsontype === 'Decimal128') {
           return parseFloat(val.toString()) || 0
         }
-        const primitive = typeof val.valueOf === 'function' ? val.valueOf() : val
-        const num = typeof primitive === 'number' ? primitive : parseFloat(String(primitive))
+        const primitive =
+          typeof val.valueOf === 'function' ? val.valueOf() : val
+        const num =
+          typeof primitive === 'number'
+            ? primitive
+            : parseFloat(String(primitive))
         return isNaN(num) ? 0 : num
       }
       return 0
@@ -237,8 +254,9 @@ app.get('/api/v1/payment/all/stats', authenticateToken, async (req, res) => {
       paystack: payments.filter((p) => p.mode_of_payment === 'paystack').length,
       flutterwave: payments.filter((p) => p.mode_of_payment === 'flutterwave')
         .length,
-      bank_transfer: payments.filter((p) => p.mode_of_payment === 'bank_transfer')
-        .length,
+      bank_transfer: payments.filter(
+        (p) => p.mode_of_payment === 'bank_transfer'
+      ).length,
       cash: payments.filter((p) => p.mode_of_payment === 'cash').length,
     }
 

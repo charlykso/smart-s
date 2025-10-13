@@ -63,8 +63,9 @@ const LandingPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="py-16 px-4">
+      <main>
+        {/* Hero Section */}
+        <section className="py-16 px-4">
         <div className="container mx-auto text-center">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary-600 dark:text-primary-400 mb-4 leading-tight">
             Complete School Accounting
@@ -89,10 +90,10 @@ const LandingPage: React.FC = () => {
             </button>
           </div>
         </div>
-      </section>
+        </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-16 px-4 bg-gray-50 dark:bg-gray-800 transition-colors duration-200">
+        {/* Features Section */}
+        <section id="features" className="py-16 px-4 bg-gray-50 dark:bg-gray-800 transition-colors duration-200">
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-2xl md:text-3xl font-bold text-secondary-900 dark:text-gray-100 mb-3">
@@ -171,13 +172,76 @@ const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
+        </section>
 
-      {/* CTA Section */}
-      <section className="py-16 px-4 bg-gradient-to-r from-primary-600 to-primary-700">
+        {/* About Section */}
+        <section id="about" className="py-16 px-4">
+          <div className="container mx-auto max-w-5xl">
+            <div className="grid gap-8 md:grid-cols-2 items-center">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-secondary-900 dark:text-gray-100 mb-3">
+                  Built for Modern School Finance Teams
+                </h2>
+                <p className="text-secondary-600 dark:text-gray-300 text-sm leading-relaxed mb-4">
+                  Ledgrio centralizes your financial workflows so bursars, principals, and proprietors stay
+                  aligned. Automate the busywork around approvals and reconciliations while keeping a full audit
+                  trail for regulators and stakeholders.
+                </p>
+                <p className="text-secondary-600 dark:text-gray-300 text-sm leading-relaxed">
+                  Our platform is engineered for Nigerian nursery, primary, and secondary schools, with support for
+                  multiple campuses, localized currencies, and compliance-ready reports that help you forecast cash
+                  flow and reduce revenue leakage.
+                </p>
+              </div>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-gray-900 border border-gray-200 dark:border-gray-700 p-6">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                  Why Schools Choose Ledgrio
+                </h3>
+                <ul className="space-y-2 text-secondary-600 dark:text-gray-300 text-sm">
+                  <li>✔️ Automated reminders that improve fee collection rates</li>
+                  <li>✔️ Centralized expense requests with instant approval workflows</li>
+                  <li>✔️ Role-based dashboards for transparent decision making</li>
+                  <li>✔️ Secure payment integrations including Paystack and Flutterwave</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Contact Section */}
+        <section id="contact" className="py-16 px-4 bg-gray-50 dark:bg-gray-800">
+          <div className="container mx-auto max-w-4xl">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl md:text-3xl font-bold text-secondary-900 dark:text-gray-100 mb-3">
+                Talk to Our Team
+              </h2>
+              <p className="text-secondary-600 dark:text-gray-300 text-sm leading-relaxed">
+                Schedule a personalized walkthrough to see how Ledgrio can modernize your school&apos;s finance
+                operations and help your stakeholders stay informed.
+              </p>
+            </div>
+            <div className="grid gap-6 md:grid-cols-3">
+              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Email</h3>
+                <p className="text-secondary-600 dark:text-gray-300 text-sm">support@ledgrio.com</p>
+              </div>
+              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Phone</h3>
+                <p className="text-secondary-600 dark:text-gray-300 text-sm">+234 703 778 4912</p>
+              </div>
+              <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-5">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">Location</h3>
+                <p className="text-secondary-600 dark:text-gray-300 text-sm">Abakaliki, Nigeria</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 px-4 bg-gradient-to-r from-primary-600 to-primary-700">
         <div className="container mx-auto text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-            Ready to Transform Your School Management?
+            Ready to Transform Your School Financial Management?
           </h2>
           <p className="text-base text-primary-100 mb-6 max-w-xl mx-auto">
             Join hundreds of schools already using Ledgrio to streamline their operations
@@ -192,7 +256,8 @@ const LandingPage: React.FC = () => {
             </svg>
           </Link>
         </div>
-      </section>
+        </section>
+      </main>
 
       {/* Footer */}
       <footer className="bg-secondary-900 dark:bg-gray-900 text-white py-10 px-4 transition-colors duration-200">
@@ -204,11 +269,11 @@ const LandingPage: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold">Ledgrio</h3>
-                  <p className="text-xs text-secondary-400 dark:text-gray-400">School Management System</p>
+                  <p className="text-xs text-secondary-400 dark:text-gray-400">School Financial Management System</p>
                 </div>
               </div>
               <p className="text-secondary-300 dark:text-gray-300 text-sm leading-relaxed">
-                Empowering educational institutions with modern, efficient, and secure management solutions.
+                Empowering educational institutions with modern, efficient, and secure financial management solutions.
               </p>
             </div>
 
@@ -228,15 +293,15 @@ const LandingPage: React.FC = () => {
               <h4 className="text-base font-semibold mb-3">Contact</h4>
               <ul className="space-y-1 text-secondary-300 dark:text-gray-300 text-sm">
                 <li>support@ledgrio.com</li>
-                <li>+234 (0) 123 456 7890</li>
-                <li>Lagos, Nigeria</li>
+                <li>+234 703 778 4912</li>
+                <li>Abakaliki, Nigeria</li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-secondary-700 dark:border-gray-700 mt-6 pt-6 text-center">
             <p className="text-secondary-400 dark:text-gray-400 text-xs">
-              © 2024 Ledgrio School Management System. All rights reserved.
+              © 2024 Ledgrio School Financial Management System. All rights reserved.
             </p>
           </div>
         </div>
