@@ -140,6 +140,10 @@ export const API_ENDPOINTS = {
     REJECT: '/expenses/:id/reject',
     BY_ID: '/expenses/:id',
   },
+  REPORTS: {
+    FINANCIAL_SUMMARY: '/reports/financial-summary',
+    FINANCIAL_SUMMARY_EXPORT: '/reports/financial-summary/export',
+  },
   EXPENSE_PAYMENTS: {
     ALL: '/expense-payments',
     BY_EXPENSE: '/expense-payments/expense/:expenseId',
