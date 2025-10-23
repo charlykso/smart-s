@@ -13,22 +13,26 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { ApiService } from '../../services/api';
+import { API_ENDPOINTS } from '../../constants';
 import MainLayout from '../../components/layout/MainLayout';
 import CenteredLoader from '../../components/common/CenteredLoader';
 import toast from 'react-hot-toast';
 
 interface GeneratedReport {
   id: string;
+  reportType: string;
   title: string;
   createdAt: string;
   payload: unknown;
 }
 
+type IconComponent = React.ComponentType<React.ComponentProps<'svg'>>;
+
 interface ReportType {
   id: string;
   name: string;
   description: string;
-  icon: React.ComponentType<any>;
+  icon: IconComponent;
   category: 'financial' | 'academic' | 'administrative' | 'audit';
   color: string;
 }
@@ -54,27 +58,54 @@ const ReportsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Helpers to render a readable report view from arbitrary data
-  const isPlainObject = (val: unknown): val is Record<string, any> =>
+  const isPlainObject = (val: unknown): val is Record<string, unknown> =>
     !!val && typeof val === 'object' && !Array.isArray(val);
 
   const numberFormatter = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 });
+  const integerFormatter = new Intl.NumberFormat('en-NG', { maximumFractionDigits: 0 });
+  const decimalFormatter = new Intl.NumberFormat('en-NG', { maximumFractionDigits: 2 });
+
+  const isCurrencyKey = (key?: string) => {
+    if (!key) return false;
+    const lower = key.toLowerCase();
+    const keywords = ['amount', 'revenue', 'balance', 'expense', 'outstanding', 'spend', 'cashflow', 'cash_flow', 'net cash'];
+    return keywords.some((word) => lower.includes(word));
+  };
+
+  const isPercentageKey = (key?: string) => {
+    if (!key) return false;
+    const lower = key.toLowerCase();
+    const keywords = ['rate', 'percentage', 'percent', 'ratio'];
+    return keywords.some((word) => lower.includes(word));
+  };
 
   const prettifyKey = (key: string) => key
     .replace(/_/g, ' ')
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     .replace(/^./, (s) => s.toUpperCase());
 
-  const formatValue = (val: any) => {
-    if (typeof val === 'number') return numberFormatter.format(val);
+  const formatValue = (val: unknown, key?: string) => {
+    if (typeof val === 'number') {
+      if (isCurrencyKey(key)) {
+        return numberFormatter.format(val);
+      }
+      if (isPercentageKey(key)) {
+        return `${decimalFormatter.format(val)}%`;
+      }
+      if (Number.isInteger(val)) {
+        return integerFormatter.format(val);
+      }
+      return decimalFormatter.format(val);
+    }
     if (typeof val === 'boolean') return val ? 'Yes' : 'No';
     if (typeof val === 'string') return val;
     return String(val);
   };
 
-  const renderKeyStats = (data: any) => {
+  const renderKeyStats = (data: unknown) => {
     if (!isPlainObject(data)) return null;
     const statEntries = Object.entries(data)
-      .filter(([_, v]) => typeof v === 'number')
+      .filter(([, value]) => typeof value === 'number')
       .slice(0, 6);
     if (statEntries.length === 0) return null;
     return (
@@ -82,20 +113,20 @@ const ReportsPage: React.FC = () => {
         {statEntries.map(([k, v]) => (
           <div key={k} className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-white dark:bg-gray-900">
             <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">{prettifyKey(k)}</div>
-            <div className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{formatValue(v)}</div>
+            <div className="mt-1 text-xl font-semibold text-gray-900 dark:text-white">{formatValue(v, k)}</div>
           </div>
         ))}
       </div>
     );
   };
 
-  const pickTableColumns = (rows: any[]): string[] => {
+  const pickTableColumns = (rows: unknown[]): string[] => {
     const sample = rows.find((r) => isPlainObject(r));
     if (!sample) return [];
     return Object.keys(sample).slice(0, 6); // limit columns for readability
   };
 
-  const renderArrayTable = (title: string, rows: any[]) => {
+  const renderArrayTable = (title: string, rows: unknown[]) => {
     if (!Array.isArray(rows) || rows.length === 0) return null;
     const columns = pickTableColumns(rows);
     if (columns.length === 0) return null;
@@ -112,15 +143,18 @@ const ReportsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-gray-900">
-              {rows.slice(0, 100).map((row, idx) => (
-                <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                  {columns.map((col) => (
-                    <td key={col} className="px-3 py-2 text-sm text-gray-800 dark:text-gray-200">
-                      {formatValue((row as any)[col])}
-                    </td>
-                  ))}
-                </tr>
-              ))}
+              {rows.slice(0, 100).map((row, idx) => {
+                const typedRow = isPlainObject(row) ? row : {};
+                return (
+                  <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    {columns.map((col) => (
+                      <td key={col} className="px-3 py-2 text-sm text-gray-800 dark:text-gray-200">
+                        {formatValue((typedRow as Record<string, unknown>)[col], col)}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -131,24 +165,24 @@ const ReportsPage: React.FC = () => {
     );
   };
 
-  const renderObjectDetails = (data: Record<string, any>) => {
-    const entries = Object.entries(data).filter(([_, v]) => typeof v !== 'object');
+  const renderObjectDetails = (data: Record<string, unknown>) => {
+    const entries = Object.entries(data).filter(([, value]) => typeof value !== 'object');
     if (entries.length === 0) return null;
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
         {entries.map(([k, v]) => (
           <div key={k} className="rounded-md bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-3">
             <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">{prettifyKey(k)}</div>
-            <div className="text-sm font-medium text-gray-900 dark:text-white">{formatValue(v)}</div>
+            <div className="text-sm font-medium text-gray-900 dark:text-white">{formatValue(v, k)}</div>
           </div>
         ))}
       </div>
     );
   };
 
-  const ReportContent: React.FC<{ data: any }> = ({ data }) => {
+  const ReportContent: React.FC<{ data: unknown }> = ({ data }) => {
     if (!data) return <div className="text-sm text-gray-500">No data</div>;
-    const sections: JSX.Element[] = [];
+  const sections: React.ReactNode[] = [];
 
     // Top-level key stats
     const keyStats = renderKeyStats(data);
@@ -156,19 +190,22 @@ const ReportsPage: React.FC = () => {
 
     // If array at top level, render as table
     if (Array.isArray(data)) {
-      sections.push(renderArrayTable('Items', data) as unknown as JSX.Element);
+      const arraySection = renderArrayTable('Items', data);
+      if (arraySection) {
+        sections.push(arraySection);
+      }
     }
 
     // For objects: render simple fields and attempt to render arrays/objects within
     if (isPlainObject(data)) {
-      const obj = data as Record<string, any>;
+      const obj = data as Record<string, unknown>;
       const simple = renderObjectDetails(obj);
       if (simple) sections.push(simple);
 
       Object.entries(obj).forEach(([k, v]) => {
         if (Array.isArray(v)) {
           const table = renderArrayTable(prettifyKey(k), v);
-          if (table) sections.push(table as unknown as JSX.Element);
+          if (table) sections.push(table);
         } else if (isPlainObject(v)) {
           const innerStats = renderKeyStats(v);
           const innerDetails = renderObjectDetails(v);
@@ -268,7 +305,7 @@ const ReportsPage: React.FC = () => {
       let endpoint = '';
       switch (reportId) {
         case 'financial-summary':
-          endpoint = '/reports/financial-summary';
+          endpoint = API_ENDPOINTS.REPORTS.FINANCIAL_SUMMARY;
           break;
         case 'payment-analysis':
           endpoint = '/reports/payment-analysis';
@@ -286,6 +323,7 @@ const ReportsPage: React.FC = () => {
         const title = reportTypes.find(r => r.id === reportId)?.name || 'Generated Report';
         const report: GeneratedReport = {
           id: `${reportId}-${Date.now()}`,
+          reportType: reportId,
           title,
           createdAt: new Date().toISOString(),
           payload: response.data,
@@ -304,42 +342,29 @@ const ReportsPage: React.FC = () => {
     }
   };
 
-  const handleExportReport = (reportId: string, format: 'pdf' | 'excel' | 'csv') => {
+  const handleExportReport = async (reportId: string, format: 'pdf' | 'excel' | 'csv') => {
     try {
-      const title = reportTypes.find(r => r.id === reportId)?.name || 'report';
-      const data = generatedReport?.payload;
-      const filenameBase = `${title.replace(/\s+/g, '_').toLowerCase()}_${new Date().toISOString().slice(0,10)}`;
-
-      if (format === 'csv' || format === 'excel') {
-        const json = JSON.stringify(data, null, 2);
-        const blob = new Blob([json], { type: 'application/json;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `${filenameBase}.${format === 'csv' ? 'csv' : 'xlsx'}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      const reportConfig = reportTypes.find(r => r.id === reportId);
+      if (!reportConfig) {
+        toast.error('Report type not recognised');
         return;
       }
 
-      if (format === 'pdf') {
-        const printable = document.getElementById('report-printable');
-        if (!printable) {
-          toast.error('No report to export. Generate a report first.');
-          return;
-        }
-        const win = window.open('', 'PRINT', 'height=650,width=900,top=100,left=150');
-        if (win) {
-          win.document.write(`<html><head><title>${title}</title>`);
-          win.document.write('</head><body >');
-          win.document.write(printable.innerHTML);
-          win.document.write('</body></html>');
-          win.document.close();
-          win.focus();
-          win.print();
-          win.close();
-        }
+      if (!generatedReport || !generatedReport.payload) {
+        toast.error('Generate the report before exporting');
+        return;
       }
+
+      if (reportId === 'financial-summary') {
+        await ApiService.downloadFile(
+          `${API_ENDPOINTS.REPORTS.FINANCIAL_SUMMARY_EXPORT}?format=${format}`,
+          `financial-summary.${format === 'excel' ? 'xlsx' : format}`
+        );
+        toast.success(`${reportConfig.name} exported as ${format.toUpperCase()}`);
+        return;
+      }
+
+      toast.error('Export is not yet available for this report type');
     } catch (e) {
       console.error('Export error:', e);
       toast.error('Failed to export report');
@@ -406,14 +431,16 @@ const ReportsPage: React.FC = () => {
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="school-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     School
                   </label>
                   <select
+                    id="school-filter"
                     className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     value={filters.school || ''}
                     onChange={(e) => setFilters({ ...filters, school: e.target.value })}
                     disabled={!user?.roles?.includes('Admin') || !!user?.school}
+                    aria-label="School filter"
                   >
                     <option value="">
                       {user?.roles?.includes('Admin') && !user?.school ? 'All Schools' : 'Current School'}
@@ -427,20 +454,28 @@ const ReportsPage: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="session-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Session
                   </label>
-                  <select className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                  <select
+                    id="session-filter"
+                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    aria-label="Session filter"
+                  >
                     <option value="">All Sessions</option>
                     <option value="2023-2024">2023/2024</option>
                     <option value="2022-2023">2022/2023</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="term-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Term
                   </label>
-                  <select className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                  <select
+                    id="term-filter"
+                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    aria-label="Term filter"
+                  >
                     <option value="">All Terms</option>
                     <option value="first">First Term</option>
                     <option value="second">Second Term</option>
@@ -448,12 +483,15 @@ const ReportsPage: React.FC = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label htmlFor="date-range-filter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Date Range
                   </label>
                   <input
                     type="date"
+                    id="date-range-filter"
+                    name="dateRange"
                     className="block w-full pl-3 pr-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    aria-label="Date range filter"
                   />
                 </div>
               </div>
@@ -514,6 +552,7 @@ const ReportsPage: React.FC = () => {
                   <div className="space-y-3">
                     <button
                       onClick={() => handleGenerateReport(report.id)}
+                      disabled={isLoading}
                       className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                     >
                       <DocumentTextIcon className="h-4 w-4 mr-2" />
@@ -570,20 +609,20 @@ const ReportsPage: React.FC = () => {
               </div>
               <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-end gap-2">
                 <button
-                  onClick={() => handleExportReport(generatedReport.id.split('-')[0], 'pdf')}
+                  onClick={() => handleExportReport(generatedReport.reportType, 'pdf')}
                   className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
                 >
                   <DocumentArrowDownIcon className="h-4 w-4 mr-2" />
                   Export PDF
                 </button>
                 <button
-                  onClick={() => handleExportReport(generatedReport.id.split('-')[0], 'excel')}
+                  onClick={() => handleExportReport(generatedReport.reportType, 'excel')}
                   className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
                 >
                   Export Excel
                 </button>
                 <button
-                  onClick={() => handleExportReport(generatedReport.id.split('-')[0], 'csv')}
+                  onClick={() => handleExportReport(generatedReport.reportType, 'csv')}
                   className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
                 >
                   Export CSV
